@@ -145,10 +145,17 @@ selected_label = st.selectbox(
 selected = model_ids[model_label_opts.index(selected_label)]
 st.session_state["selected_model_id"] = selected
 
-# Keep request selection scoped to the current model.
-if st.session_state.get("_md_req_model") != selected:
+# Keep request selection scoped to the current model (list ↔ detail).
+# Only clear when the model *changes*; first paint with a preset selection
+# (e.g. deep-link / smoke test) must keep md_selected_request.
+_prev_req_model = st.session_state.get("_md_req_model")
+if _prev_req_model is None:
+    st.session_state["_md_req_model"] = selected
+elif _prev_req_model != selected:
     st.session_state["_md_req_model"] = selected
     st.session_state.pop("md_selected_request", None)
+    st.session_state.pop("md_req_list_nonce", None)
+    st.session_state.pop("_md_req_auto", None)
 
 m = get_model(selected)
 if m is None:
@@ -630,74 +637,159 @@ with tab_val:
             f"({auth.ROLE_LABELS[auth.get_current_user()['role']]})."
         )
 
-    # ------------------------------------------------ Filters + list + detail
-    st.subheader("Requests for this model")
-    type_chip_labels = {
-        t: f"{t} — {auth.REQUEST_TYPES[t]['label']}" for t in auth.REQUEST_TYPE_ORDER
-    }
-    f1, f2 = st.columns(2)
-    with f1:
-        type_f_labels = st.multiselect(
-            "Type",
-            [type_chip_labels[t] for t in auth.REQUEST_TYPE_ORDER],
-            default=[type_chip_labels[t] for t in auth.REQUEST_TYPE_ORDER],
-            key="req_type_filter",
-        )
-        type_f = [
-            t for t, lab in type_chip_labels.items() if lab in type_f_labels
-        ]
-    with f2:
-        status_f = st.multiselect(
-            "Status",
-            data_store.REQUEST_STATUSES,
-            default=data_store.REQUEST_STATUSES,
-            key="req_status_filter",
-        )
+    # ------------------------------------------------ Request register (list ↔ detail)
+    def _type_cell(r: dict) -> str:
+        """Type plus short materiality / nature / severity when present."""
+        t = r.get("type") or ""
+        if t == "MC" and r.get("materiality"):
+            return f"MC · {r['materiality']}"
+        if t == "VAL" and r.get("validation_subtype"):
+            sub = r["validation_subtype"]
+            return f"VAL · {sub[:28] + '…' if len(sub) > 28 else sub}"
+        if t == "FND" and r.get("severity"):
+            return f"FND · {r['severity']}"
+        return t
 
-    filtered = [
-        r for r in model_requests
-        if r["type"] in type_f and r["status"] in status_f
-    ]
-    filtered = sorted(
-        filtered,
-        key=lambda r: (
-            0 if r["status"] != "Closed" else 1,
-            auth.REQUEST_TYPE_ORDER.index(r["type"]) if r["type"] in auth.REQUEST_TYPE_ORDER else 9,
-            r["request_id"],
-        ),
-    )
+    selected_rid = st.session_state.get("md_selected_request")
+    if selected_rid and not any(r["request_id"] == selected_rid for r in model_requests):
+        st.session_state.pop("md_selected_request", None)
+        selected_rid = None
 
-    if not filtered:
-        st.info("No requests match the current filters.")
-    else:
-        labels = {
-            r["request_id"]: (
-                f"{r['request_id']} · {r['status']} · {r['title'][:60]}"
+    if selected_rid is None:
+        # ---- LIST VIEW
+        st.subheader("Request register")
+        f1, f2 = st.columns(2)
+        with f1:
+            type_f = st.selectbox(
+                "Type",
+                ["All", "MC", "VAL", "FND"],
+                key="req_type_filter",
             )
-            for r in filtered
-        }
-        ids = [r["request_id"] for r in filtered]
-        # Keep selection per model; drop stale ids after filters change.
-        state_key = "md_selected_request"
-        label_opts = [labels[i] for i in ids]
-        if (
-            state_key not in st.session_state
-            or st.session_state[state_key] not in label_opts
-        ):
-            st.session_state[state_key] = label_opts[0]
-        chosen_label = st.selectbox(
-            "Select request ID",
-            label_opts,
-            key=state_key,
+        with f2:
+            status_f = st.selectbox(
+                "Status",
+                ["All", *data_store.REQUEST_STATUSES],
+                key="req_status_filter",
+            )
+
+        filtered = [
+            r for r in model_requests
+            if (type_f == "All" or r["type"] == type_f)
+            and (status_f == "All" or r["status"] == status_f)
+        ]
+        # Open / In Progress first (newest), then Closed (newest).
+        open_part = sorted(
+            [r for r in filtered if r["status"] != "Closed"],
+            key=lambda r: (r.get("created_date") or "", r["request_id"]),
+            reverse=True,
         )
-        chosen = ids[label_opts.index(chosen_label)]
-        req = next(r for r in filtered if r["request_id"] == chosen)
+        closed_part = sorted(
+            [r for r in filtered if r["status"] == "Closed"],
+            key=lambda r: (r.get("created_date") or "", r["request_id"]),
+            reverse=True,
+        )
+        filtered = open_part + closed_part
+
+        st.caption(
+            f"{len(filtered)} request(s) · click a row checkbox to open detail, "
+            "or select a row and press **Open**."
+        )
+
+        if not filtered:
+            st.info("No requests match the current filters.")
+        else:
+            register_df = pd.DataFrame([
+                {
+                    "Request ID": r["request_id"],
+                    "Type": _type_cell(r),
+                    "Title": r.get("title") or "",
+                    "Status": r.get("status") or "",
+                    "Initiated by": r.get("initiated_by") or "—",
+                    "Assigned to": r.get("assigned_to") or "—",
+                    "Created": r.get("created_date") or "—",
+                }
+                for r in filtered
+            ])
+            list_nonce = st.session_state.get("md_req_list_nonce", 0)
+            event = st.dataframe(
+                register_df,
+                hide_index=True,
+                width="stretch",
+                height=min(420, 56 + 36 * max(len(register_df), 1)),
+                on_select="rerun",
+                selection_mode="single-row",
+                key=f"req_register_{selected}_{list_nonce}",
+                column_config={
+                    "Request ID": st.column_config.TextColumn(width="small"),
+                    "Type": st.column_config.TextColumn(width="medium"),
+                    "Title": st.column_config.TextColumn(width="large"),
+                    "Status": st.column_config.TextColumn(width="small"),
+                    "Created": st.column_config.TextColumn(width="small"),
+                },
+            )
+            sel_rows = (
+                list(event.selection.rows)
+                if event.selection and event.selection.rows
+                else []
+            )
+            open_col, hint_col = st.columns([1.2, 4])
+            with open_col:
+                open_clicked = st.button(
+                    "Open",
+                    type="primary",
+                    disabled=not sel_rows,
+                    key="req_register_open",
+                    width="stretch",
+                )
+            with hint_col:
+                if sel_rows:
+                    st.caption(
+                        f"Selected: **{register_df.iloc[sel_rows[0]]['Request ID']}**"
+                    )
+            # Navigate on Open click, or auto-open once per new row selection
+            # (inventory-style). Nonce on "Back" resets the dataframe so we
+            # do not immediately re-enter detail.
+            if sel_rows:
+                rid = str(register_df.iloc[sel_rows[0]]["Request ID"])
+                if open_clicked or st.session_state.get("_md_req_auto") != rid:
+                    st.session_state["md_selected_request"] = rid
+                    st.session_state["_md_req_auto"] = rid
+                    st.rerun()
+
+        with st.expander("Counts by type", expanded=False):
+            counts = []
+            for t in auth.REQUEST_TYPE_ORDER:
+                n = sum(1 for r in model_requests if r["type"] == t)
+                n_open = sum(
+                    1 for r in model_requests
+                    if r["type"] == t and r["status"] != "Closed"
+                )
+                counts.append({
+                    "Type": t,
+                    "Label": auth.REQUEST_TYPES[t]["label"],
+                    "Total": n,
+                    "Open": n_open,
+                })
+            st.dataframe(pd.DataFrame(counts), hide_index=True, width="stretch")
+
+    else:
+        # ---- DETAIL VIEW
+        req = next(r for r in model_requests if r["request_id"] == selected_rid)
         is_closed = req["status"] == "Closed"
         status_color = {
             "Open": utils.AMBER, "In Progress": utils.NAVY, "Closed": utils.GREEN,
         }.get(req["status"], utils.GREY)
 
-        st.markdown("---")
+        back_col, _ = st.columns([1.4, 4])
+        with back_col:
+            if st.button("← Back to list", key="req_back_to_list", width="stretch"):
+                st.session_state.pop("md_selected_request", None)
+                st.session_state.pop("_md_req_auto", None)
+                st.session_state["md_req_list_nonce"] = (
+                    st.session_state.get("md_req_list_nonce", 0) + 1
+                )
+                st.rerun()
+
         st.markdown(
             utils.badge(req["request_id"], utils.GREY)
             + utils.badge(auth.REQUEST_TYPES[req["type"]]["label"], utils.NAVY)
@@ -726,12 +818,14 @@ with tab_val:
             st.caption(f"Nature: {req['validation_subtype']}")
 
         if is_closed:
-            st.warning("This request is **Closed** — read-only (no upload, edit, or new comments).")
+            st.warning(
+                "This request is **Closed** — read-only "
+                "(no upload, edit, or new comments)."
+            )
 
         # ---- Evidence
         st.markdown("**Evidence**")
         req_ev = _evidence_for("validation_request", req["request_id"], evidence_all)
-        # Also show legacy validation link if legacy_id present
         if req.get("legacy_id"):
             req_ev = req_ev + [
                 e for e in _evidence_for("validation", req["legacy_id"], evidence_all)
@@ -775,7 +869,6 @@ with tab_val:
                 _render_evidence_rows(resp_ev, f"thr_{rid}")
 
         if not is_closed:
-            # Assign / send
             if auth.has_permission("assign_request"):
                 with st.form(f"assign_form_{req['request_id']}", clear_on_submit=True):
                     all_opts = auth.user_option_labels("LOD1", "LOD2", "LOD3", "ADMIN")
@@ -790,9 +883,9 @@ with tab_val:
                     data_store.assign_request(req["request_id"], new_assignee)
                     flash_and_rerun(f"{req['request_id']} assigned to {new_assignee}.")
 
-            # Respond (LoD1 on FND; LOD2/ADMIN may comment on MC/VAL via respond path)
             can_respond = auth.has_permission("respond_request") or (
-                req["type"] != "FND" and auth.get_current_user()["role"] in ("LOD2", "ADMIN")
+                req["type"] != "FND"
+                and auth.get_current_user()["role"] in ("LOD2", "ADMIN")
             )
             if can_respond and auth.has_permission("respond_request"):
                 with st.form(f"resp_form_{req['request_id']}", clear_on_submit=True):
@@ -817,7 +910,9 @@ with tab_val:
                     if not resp_text.strip():
                         st.error("Response text is required.")
                     elif resp_file is not None and not resp_desc.strip():
-                        st.error("Provide a short evidence description when attaching a file.")
+                        st.error(
+                            "Provide a short evidence description when attaching a file."
+                        )
                     else:
                         rid = data_store.peek_next_thread_id(req["request_id"])
                         ev_ids = []
@@ -829,14 +924,15 @@ with tab_val:
                         data_store.add_request_response(
                             req["request_id"], resp_text.strip(), ev_ids,
                         )
-                        flash_and_rerun(f"Response {rid} added to {req['request_id']}.")
+                        flash_and_rerun(
+                            f"Response {rid} added to {req['request_id']}."
+                        )
             elif req["type"] == "FND" and not auth.has_permission("respond_request"):
                 st.caption(
                     f"Findings are answered by the first line "
                     f"({auth.who_can('respond_request')})."
                 )
 
-            # Close
             if auth.can_close_request(req):
                 with st.form(f"close_form_{req['request_id']}", clear_on_submit=True):
                     close_comment = st.text_input(
@@ -864,17 +960,22 @@ with tab_val:
                         key=f"close_cat_{req['request_id']}",
                     )
                     close_desc = st.text_input(
-                        "Evidence description", key=f"close_desc_{req['request_id']}",
+                        "Evidence description",
+                        key=f"close_desc_{req['request_id']}",
                         placeholder="Short note if attaching a file",
                     )
-                    close_submit = st.form_submit_button("Close request", type="primary")
+                    close_submit = st.form_submit_button(
+                        "Close request", type="primary",
+                    )
                 if close_submit:
                     if not close_comment.strip():
                         st.error("A closure comment is required.")
                     elif req["type"] in ("VAL", "MC") and not close_outcome:
                         st.error("Outcome is required to close this request.")
                     elif close_file is not None and not close_desc.strip():
-                        st.error("Provide a short evidence description when attaching a file.")
+                        st.error(
+                            "Provide a short evidence description when attaching a file."
+                        )
                     else:
                         rid = data_store.peek_next_thread_id(req["request_id"])
                         ev_ids = []
@@ -882,7 +983,8 @@ with tab_val:
                             ev_ids.append(data_store.attach_evidence(
                                 selected, "request_response", rid, close_file,
                                 close_cat,
-                                close_desc.strip() or f"Closure evidence on {req['request_id']}",
+                                close_desc.strip()
+                                or f"Closure evidence on {req['request_id']}",
                             ))
                         data_store.close_request(
                             req["request_id"],
@@ -893,21 +995,9 @@ with tab_val:
                         )
                         flash_and_rerun(f"Request {req['request_id']} closed.")
             else:
-                st.caption("You cannot close this request under the current role rules.")
-
-    # Compact counts by type
-    with st.expander("Counts by type", expanded=False):
-        counts = []
-        for t in auth.REQUEST_TYPE_ORDER:
-            n = sum(1 for r in model_requests if r["type"] == t)
-            n_open = sum(1 for r in model_requests if r["type"] == t and r["status"] != "Closed")
-            counts.append({
-                "Type": t,
-                "Label": auth.REQUEST_TYPES[t]["label"],
-                "Total": n,
-                "Open": n_open,
-            })
-        st.dataframe(pd.DataFrame(counts), hide_index=True, width="stretch")
+                st.caption(
+                    "You cannot close this request under the current role rules."
+                )
 
 # ================================================================ Monitoring
 with tab_perf:

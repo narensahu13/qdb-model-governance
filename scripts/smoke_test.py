@@ -81,6 +81,86 @@ for mid in [m["model_id"] for m in models]:
     run_page("views/model_detail.py", f"Model Detail for {mid}",
              {"selected_model_id": mid})
 
+# ---------------------------------------------------------------- validation register list ↔ detail
+# List view (no md_selected_request) and detail view (request id in session).
+at = run_page(
+    "views/model_detail.py",
+    "Validation register list (QDB-CR-001)",
+    {
+        "current_user_name": ROLE_USERS["LOD2"],
+        "selected_model_id": "QDB-CR-001",
+    },
+)
+if at is not None and not at.exception:
+    if ss_get(at, "md_selected_request"):
+        failed = True
+        print("FAIL  Validation register list unexpectedly opened a detail")
+    else:
+        print("OK    Validation register stays on list without selection")
+
+at = run_page(
+    "views/model_detail.py",
+    "Validation register detail (VAL-001)",
+    {
+        "current_user_name": ROLE_USERS["LOD2"],
+        "selected_model_id": "QDB-CR-001",
+        "md_selected_request": "VAL-001",
+    },
+)
+if at is not None and not at.exception:
+    if ss_get(at, "md_selected_request") != "VAL-001":
+        failed = True
+        print(f"FAIL  Validation register detail lost selection "
+              f"(got {ss_get(at, 'md_selected_request')!r})")
+    else:
+        # Back to list button should be present in detail mode.
+        back_btns = [b for b in at.button if "Back to list" in (b.label or "")]
+        if not back_btns:
+            failed = True
+            print("FAIL  Validation register detail missing Back to list")
+        else:
+            back_btns[0].click().run()
+            if at.exception:
+                failed = True
+                print("FAIL  Back to list raised")
+                for exc in at.exception:
+                    print(f"      {exc.value}")
+            elif ss_get(at, "md_selected_request"):
+                failed = True
+                print(f"FAIL  Back to list did not clear selection "
+                      f"(got {ss_get(at, 'md_selected_request')!r})")
+            else:
+                print("OK    Validation register Back to list returns to register")
+
+at = run_page(
+    "views/model_detail.py",
+    "Validation register detail open MC (MC-001 on QDB-CR-002)",
+    {
+        "current_user_name": ROLE_USERS["LOD1"],
+        "selected_model_id": "QDB-CR-002",
+        "md_selected_request": "MC-001",
+    },
+)
+
+# Stale selection for another model must not crash (cleared on model scope).
+at = run_page(
+    "views/model_detail.py",
+    "Validation register stale selection cleared on model change",
+    {
+        "current_user_name": ROLE_USERS["LOD2"],
+        "selected_model_id": "QDB-CR-001",
+        "md_selected_request": "MC-001",  # belongs to QDB-CR-002
+        "_md_req_model": "QDB-CR-002",
+    },
+)
+if at is not None and not at.exception:
+    # Model is QDB-CR-001; MC-001 is not on this model → cleared.
+    if ss_get(at, "md_selected_request") == "MC-001":
+        failed = True
+        print("FAIL  Stale request selection was kept for the wrong model")
+    else:
+        print("OK    Stale request selection cleared for model mismatch")
+
 # ---------------------------------------------------------------- tiering
 from tiering import compute_tier
 
