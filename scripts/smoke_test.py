@@ -140,7 +140,7 @@ try:
             failed = True
             print(f"FAIL  {label}")
 
-    # ---- raise finding (VFI) as LOD2
+    # ---- raise finding (FND) as LOD2
     st.session_state["current_user_name"] = ROLE_USERS["LOD2"]
     new_id = data_store.add_issue({
         "model_id": "QDB-CR-001",
@@ -153,8 +153,8 @@ try:
     })
     reqs = json.loads((DATA / "validation_requests.json").read_text(encoding="utf-8"))
     rec = next(i for i in reqs if i["request_id"] == new_id)
-    check(f"Write path: VFI {new_id} raised by LOD2",
-          rec["type"] == "VFI"
+    check(f"Write path: FND {new_id} raised by LOD2",
+          rec["type"] == "FND"
           and rec["initiated_by"] == ROLE_USERS["LOD2"] and rec["initiated_by_role"] == "LOD2"
           and rec["status"] == "Open" and rec["thread"] == [])
 
@@ -163,28 +163,32 @@ try:
     data_store.add_issue_response(new_id, "First-line response from smoke test.")
     reqs = json.loads((DATA / "validation_requests.json").read_text(encoding="utf-8"))
     rec = next(i for i in reqs if i["request_id"] == new_id)
-    check("Write path: LOD1 response recorded on VFI",
+    check("Write path: LOD1 response recorded on FND",
           len(rec["thread"]) == 1 and rec["thread"][0]["role"] == "LOD1"
           and rec["status"] == "In Progress")
 
     # ---- permission checks through auth
-    check("Permissions: LOD1 cannot add validation / initiate VAL",
-          not auth.has_permission("add_validation") and not auth.can_initiate("VAL"))
-    check("Permissions: LOD1 can initiate MMC / VRQ",
-          auth.can_initiate("MMC") and auth.can_initiate("VRQ"))
+    check("Permissions: LOD1 can initiate MC / VAL",
+          auth.can_initiate("MC") and auth.can_initiate("VAL"))
+    check("Permissions: LOD1 cannot initiate FND",
+          not auth.can_initiate("FND"))
     check("Permissions: LOD1 cannot close a LOD2-raised finding",
           not auth.can_close_issue("LOD2"))
     st.session_state["current_user_name"] = ROLE_USERS["LOD2"]
-    check("Permissions: LOD2 can close its own VFI", auth.can_close_issue("LOD2"))
-    check("Permissions: LOD2 can initiate VAL / VFI",
-          auth.can_initiate("VAL") and auth.can_initiate("VFI"))
-    check("Permissions: LOD2 cannot initiate MMC", not auth.can_initiate("MMC"))
+    check("Permissions: LOD2 can close its own FND", auth.can_close_issue("LOD2"))
+    check("Permissions: LOD2 can initiate MC / VAL / FND",
+          auth.can_initiate("MC") and auth.can_initiate("VAL") and auth.can_initiate("FND"))
+    st.session_state["current_user_name"] = ROLE_USERS["LOD3"]
+    check("Permissions: LOD3 can initiate VAL / FND",
+          auth.can_initiate("VAL") and auth.can_initiate("FND"))
+    check("Permissions: LOD3 cannot initiate MC", not auth.can_initiate("MC"))
+    st.session_state["current_user_name"] = ROLE_USERS["LOD2"]
 
     # ---- close as the raiser (LOD2)
     data_store.close_issue(new_id, "Closed by smoke test.")
     reqs = json.loads((DATA / "validation_requests.json").read_text(encoding="utf-8"))
     rec = next(i for i in reqs if i["request_id"] == new_id)
-    check("Write path: VFI closed by raiser with closure comment",
+    check("Write path: FND closed by raiser with closure comment",
           rec["status"] == "Closed" and rec["closed_date"] is not None
           and rec["thread"][-1]["text"].startswith("[Closure]"))
 
@@ -218,7 +222,7 @@ try:
           and m1["last_validation"] == "2026-09-26"
           and m1["next_validation_due"] == "2027-09-26")
 
-    # ---- material change as LOD1 -> status In Validation + MMC request
+    # ---- material change as LOD1 -> status In Validation + MC request
     st.session_state["current_user_name"] = ROLE_USERS["LOD1"]
     change_id = data_store.add_change_entry("QDB-CR-001", {
         "date": "2026-09-26",
@@ -231,17 +235,18 @@ try:
     ms = json.loads((DATA / "models.json").read_text(encoding="utf-8"))
     m1 = next(m for m in ms if m["model_id"] == "QDB-CR-001")
     reqs = json.loads((DATA / "validation_requests.json").read_text(encoding="utf-8"))
-    mmc = [r for r in reqs if r["type"] == "MMC" and r["model_id"] == "QDB-CR-001"
-           and r["status"] != "Closed" and "9.9-smoke" in r.get("title", "")]
-    check("Write path: material change sets In Validation + opens MMC",
+    mc = [r for r in reqs if r["type"] == "MC" and r["model_id"] == "QDB-CR-001"
+          and r["status"] != "Closed" and "9.9-smoke" in r.get("title", "")
+          and r.get("materiality") == "Material"]
+    check("Write path: material change sets In Validation + opens MC",
           m1["status"] == "In Validation" and m1["pending_revalidation"] is True
           and m1["change_log"][-1]["classification"] == "Material"
           and m1["change_log"][-1]["change_id"] == change_id
-          and len(mmc) >= 1)
+          and len(mc) >= 1)
 
     # ---- evidence attached in context (validation_request + change + request_response)
     eid_val = data_store.register_evidence(
-        "QDB-CR-001", "validation_request", mmc[0]["request_id"], "smoke_val.txt",
+        "QDB-CR-001", "validation_request", mc[0]["request_id"], "smoke_val.txt",
         b"smoke validation evidence", "Document", "Smoke val evidence.",
     )
     eid_chg = data_store.register_evidence(
@@ -294,7 +299,7 @@ try:
     check("Write path: audit trail captured workflow events",
           {"raise_issue", "respond_issue", "close_issue", "add_validation",
            "record_change", "upload_evidence"}.issubset(set(actions))
-          or {"initiate_vfi", "respond_request", "close_request", "initiate_val",
+          or {"initiate_fnd", "respond_request", "close_request", "initiate_val",
               "record_change", "upload_evidence"}.issubset(set(actions)))
 finally:
     # Restore the seeded demo data exactly and remove test artefacts.
@@ -390,7 +395,8 @@ try:
         for exc in at.exception:
             print(f"      {exc.value}")
     else:
-        # ir_type defaults to first initiable for LOD2 = VAL
+        at.selectbox(key="ir_type").select("VAL — Validation")
+        at.run()
         at.text_input(key="ir_title").input("SMOKE VAL form")
         at.text_area(key="ir_desc").input("Smoke-test validation via AppTest.")
         at.multiselect(key="val_tests").select("Documentation review")
@@ -409,13 +415,13 @@ try:
                 failed = True
                 print("FAIL  VAL initiate form submit did not persist a record")
 
-    # LOD2 raises a VFI
+    # LOD2 raises a FND
     at = AppTest.from_file(str(ROOT / "views/model_detail.py"), default_timeout=30)
     at.session_state["current_user_name"] = ROLE_USERS["LOD2"]
     at.session_state["selected_model_id"] = "QDB-CR-001"
     at.run()
     if not at.exception:
-        at.selectbox(key="ir_type").select("VFI — Validation Finding")
+        at.selectbox(key="ir_type").select("FND — Finding")
         at.run()
         at.text_input(key="ir_title").input("SMOKE form issue")
         at.text_area(key="ir_desc").input("Raised by AppTest.")
@@ -423,18 +429,18 @@ try:
         at.button("ir_submit").click().run()
         if at.exception:
             failed = True
-            print("FAIL  VFI initiate form submit")
+            print("FAIL  FND initiate form submit")
             for exc in at.exception:
                 print(f"      {exc.value}")
         else:
             recs = json.loads((DATA / "validation_requests.json").read_text(encoding="utf-8"))
-            found = any(i.get("title") == "SMOKE form issue" and i.get("type") == "VFI" for i in recs)
-            print("OK    VFI initiate form submit (LOD2)" if found
-                  else "FAIL  VFI initiate form submit did not persist")
+            found = any(i.get("title") == "SMOKE form issue" and i.get("type") == "FND" for i in recs)
+            print("OK    FND initiate form submit (LOD2)" if found
+                  else "FAIL  FND initiate form submit did not persist")
             if not found:
                 failed = True
 
-    # LOD1 records a non-material change (opens NMMC)
+    # LOD1 records a non-material change (opens MC with Non-material)
     at = AppTest.from_file(str(ROOT / "views/model_detail.py"), default_timeout=30)
     at.session_state["current_user_name"] = ROLE_USERS["LOD1"]
     at.session_state["selected_model_id"] = "QDB-CR-001"
@@ -455,13 +461,14 @@ try:
             m1 = next(m for m in ms if m["model_id"] == "QDB-CR-001")
             found = any(e.get("version") == "9.8-smoke" for e in m1.get("change_log", []))
             reqs = json.loads((DATA / "validation_requests.json").read_text(encoding="utf-8"))
-            nmmc = any(
-                r.get("type") == "NMMC" and "9.8-smoke" in r.get("title", "")
+            mc_nm = any(
+                r.get("type") == "MC" and r.get("materiality") == "Non-material"
+                and "9.8-smoke" in r.get("title", "")
                 for r in reqs
             )
-            print("OK    Record-change form submit (LOD1 + NMMC)" if found and nmmc
+            print("OK    Record-change form submit (LOD1 + MC Non-material)" if found and mc_nm
                   else "FAIL  Record-change form submit did not persist")
-            if not (found and nmmc):
+            if not (found and mc_nm):
                 failed = True
 
     # LOD3 records an audit review

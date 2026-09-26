@@ -29,56 +29,48 @@ ROLE_COLORS = {
     "ADMIN": "#607d8b",
 }
 
-# Request types and who may initiate them.
+# Three request types: Model Change, Validation, Finding.
 REQUEST_TYPES = {
-    "MMC": {
-        "label": "Material Model Change",
-        "short": "MMC",
-        "initiate_roles": ["LOD1", "ADMIN"],
+    "MC": {
+        "label": "Model Change",
+        "short": "MC",
+        "initiate_roles": ["LOD1", "LOD2", "ADMIN"],
         "default_assignee_roles": ["LOD2"],
-        "description": "LoD1 records a material change for independent revalidation by MVU.",
-    },
-    "NMMC": {
-        "label": "Non-material Model Change",
-        "short": "NMMC",
-        "initiate_roles": ["LOD1", "ADMIN"],
-        "default_assignee_roles": ["LOD2"],
-        "description": "LoD1 notifies MVU of a non-material change (notification / light review).",
+        "description": (
+            "Record a model change for MVU review. Materiality (Material / Non-material) "
+            "is a field on the request — Material changes require revalidation before deployment."
+        ),
     },
     "VAL": {
-        "label": "Independent Validation",
+        "label": "Validation",
         "short": "VAL",
-        "initiate_roles": ["LOD2", "ADMIN"],
+        "initiate_roles": ["LOD1", "LOD2", "LOD3", "ADMIN"],
         "default_assignee_roles": ["LOD2"],
-        "description": "MVU records periodic, initial, or targeted independent validation.",
+        "description": (
+            "Validation request or independent validation (initial, periodic, targeted, or ad-hoc). "
+            "LoD1 may request validation; LoD2/LoD3 may record or commission it."
+        ),
     },
-    "VRQ": {
-        "label": "Validation Request",
-        "short": "VRQ",
-        "initiate_roles": ["LOD1", "ADMIN"],
-        "default_assignee_roles": ["LOD2"],
-        "description": "LoD1 asks MVU to validate (or revalidate) a model.",
-    },
-    "VFI": {
-        "label": "Validation Finding",
-        "short": "VFI",
+    "FND": {
+        "label": "Finding",
+        "short": "FND",
         "initiate_roles": ["LOD2", "LOD3", "ADMIN"],
         "default_assignee_roles": ["LOD1"],
-        "description": "LoD2/LoD3 raises a finding; LoD1 must respond; raiser closes.",
+        "description": (
+            "Validation or audit finding. LoD2/LoD3 raises; LoD1 responds; the raiser's line closes."
+        ),
     },
 }
 
-REQUEST_TYPE_ORDER = ["MMC", "NMMC", "VAL", "VRQ", "VFI"]
+REQUEST_TYPE_ORDER = ["MC", "VAL", "FND"]
 
 # Permission matrix as data: action -> roles allowed to perform it.
 PERMISSIONS = {
-    "initiate_mmc": ["LOD1", "ADMIN"],
-    "initiate_nmmc": ["LOD1", "ADMIN"],
-    "initiate_val": ["LOD2", "ADMIN"],
-    "initiate_vrq": ["LOD1", "ADMIN"],
-    "initiate_vfi": ["LOD2", "LOD3", "ADMIN"],
+    "initiate_model_change": ["LOD1", "LOD2", "ADMIN"],
+    "initiate_validation": ["LOD1", "LOD2", "LOD3", "ADMIN"],
+    "initiate_finding": ["LOD2", "LOD3", "ADMIN"],
     "respond_request": ["LOD1", "ADMIN"],
-    "close_request": ["LOD2", "LOD3", "ADMIN"],  # further restricted to raiser's role
+    "close_request": ["LOD2", "LOD3", "ADMIN"],  # further restricted to raiser's role for FND
     "assign_request": ["LOD1", "LOD2", "LOD3", "ADMIN"],
     "upload_evidence": ["LOD1", "LOD2", "LOD3", "ADMIN"],
     "record_change": ["LOD1", "ADMIN"],
@@ -91,29 +83,25 @@ PERMISSIONS = {
 }
 
 ACTION_LABELS = {
-    "initiate_mmc": "Initiate a Material Model Change (MMC)",
-    "initiate_nmmc": "Initiate a Non-material Model Change (NMMC)",
-    "initiate_val": "Record an independent validation (VAL)",
-    "initiate_vrq": "Request validation from MVU (VRQ)",
-    "initiate_vfi": "Raise a validation finding (VFI)",
+    "initiate_model_change": "Initiate a Model Change (MC)",
+    "initiate_validation": "Initiate a Validation (VAL)",
+    "initiate_finding": "Raise a Finding (FND)",
     "respond_request": "Respond on an open request",
-    "close_request": "Close a request (raiser's line only)",
+    "close_request": "Close a request (raiser's line only for findings)",
     "assign_request": "Assign / send a request to a validator or owner",
     "upload_evidence": "Attach evidence (open requests only)",
     "record_change": "Record a model change",
     "record_audit": "Record an internal audit review",
     "add_validation": "Record a validation (VAL)",
-    "raise_issue": "Raise a validation finding (VFI)",
+    "raise_issue": "Raise a finding (FND)",
     "respond_issue": "Respond to a finding",
     "close_issue": "Close a finding (raiser's line only)",
 }
 
 _INITIATE_ACTION = {
-    "MMC": "initiate_mmc",
-    "NMMC": "initiate_nmmc",
-    "VAL": "initiate_val",
-    "VRQ": "initiate_vrq",
-    "VFI": "initiate_vfi",
+    "MC": "initiate_model_change",
+    "VAL": "initiate_validation",
+    "FND": "initiate_finding",
 }
 
 _SESSION_KEY = "current_user_name"
@@ -204,16 +192,17 @@ def can_close_issue(raised_by_role: str) -> bool:
 def can_close_request(req: dict) -> bool:
     """Close rules by request type.
 
-    - VFI: raiser's line (LOD2/LOD3) or ADMIN
-    - MMC / NMMC / VAL / VRQ: LoD2 (MVU) or ADMIN after an outcome is recorded
+    - FND: raiser's line (LOD2/LOD3) or ADMIN
+    - MC / VAL: LoD2 (MVU) or ADMIN
     """
     role = get_current_user()["role"]
     if role == "ADMIN":
         return True
     rtype = req.get("type")
-    if rtype == "VFI":
+    if rtype == "FND":
         return role == req.get("initiated_by_role") and role in ("LOD2", "LOD3")
     return role == "LOD2"
+
 
 def who_can(action: str) -> str:
     """Human-readable list of roles allowed to perform an action (for denial messages)."""

@@ -26,8 +26,8 @@ The app opens at http://localhost:8501.
 |---|---|
 | Executive Dashboard | Model risk profile at a glance: KPIs, tier/status charts, attention-required list, validation calendar |
 | Model Inventory | Filterable, searchable register of all models; click a row to drill down |
-| Model Detail | Full governance record per model: Overview, Governance & Lifecycle, **Validation & Findings** (typed requests MMC/NMMC/VAL/VRQ/VFI), Performance Monitoring, Documentation & Audit |
-| Findings Tracker | Bank-wide VFI register plus other open validation requests (MMC/VRQ); detail lives on Model Detail |
+| Model Detail | Full governance record per model: Overview, Governance & Lifecycle, **Validation & Findings** (MC / VAL / FND), Performance Monitoring, Documentation & Audit |
+| Findings Tracker | Bank-wide FND register plus other open MC / VAL requests; detail lives on Model Detail |
 | Governance Framework | The proposed MRM policy: model definition, tiering methodology, lifecycle, committees, implementation roadmap |
 
 ## Replacing mock data with real QDB models
@@ -37,9 +37,9 @@ All data lives in `data/` and is loaded through `data_loader.py` — no page cod
 | File | Contents |
 |---|---|
 | `data/models.json` | One record per model: identification, ownership, tiering, lifecycle dates, regulatory mapping, documentation checklist, change log, audit reviews, dependencies |
-| `data/validation_requests.json` | **Source of truth** for validation workflow: typed requests (MMC, NMMC, VAL, VRQ, VFI) with status, assignment, thread, outcome |
+| `data/validation_requests.json` | **Source of truth** for validation workflow: typed requests (MC, VAL, FND) with status, assignment, thread, outcome |
 | `data/validations.json` | Historical archive (migrated into validation_requests) |
-| `data/issues.json` | Historical archive of findings (migrated into VFI requests) |
+| `data/issues.json` | Historical archive of findings (migrated into FND requests) |
 | `data/monitoring.csv` | Quarterly KPI history per model metric with amber/red thresholds |
 
 To add a real model, copy an existing record in `models.json` and edit the fields. Overdue

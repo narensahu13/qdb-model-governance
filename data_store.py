@@ -4,7 +4,7 @@ Streamlit data cache so all pages refresh. Swapping the JSON files for a real
 database later only requires changing this module and data_loader.py.
 
 Source of truth for validation workflow: data/validation_requests.json
-(types MMC / NMMC / VAL / VRQ / VFI). Historical validations.json and
+(types MC / VAL / FND). Historical validations.json and
 issues.json remain as read-only archives from the migration.
 """
 
@@ -36,15 +36,22 @@ ALLOWED_UPLOAD_TYPES = ["pdf", "docx", "xlsx", "py", "txt", "msg", "eml", "png",
 REQUEST_STATUSES = ["Open", "In Progress", "Closed"]
 
 VAL_SUBTYPES = [
+    "Initial",
+    "Periodic",
+    "Targeted",
+    "Ad-hoc",
+]
+
+MATERIALITY_OPTIONS = ["Material", "Non-material"]
+
+# Legacy labels still accepted by add_validation() compatibility wrapper
+VALIDATION_TYPES = VAL_SUBTYPES + [
+    "Material Model Change",
+    "Non-material Model Change Review",
     "Initial (pre-implementation)",
     "Periodic (annual/biennial)",
     "Targeted / Trigger-based",
     "Vendor Model Review",
-]
-
-VALIDATION_TYPES = VAL_SUBTYPES + [
-    "Material Model Change",
-    "Non-material Model Change Review",
 ]
 
 CHANGE_RELATED_VALIDATION_TYPES = {
@@ -169,7 +176,7 @@ def is_request_open(req: dict) -> bool:
 
 
 def peek_next_thread_id(request_id: str) -> str:
-    """Stable id for the next thread entry (VFI-001-R1, …)."""
+    """Stable id for the next thread entry (FND-001-R1, …)."""
     for r in _read_requests():
         if r["request_id"] == request_id:
             n = len(r.get("thread") or []) + 1
@@ -177,12 +184,26 @@ def peek_next_thread_id(request_id: str) -> str:
     return f"{request_id}-R1"
 
 
+def _map_legacy_finding_id(issue_id: str) -> str:
+    """Map legacy ISS-xxx / VFI-xxx ids to FND-xxx when present."""
+    if issue_id.startswith("ISS-"):
+        candidate = "FND-" + issue_id.split("-", 1)[1]
+        if get_request(candidate):
+            return candidate
+        old = "VFI-" + issue_id.split("-", 1)[1]
+        if get_request(old):
+            return old
+        return candidate
+    if issue_id.startswith("VFI-"):
+        candidate = "FND-" + issue_id.split("-", 1)[1]
+        if get_request(candidate):
+            return candidate
+    return issue_id
+
+
 # Legacy alias used by older callers / smoke tests
 def peek_next_response_id(issue_id: str) -> str:
-    # Map legacy ISS-xxx to VFI-xxx if present
-    mapped = issue_id
-    if issue_id.startswith("ISS-"):
-        mapped = "VFI-" + issue_id.split("-", 1)[1]
+    mapped = _map_legacy_finding_id(issue_id)
     req = get_request(mapped) or get_request(issue_id)
     if req:
         return peek_next_thread_id(req["request_id"])
@@ -213,11 +234,11 @@ def _apply_validation_schedule(model_id: str, val_date_iso: str, outcome: str) -
 
 # ---------------------------------------------------------------- validation requests
 def create_request(model_id: str, record: dict) -> str:
-    """Create a typed validation request. Returns request_id (e.g. MMC-002).
+    """Create a typed validation request. Returns request_id (e.g. MC-002).
 
-    `record` keys: type (MMC|NMMC|VAL|VRQ|VFI), title, description,
-    assigned_to, optional severity/remediation/due_date/validation_subtype/tests,
-    optional status (default Open), optional outcome/closed_date for immediate close.
+    `record` keys: type (MC|VAL|FND), title, description, assigned_to,
+    optional materiality (MC), validation_subtype/nature (VAL),
+    severity/remediation/due_date (FND), tests, status, outcome/closed_date.
     """
     user = auth.get_current_user()
     rtype = record["type"]
@@ -249,6 +270,7 @@ def create_request(model_id: str, record: dict) -> str:
         "severity": record.get("severity"),
         "remediation": record.get("remediation"),
         "source": record.get("source"),
+        "materiality": record.get("materiality"),
         "validation_subtype": record.get("validation_subtype"),
         "tests": record.get("tests") or [],
         "legacy_id": record.get("legacy_id"),
@@ -261,10 +283,9 @@ def create_request(model_id: str, record: dict) -> str:
             entry["response_id"] = f"{request_id}-R{i}"
     _write_requests(requests)
 
-    if rtype in ("VAL", "MMC") and status == "Closed" and outcome:
+    material = (req.get("materiality") or "") == "Material"
+    if status == "Closed" and outcome and (rtype == "VAL" or (rtype == "MC" and material)):
         _apply_validation_schedule(model_id, req["created_date"], outcome)
-        if rtype == "MMC":
-            pass  # schedule helper already clears pending_revalidation
 
     log_event(
         f"initiate_{rtype.lower()}", "validation_request", request_id, model_id,
@@ -342,6 +363,8 @@ def close_request(
     model_id = ""
     response_id = peek_next_thread_id(request_id)
     rtype = ""
+    material = False
+    closed_outcome = ""
     for r in requests:
         if r["request_id"] == request_id:
             if r["status"] == "Closed":
@@ -366,11 +389,12 @@ def close_request(
             })
             model_id = r["model_id"]
             rtype = r["type"]
+            material = (r.get("materiality") or "") == "Material"
             closed_outcome = r.get("outcome") or outcome or ""
             break
     _write_requests(requests)
 
-    if rtype in ("VAL", "MMC") and closed_outcome:
+    if closed_outcome and (rtype == "VAL" or (rtype == "MC" and material)):
         _apply_validation_schedule(model_id, date.today().isoformat(), closed_outcome)
 
     log_event(
@@ -382,20 +406,20 @@ def close_request(
 
 # ---------------------------------------------------------------- legacy validation / issue wrappers
 def add_validation(model_id: str, record: dict) -> str:
-    """Compatibility: record a completed VAL (or MMC/NMMC) as a Closed request.
+    """Compatibility: record a completed VAL (or MC) as a Closed request.
 
     `record`: date, type, outcome, validator, tests, summary.
-    Returns the new request_id (VAL-xxx / MMC-xxx / NMMC-xxx).
+    Returns the new request_id (VAL-xxx / MC-xxx).
     """
-    raw_type = record.get("type", "Periodic (annual/biennial)")
-    if raw_type == "Material Model Change":
-        rtype, subtype = "MMC", None
+    raw_type = record.get("type", "Periodic")
+    if raw_type in ("Material Model Change",) or raw_type == "Material":
+        rtype, subtype, materiality = "MC", None, "Material"
         title = "Material Model Change"
-    elif raw_type == "Non-material Model Change Review":
-        rtype, subtype = "NMMC", None
+    elif raw_type in ("Non-material Model Change Review", "Non-material"):
+        rtype, subtype, materiality = "MC", None, "Non-material"
         title = "Non-material Model Change"
     else:
-        rtype, subtype = "VAL", raw_type
+        rtype, subtype, materiality = "VAL", raw_type, None
         title = raw_type
 
     rid = create_request(model_id, {
@@ -407,6 +431,7 @@ def add_validation(model_id: str, record: dict) -> str:
         "created_date": record.get("date") or date.today().isoformat(),
         "closed_date": record.get("date") or date.today().isoformat(),
         "outcome": record.get("outcome"),
+        "materiality": materiality,
         "validation_subtype": subtype,
         "tests": record.get("tests") or [],
         "source": "Validation",
@@ -425,7 +450,6 @@ def add_validation(model_id: str, record: dict) -> str:
         if r["request_id"] == rid and r.get("thread"):
             r["thread"][0]["response_id"] = f"{rid}-R1"
     _write_requests(requests)
-    # create_request already applied schedule for Closed VAL/MMC
     log_event(
         "add_validation", "validation_request", rid, model_id,
         f"{raw_type} validation recorded — outcome: {record.get('outcome')}",
@@ -434,14 +458,14 @@ def add_validation(model_id: str, record: dict) -> str:
 
 
 def add_issue(issue: dict) -> str:
-    """Compatibility: raise a VFI. Returns request_id (VFI-xxx)."""
+    """Compatibility: raise a Finding. Returns request_id (FND-xxx)."""
     user = auth.get_current_user()
     source = issue.get(
         "source",
         "Validation" if user["role"] == "LOD2" else "Internal Audit",
     )
     rid = create_request(issue["model_id"], {
-        "type": "VFI",
+        "type": "FND",
         "title": issue["title"],
         "description": issue["description"],
         "assigned_to": issue.get("owner") or "",
@@ -460,10 +484,9 @@ def add_issue(issue: dict) -> str:
 
 def add_issue_response(issue_id: str, text: str, evidence_ids: list[str] | None = None) -> str:
     """Compatibility wrapper → add_request_response."""
-    mapped = issue_id
-    if issue_id.startswith("ISS-"):
-        mapped = "VFI-" + issue_id.split("-", 1)[1]
-    rid = mapped if get_request(mapped) else issue_id
+    rid = _map_legacy_finding_id(issue_id)
+    if not get_request(rid):
+        rid = issue_id
     response_id = add_request_response(rid, text, evidence_ids)
     log_event(
         "respond_issue", "validation_request", rid,
@@ -479,10 +502,9 @@ def close_issue(
     evidence_ids: list[str] | None = None,
 ) -> str:
     """Compatibility wrapper → close_request."""
-    mapped = issue_id
-    if issue_id.startswith("ISS-"):
-        mapped = "VFI-" + issue_id.split("-", 1)[1]
-    rid = mapped if get_request(mapped) else issue_id
+    rid = _map_legacy_finding_id(issue_id)
+    if not get_request(rid):
+        rid = issue_id
     response_id = close_request(rid, comment, outcome="Closed", evidence_ids=evidence_ids)
     log_event(
         "close_issue", "validation_request", rid,
@@ -495,8 +517,8 @@ def close_issue(
 # ---------------------------------------------------------------- model changes
 def add_change_entry(model_id: str, entry: dict) -> str:
     """Append a change-log entry. Material changes push the model into
-    'In Validation' pending independent revalidation and open an MMC request.
-    Non-material changes open an NMMC notification request.
+    'In Validation' pending independent revalidation and open an MC request.
+    Non-material changes open an MC notification (materiality=Non-material).
 
     `entry`: date, version, description, author, classification, justification.
     Returns the new change_id (e.g. CHG-026).
@@ -514,8 +536,6 @@ def add_change_entry(model_id: str, entry: dict) -> str:
 
     _update_model(model_id, mutate)
 
-    # Auto-open MMC / NMMC under Validation
-    rtype = "MMC" if material else "NMMC"
     default_assignee = "Hassan Al-Mohannadi (Model Validation Unit)"
     models = _read("models.json")
     for m in models:
@@ -523,7 +543,7 @@ def add_change_entry(model_id: str, entry: dict) -> str:
             default_assignee = m["validator"]
             break
     create_request(model_id, {
-        "type": rtype,
+        "type": "MC",
         "title": f"{'Material' if material else 'Non-material'} change v{entry['version']}",
         "description": (
             f"{entry.get('description', '')}\n\n"
@@ -531,6 +551,7 @@ def add_change_entry(model_id: str, entry: dict) -> str:
         ),
         "assigned_to": default_assignee,
         "status": "In Progress" if material else "Open",
+        "materiality": "Material" if material else "Non-material",
         "source": "Model Change",
     })
 

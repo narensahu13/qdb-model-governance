@@ -1,7 +1,8 @@
-"""One-shot migration: validations.json + issues.json → validation_requests.json.
+"""Rebuild data/validation_requests.json from historical validations.json +
+issues.json using the simplified 3-type taxonomy (MC / VAL / FND).
 
-Also remaps evidence linked_type/linked_id for validation / issue / issue_response.
-Keeps validations.json and issues.json as read-only archives (not written by the app).
+Normally not needed — seed data is already migrated. Re-run only if regenerating
+from archives.
 """
 
 from __future__ import annotations
@@ -13,159 +14,144 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 
 TYPE_LABELS = {
-    "MMC": "Material Model Change",
-    "NMMC": "Non-material Model Change",
-    "VAL": "Independent Validation",
-    "VRQ": "Validation Request",
-    "VFI": "Validation Finding",
+    "MC": "Model Change",
+    "VAL": "Validation",
+    "FND": "Finding",
 }
 
 
-def _map_val_type(raw: str) -> tuple[str, str | None]:
-    """Return (request type code, optional VAL subtype label)."""
-    t = (raw or "").strip()
-    if t == "Material Model Change":
-        return "MMC", None
-    if t == "Non-material Model Change Review":
-        return "NMMC", None
-    return "VAL", t
-
-
-def _status_from_issue(status: str) -> str:
-    if status == "Closed":
-        return "Closed"
-    # Overdue / Open → Open (overdue derived from due_date in the UI)
-    return "Open"
+def classify_validation(vtype: str) -> tuple[str, str | None, str | None]:
+    """Return (type, materiality, validation_subtype)."""
+    if vtype == "Material Model Change":
+        return "MC", "Material", None
+    if vtype == "Non-material Model Change Review":
+        return "MC", "Non-material", None
+    # Light nature labels
+    if vtype.startswith("Initial"):
+        return "VAL", None, "Initial"
+    if vtype.startswith("Periodic"):
+        return "VAL", None, "Periodic"
+    if "Targeted" in vtype or "Trigger" in vtype:
+        return "VAL", None, "Targeted"
+    if "Vendor" in vtype:
+        return "VAL", None, "Targeted"
+    return "VAL", None, vtype or "Periodic"
 
 
 def main() -> None:
-    validations = json.loads((DATA / "validations.json").read_text(encoding="utf-8"))
+    vals = json.loads((DATA / "validations.json").read_text(encoding="utf-8"))
     issues = json.loads((DATA / "issues.json").read_text(encoding="utf-8"))
-    evidence = json.loads((DATA / "evidence.json").read_text(encoding="utf-8"))
 
-    requests: list[dict] = []
-    id_remap: dict[str, str] = {}  # legacy id → new request_id
-    counters = {"MMC": 0, "NMMC": 0, "VAL": 0, "VRQ": 0, "VFI": 0}
+    counters = {"MC": 0, "VAL": 0, "FND": 0}
 
     def next_id(code: str) -> str:
         counters[code] += 1
         return f"{code}-{counters[code]:03d}"
 
-    # ---- validations → MMC / NMMC / VAL
-    for v in validations:
+    out: list[dict] = []
+
+    for v in vals:
         legacy = v.get("validation_id") or f"VAL-legacy-{v['model_id']}-{v['date']}"
-        code, subtype = _map_val_type(v.get("type", ""))
-        rid = next_id(code)
-        id_remap[legacy] = rid
-
-        # VAL-027 style open revalidation: treat incomplete MMC as In Progress
-        summary = v.get("summary") or ""
-        awaiting = "awaiting" in summary.lower() or "opened for" in summary.lower()
-        if code == "MMC" and awaiting:
+        code, materiality, subtype = classify_validation(v.get("type") or "")
+        awaiting = "awaiting" in (v.get("summary") or "").lower() or v.get("outcome") in (
+            None, "", "In Progress",
+        )
+        status = "In Progress" if code == "MC" and materiality == "Material" and awaiting else "Closed"
+        if status == "Closed" and not v.get("outcome"):
             status = "In Progress"
-            closed_date = None
-            outcome = None
-        else:
-            status = "Closed"
-            closed_date = v["date"]
-            outcome = v.get("outcome")
 
-        title = TYPE_LABELS[code]
-        if subtype:
-            title = f"{subtype}"
-
+        rid = next_id(code)
+        title = (
+            "Material Model Change" if code == "MC" and materiality == "Material"
+            else "Non-material Model Change" if code == "MC"
+            else (subtype or "Validation")
+        )
         thread = []
-        if summary:
+        if v.get("summary"):
             thread.append({
                 "response_id": f"{rid}-R1",
                 "date": v["date"],
                 "author": (v.get("validator") or "MVU").split(" (")[0],
                 "role": "LOD2",
-                "text": summary,
+                "text": v["summary"],
                 "evidence_ids": [],
             })
-
-        requests.append({
+        out.append({
             "request_id": rid,
             "type": code,
             "model_id": v["model_id"],
             "status": status,
             "initiated_by": (v.get("validator") or "Hassan Al-Mohannadi").split(" (")[0],
             "initiated_by_role": "LOD2",
-            "assigned_to": v.get("validator") or "Hassan Al-Mohannadi (Model Validation Unit)",
+            "assigned_to": v.get("validator") or "",
             "title": title,
-            "description": summary,
+            "description": v.get("summary") or "",
             "created_date": v["date"],
-            "closed_date": closed_date,
+            "closed_date": v["date"] if status == "Closed" else None,
             "due_date": None,
-            "outcome": outcome,
+            "outcome": v.get("outcome") if status == "Closed" else None,
             "severity": None,
             "remediation": None,
             "source": "Validation",
+            "materiality": materiality,
             "validation_subtype": subtype,
             "tests": v.get("tests") or [],
             "legacy_id": legacy,
             "thread": thread,
         })
 
-    # ---- issues → VFI (preserve numbering where possible)
     for iss in issues:
-        legacy = iss["issue_id"]
-        # Prefer VFI-NNN matching ISS-NNN
+        raw = iss.get("issue_id") or ""
         try:
-            num = int(legacy.split("-")[-1])
-            rid = f"VFI-{num:03d}"
-            counters["VFI"] = max(counters["VFI"], num)
+            num = int(raw.split("-")[-1])
+            rid = f"FND-{num:03d}"
+            counters["FND"] = max(counters["FND"], num)
         except ValueError:
-            rid = next_id("VFI")
-        id_remap[legacy] = rid
+            rid = next_id("FND")
 
         thread = []
-        for resp in iss.get("responses") or []:
-            old_rid = resp.get("response_id") or ""
-            new_resp_id = old_rid.replace(legacy, rid) if old_rid.startswith(legacy) else None
-            if not new_resp_id:
-                n = len(thread) + 1
-                new_resp_id = f"{rid}-R{n}"
-            if old_rid:
-                id_remap[old_rid] = new_resp_id
+        for i, resp in enumerate(iss.get("responses") or [], start=1):
             thread.append({
-                "response_id": new_resp_id,
-                "date": resp["date"],
-                "author": resp["author"],
-                "role": resp.get("role", "LOD1"),
-                "text": resp["text"],
-                "evidence_ids": list(resp.get("evidence_ids") or []),
+                "response_id": f"{rid}-R{i}",
+                "date": resp.get("date"),
+                "author": resp.get("author"),
+                "role": resp.get("role") or "LOD1",
+                "text": resp.get("text") or "",
+                "evidence_ids": resp.get("evidence_ids") or [],
             })
 
-        status = _status_from_issue(iss.get("status", "Open"))
-        requests.append({
+        status = "Closed" if iss.get("status") == "Closed" else (
+            "In Progress" if thread else "Open"
+        )
+        out.append({
             "request_id": rid,
-            "type": "VFI",
+            "type": "FND",
             "model_id": iss["model_id"],
-            "status": status,
+            "status": status if status != "Overdue" else "Open",
             "initiated_by": iss.get("raised_by") or "Hassan Al-Mohannadi",
             "initiated_by_role": iss.get("raised_by_role") or "LOD2",
             "assigned_to": iss.get("owner") or "",
             "title": iss["title"],
-            "description": iss["description"],
-            "created_date": iss["raised_date"],
+            "description": iss.get("description") or "",
+            "created_date": iss.get("raised_date"),
             "closed_date": iss.get("closed_date"),
             "due_date": iss.get("due_date"),
             "outcome": "Closed" if status == "Closed" else None,
             "severity": iss.get("severity"),
             "remediation": iss.get("remediation"),
-            "source": iss.get("source"),
+            "source": iss.get("source") or "Validation",
+            "materiality": None,
             "validation_subtype": None,
             "tests": [],
-            "legacy_id": legacy,
+            "legacy_id": raw,
             "thread": thread,
         })
 
-    # ---- demo VRQ (LoD1 → LoD2) so the type shows in demos
-    requests.append({
-        "request_id": next_id("VRQ"),
-        "type": "VRQ",
+    # Demo LoD1-initiated validation request
+    rid = next_id("VAL")
+    out.append({
+        "request_id": rid,
+        "type": "VAL",
         "model_id": "QDB-IF-005",
         "status": "In Progress",
         "initiated_by": "Fatima Al-Sulaiti",
@@ -183,54 +169,29 @@ def main() -> None:
         "severity": None,
         "remediation": None,
         "source": "LoD1 Request",
-        "validation_subtype": None,
+        "materiality": None,
+        "validation_subtype": "Ad-hoc",
         "tests": [],
         "legacy_id": None,
-        "thread": [
-            {
-                "response_id": "VRQ-001-R1",
-                "date": "2026-03-12",
-                "author": "Hassan Al-Mohannadi",
-                "role": "LOD2",
-                "text": "Accepted. External firm shortlist under review; kick-off targeted for Q3.",
-                "evidence_ids": [],
-            }
-        ],
+        "thread": [{
+            "response_id": f"{rid}-R1",
+            "date": "2026-03-12",
+            "author": "Hassan Al-Mohannadi",
+            "role": "LOD2",
+            "text": "Accepted. External firm shortlist under review; kick-off targeted for Q3.",
+            "evidence_ids": [],
+        }],
     })
 
-    # Sort: type then id
-    type_order = {"MMC": 0, "NMMC": 1, "VAL": 2, "VRQ": 3, "VFI": 4}
-    requests.sort(key=lambda r: (type_order.get(r["type"], 9), r["request_id"]))
+    type_order = {"MC": 0, "VAL": 1, "FND": 2}
+    out.sort(key=lambda r: (type_order.get(r["type"], 9), r["request_id"]))
 
-    (DATA / "validation_requests.json").write_text(
-        json.dumps(requests, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-
-    # ---- remap evidence
-    for ev in evidence:
-        lt = ev.get("linked_type")
-        lid = ev.get("linked_id") or ""
-        if lt == "validation":
-            ev["linked_type"] = "validation_request"
-            ev["linked_id"] = id_remap.get(lid, lid)
-        elif lt == "issue":
-            ev["linked_type"] = "validation_request"
-            ev["linked_id"] = id_remap.get(lid, lid)
-        elif lt == "issue_response":
-            ev["linked_type"] = "request_response"
-            ev["linked_id"] = id_remap.get(lid, lid)
-
-    (DATA / "evidence.json").write_text(
-        json.dumps(evidence, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-
-    print(f"Wrote {len(requests)} validation requests")
-    for code in ("MMC", "NMMC", "VAL", "VRQ", "VFI"):
-        n = sum(1 for r in requests if r["type"] == code)
-        print(f"  {code}: {n}")
-    print(f"Evidence remaps applied: {len(id_remap)} id mappings")
+    path = DATA / "validation_requests.json"
+    path.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    from collections import Counter
+    print(f"Wrote {len(out)} requests to {path.name}: {dict(Counter(r['type'] for r in out))}")
+    for code in ("MC", "VAL", "FND"):
+        print(f"  {code} ({TYPE_LABELS[code]}): {counters[code]}")
 
 
 if __name__ == "__main__":

@@ -200,22 +200,21 @@ register. Each user acts in a role (simulated via the sidebar selector in this P
 replaced by single sign-on in production), and every action is permission-checked and
 recorded in the model's **audit trail**:
 
-- **Validation workflow (2nd line).** The Model Validation Unit records validations
-  (initial, periodic, targeted, model-change reviews, vendor reviews) with outcome, tests
-  and evidence attached **on that validation**. LoD 1 can also attach a supporting
-  development pack to Material / Non-material Model Change validations without being
-  the validator. The model's validation schedule updates automatically.
-- **Model change workflow (1st line).** Model owners record changes with a
-  **Material / Non-material** classification and may attach a change memo / code /
-  approval email on the change itself; material changes move the model to
-  *In Validation* — next step is the **Validation** tab to support revalidation.
-- **Issue lifecycle (2nd/3rd → 1st → raiser).** Validation or Internal Audit raise issues
-  (with optional evidence on the raise); the accountable first line **replies with
-  remediation updates and evidence on the response**; the issue is closed **only by the
-  line that raised it** (or the MRM Administrator), optionally with closure evidence.
-- **Evidence in context (all lines).** There is no separate Evidence tab. Artefacts are
-  attached where the work happens — validation, issue / response, model change, or
-  audit review — with a file, category, and short description.
+- **Three request types.** Work is tracked as **Model Change (MC)**, **Validation (VAL)**,
+  or **Finding (FND)** — with typed IDs (`MC-###`, `VAL-###`, `FND-###`). Material vs
+  non-material is a field on Model Change requests, not a separate type. Validation
+  nature (Initial / Periodic / Targeted / Ad-hoc) is a light dropdown on VAL.
+- **Model change (LoD1 / LoD2).** Owners record changes with a Material / Non-material
+  classification; an MC request opens automatically. Material changes move the model to
+  *In Validation* until MVU closes the MC with an outcome.
+- **Validation (LoD1 / LoD2 / LoD3).** LoD1 may request validation; LoD2 records
+  independent validation with outcome, tests, and evidence. Closed requests are read-only.
+- **Finding lifecycle (LoD2/LoD3 → LoD1 → raiser).** Validation or Internal Audit raise
+  findings; the first line replies with remediation updates and evidence; the finding is
+  closed **only by the line that raised it** (or the MRM Administrator).
+- **Evidence in context (all lines).** Artefacts are attached where the work happens —
+  request, thread response, model change, or audit review — with a file, category, and
+  short description. Closed requests reject new uploads.
 """
     )
 

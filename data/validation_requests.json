@@ -1,7 +1,5 @@
 [
   {
-    "request_id": "MMC-001",
-    "type": "MMC",
     "model_id": "QDB-CR-002",
     "status": "In Progress",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -16,16 +14,19 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": null,
     "tests": [
       "Discriminatory power (Gini/KS)",
       "Calibration accuracy / backtest",
       "Documentation review"
     ],
     "legacy_id": "VAL-027",
+    "request_id": "MC-001",
+    "type": "MC",
+    "materiality": "Material",
+    "validation_subtype": null,
     "thread": [
       {
-        "response_id": "MMC-001-R1",
+        "response_id": "MC-001-R1",
         "date": "2026-08-01",
         "author": "Hassan Al-Mohannadi",
         "role": "LOD2",
@@ -35,8 +36,6 @@
     ]
   },
   {
-    "request_id": "VAL-001",
-    "type": "VAL",
     "model_id": "QDB-CR-001",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -51,7 +50,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Initial (pre-implementation)",
     "tests": [
       "Discriminatory power (Gini/KS)",
       "Calibration accuracy",
@@ -60,6 +58,10 @@
       "Sensitivity analysis"
     ],
     "legacy_id": "VAL-001",
+    "request_id": "VAL-001",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Initial (pre-implementation)",
     "thread": [
       {
         "response_id": "VAL-001-R1",
@@ -72,8 +74,6 @@
     ]
   },
   {
-    "request_id": "VAL-002",
-    "type": "VAL",
     "model_id": "QDB-CR-001",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -88,7 +88,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (annual)",
     "tests": [
       "Discriminatory power",
       "Population stability (PSI)",
@@ -96,6 +95,10 @@
       "Override analysis"
     ],
     "legacy_id": "VAL-002",
+    "request_id": "VAL-002",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (annual)",
     "thread": [
       {
         "response_id": "VAL-002-R1",
@@ -108,8 +111,6 @@
     ]
   },
   {
-    "request_id": "VAL-003",
-    "type": "VAL",
     "model_id": "QDB-CR-002",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -124,7 +125,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Initial (pre-implementation)",
     "tests": [
       "Discriminatory power",
       "Calibration",
@@ -132,6 +132,10 @@
       "Implementation testing"
     ],
     "legacy_id": "VAL-003",
+    "request_id": "VAL-003",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Initial (pre-implementation)",
     "thread": [
       {
         "response_id": "VAL-003-R1",
@@ -144,8 +148,6 @@
     ]
   },
   {
-    "request_id": "VAL-004",
-    "type": "VAL",
     "model_id": "QDB-CR-002",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -160,7 +162,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (annual)",
     "tests": [
       "Discriminatory power",
       "PSI",
@@ -168,6 +169,10 @@
       "Use test review"
     ],
     "legacy_id": "VAL-004",
+    "request_id": "VAL-004",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (annual)",
     "thread": [
       {
         "response_id": "VAL-004-R1",
@@ -180,8 +185,6 @@
     ]
   },
   {
-    "request_id": "VAL-005",
-    "type": "VAL",
     "model_id": "QDB-CR-003",
     "status": "Closed",
     "initiated_by": "Deloitte Middle East",
@@ -196,7 +199,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (annual, external)",
     "tests": [
       "Low-default portfolio benchmarking",
       "Qualitative module review",
@@ -204,6 +206,10 @@
       "Rating migration analysis"
     ],
     "legacy_id": "VAL-005",
+    "request_id": "VAL-005",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (annual, external)",
     "thread": [
       {
         "response_id": "VAL-005-R1",
@@ -216,8 +222,6 @@
     ]
   },
   {
-    "request_id": "VAL-006",
-    "type": "VAL",
     "model_id": "QDB-CR-004",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -232,7 +236,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Initial (pre-implementation)",
     "tests": [
       "Pricing logic review",
       "PD/LGD input verification",
@@ -240,6 +243,10 @@
       "Benchmarking vs program actuals"
     ],
     "legacy_id": "VAL-006",
+    "request_id": "VAL-006",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Initial (pre-implementation)",
     "thread": [
       {
         "response_id": "VAL-006-R1",
@@ -252,8 +259,6 @@
     ]
   },
   {
-    "request_id": "VAL-007",
-    "type": "VAL",
     "model_id": "QDB-CR-004",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -268,7 +273,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Targeted (triggered by claims experience)",
     "tests": [
       "Claims backtest",
       "Assumption review",
@@ -276,6 +280,10 @@
       "Data quality deep-dive"
     ],
     "legacy_id": "VAL-007",
+    "request_id": "VAL-007",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Targeted (triggered by claims experience)",
     "thread": [
       {
         "response_id": "VAL-007-R1",
@@ -288,8 +296,6 @@
     ]
   },
   {
-    "request_id": "VAL-008",
-    "type": "VAL",
     "model_id": "QDB-CR-005",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -304,7 +310,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Initial (pre-implementation)",
     "tests": [
       "Discriminatory power",
       "Explainability review (SHAP)",
@@ -313,6 +318,10 @@
       "Benchmark vs logistic challenger"
     ],
     "legacy_id": "VAL-008",
+    "request_id": "VAL-008",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Initial (pre-implementation)",
     "thread": [
       {
         "response_id": "VAL-008-R1",
@@ -325,8 +334,6 @@
     ]
   },
   {
-    "request_id": "VAL-009",
-    "type": "VAL",
     "model_id": "QDB-CR-006",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -341,13 +348,16 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Initial (formalisation)",
     "tests": [
       "Benchmarking vs realised liquidation outcomes",
       "Peer comparison",
       "Conservatism assessment"
     ],
     "legacy_id": "VAL-009",
+    "request_id": "VAL-009",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Initial (formalisation)",
     "thread": [
       {
         "response_id": "VAL-009-R1",
@@ -360,8 +370,6 @@
     ]
   },
   {
-    "request_id": "VAL-010",
-    "type": "VAL",
     "model_id": "QDB-IF-001",
     "status": "Closed",
     "initiated_by": "KPMG Qatar",
@@ -376,7 +384,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Initial (pre-implementation, external)",
     "tests": [
       "Transition matrix estimation review",
       "Macro-conditioning methodology",
@@ -385,6 +392,10 @@
       "Replication testing"
     ],
     "legacy_id": "VAL-010",
+    "request_id": "VAL-010",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Initial (pre-implementation, external)",
     "thread": [
       {
         "response_id": "VAL-010-R1",
@@ -397,8 +408,6 @@
     ]
   },
   {
-    "request_id": "VAL-011",
-    "type": "VAL",
     "model_id": "QDB-IF-001",
     "status": "Closed",
     "initiated_by": "KPMG Qatar",
@@ -413,7 +422,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (annual, external)",
     "tests": [
       "PD backtesting",
       "PSI",
@@ -421,6 +429,10 @@
       "ECL attribution analysis"
     ],
     "legacy_id": "VAL-011",
+    "request_id": "VAL-011",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (annual, external)",
     "thread": [
       {
         "response_id": "VAL-011-R1",
@@ -433,8 +445,6 @@
     ]
   },
   {
-    "request_id": "VAL-012",
-    "type": "VAL",
     "model_id": "QDB-IF-002",
     "status": "Closed",
     "initiated_by": "KPMG Qatar",
@@ -449,7 +459,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Initial (pre-implementation, external)",
     "tests": [
       "Workout LGD estimation review",
       "Cure rate analysis",
@@ -457,6 +466,10 @@
       "Data completeness assessment"
     ],
     "legacy_id": "VAL-012",
+    "request_id": "VAL-012",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Initial (pre-implementation, external)",
     "thread": [
       {
         "response_id": "VAL-012-R1",
@@ -469,8 +482,6 @@
     ]
   },
   {
-    "request_id": "VAL-013",
-    "type": "VAL",
     "model_id": "QDB-IF-002",
     "status": "Closed",
     "initiated_by": "KPMG Qatar",
@@ -485,13 +496,16 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (annual, external)",
     "tests": [
       "LGD backtesting",
       "Cure rate stability",
       "Collateral valuation linkage review"
     ],
     "legacy_id": "VAL-013",
+    "request_id": "VAL-013",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (annual, external)",
     "thread": [
       {
         "response_id": "VAL-013-R1",
@@ -504,8 +518,6 @@
     ]
   },
   {
-    "request_id": "VAL-014",
-    "type": "VAL",
     "model_id": "QDB-IF-003",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -520,13 +532,16 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (biennial)",
     "tests": [
       "CCF backtesting",
       "Segment stability",
       "Guarantee utilisation analysis"
     ],
     "legacy_id": "VAL-014",
+    "request_id": "VAL-014",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (biennial)",
     "thread": [
       {
         "response_id": "VAL-014-R1",
@@ -539,8 +554,6 @@
     ]
   },
   {
-    "request_id": "VAL-015",
-    "type": "VAL",
     "model_id": "QDB-IF-004",
     "status": "Closed",
     "initiated_by": "KPMG Qatar",
@@ -555,7 +568,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Initial (pre-implementation, external)",
     "tests": [
       "Threshold calibration review",
       "Stage transition analysis",
@@ -563,6 +575,10 @@
       "Benchmarking vs peer disclosure"
     ],
     "legacy_id": "VAL-015",
+    "request_id": "VAL-015",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Initial (pre-implementation, external)",
     "thread": [
       {
         "response_id": "VAL-015-R1",
@@ -575,8 +591,6 @@
     ]
   },
   {
-    "request_id": "VAL-016",
-    "type": "VAL",
     "model_id": "QDB-IF-004",
     "status": "Closed",
     "initiated_by": "KPMG Qatar",
@@ -591,13 +605,16 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (annual, external)",
     "tests": [
       "Stage transition backtesting",
       "Override analysis",
       "Cliff-effect analysis"
     ],
     "legacy_id": "VAL-016",
+    "request_id": "VAL-016",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (annual, external)",
     "thread": [
       {
         "response_id": "VAL-016-R1",
@@ -610,8 +627,6 @@
     ]
   },
   {
-    "request_id": "VAL-017",
-    "type": "VAL",
     "model_id": "QDB-ML-001",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -626,7 +641,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (biennial)",
     "tests": [
       "Behavioural assumption review",
       "Shock scenario replication",
@@ -634,6 +648,10 @@
       "Benchmark vs full revaluation"
     ],
     "legacy_id": "VAL-017",
+    "request_id": "VAL-017",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (biennial)",
     "thread": [
       {
         "response_id": "VAL-017-R1",
@@ -646,8 +664,6 @@
     ]
   },
   {
-    "request_id": "VAL-018",
-    "type": "VAL",
     "model_id": "QDB-ML-002",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -662,13 +678,16 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Initial (formalisation)",
     "tests": [
       "VaR methodology review",
       "Backtesting",
       "Correlation matrix review"
     ],
     "legacy_id": "VAL-018",
+    "request_id": "VAL-018",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Initial (formalisation)",
     "thread": [
       {
         "response_id": "VAL-018-R1",
@@ -681,8 +700,6 @@
     ]
   },
   {
-    "request_id": "VAL-019",
-    "type": "VAL",
     "model_id": "QDB-ML-003",
     "status": "Closed",
     "initiated_by": "EY Qatar",
@@ -697,7 +714,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Initial (pre-implementation, external)",
     "tests": [
       "Runoff assumption benchmarking",
       "Scenario severity assessment",
@@ -705,6 +721,10 @@
       "Data lineage review"
     ],
     "legacy_id": "VAL-019",
+    "request_id": "VAL-019",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Initial (pre-implementation, external)",
     "thread": [
       {
         "response_id": "VAL-019-R1",
@@ -717,8 +737,6 @@
     ]
   },
   {
-    "request_id": "VAL-020",
-    "type": "VAL",
     "model_id": "QDB-ML-003",
     "status": "Closed",
     "initiated_by": "EY Qatar",
@@ -733,13 +751,16 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (annual, external)",
     "tests": [
       "Assumption refresh review",
       "LCR forecast backtest",
       "Intraday module review"
     ],
     "legacy_id": "VAL-020",
+    "request_id": "VAL-020",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (annual, external)",
     "thread": [
       {
         "response_id": "VAL-020-R1",
@@ -752,8 +773,6 @@
     ]
   },
   {
-    "request_id": "VAL-021",
-    "type": "VAL",
     "model_id": "QDB-ML-004",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -768,7 +787,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (biennial, vendor model review)",
     "tests": [
       "IPV variance analysis",
       "Vendor methodology documentation review",
@@ -776,6 +794,10 @@
       "Stale price detection"
     ],
     "legacy_id": "VAL-021",
+    "request_id": "VAL-021",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (biennial, vendor model review)",
     "thread": [
       {
         "response_id": "VAL-021-R1",
@@ -788,8 +810,6 @@
     ]
   },
   {
-    "request_id": "VAL-022",
-    "type": "VAL",
     "model_id": "QDB-OF-001",
     "status": "Closed",
     "initiated_by": "Deloitte Middle East",
@@ -804,7 +824,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (annual, external)",
     "tests": [
       "Scenario coverage assessment",
       "Above/below-the-line testing",
@@ -812,6 +831,10 @@
       "Alert disposition quality review"
     ],
     "legacy_id": "VAL-022",
+    "request_id": "VAL-022",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (annual, external)",
     "thread": [
       {
         "response_id": "VAL-022-R1",
@@ -824,8 +847,6 @@
     ]
   },
   {
-    "request_id": "VAL-023",
-    "type": "VAL",
     "model_id": "QDB-OF-001",
     "status": "Closed",
     "initiated_by": "Deloitte Middle East",
@@ -840,7 +861,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (annual, external)",
     "tests": [
       "Threshold tuning review",
       "Below-the-line sampling",
@@ -848,6 +868,10 @@
       "Data lineage testing"
     ],
     "legacy_id": "VAL-023",
+    "request_id": "VAL-023",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (annual, external)",
     "thread": [
       {
         "response_id": "VAL-023-R1",
@@ -860,8 +884,6 @@
     ]
   },
   {
-    "request_id": "VAL-024",
-    "type": "VAL",
     "model_id": "QDB-OF-002",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -876,13 +898,16 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (annual)",
     "tests": [
       "Matching effectiveness testing (seeded names)",
       "Threshold sensitivity analysis",
       "List management review"
     ],
     "legacy_id": "VAL-024",
+    "request_id": "VAL-024",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (annual)",
     "thread": [
       {
         "response_id": "VAL-024-R1",
@@ -895,8 +920,6 @@
     ]
   },
   {
-    "request_id": "VAL-025",
-    "type": "VAL",
     "model_id": "QDB-ST-001",
     "status": "Closed",
     "initiated_by": "EY Qatar",
@@ -911,7 +934,6 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Periodic (annual, external)",
     "tests": [
       "Projection logic verification",
       "Satellite model integration testing",
@@ -919,6 +941,10 @@
       "Capital calculation verification"
     ],
     "legacy_id": "VAL-025",
+    "request_id": "VAL-025",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Periodic (annual, external)",
     "thread": [
       {
         "response_id": "VAL-025-R1",
@@ -931,8 +957,6 @@
     ]
   },
   {
-    "request_id": "VAL-026",
-    "type": "VAL",
     "model_id": "QDB-ST-003",
     "status": "Closed",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -947,13 +971,16 @@
     "severity": null,
     "remediation": null,
     "source": "Validation",
-    "validation_subtype": "Initial (formalisation)",
     "tests": [
       "RAROC logic review",
       "FTP curve verification",
       "EL/capital input reconciliation"
     ],
     "legacy_id": "VAL-026",
+    "request_id": "VAL-026",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Initial (formalisation)",
     "thread": [
       {
         "response_id": "VAL-026-R1",
@@ -966,8 +993,6 @@
     ]
   },
   {
-    "request_id": "VRQ-001",
-    "type": "VRQ",
     "model_id": "QDB-IF-005",
     "status": "In Progress",
     "initiated_by": "Fatima Al-Sulaiti",
@@ -982,12 +1007,15 @@
     "severity": null,
     "remediation": null,
     "source": "LoD1 Request",
-    "validation_subtype": null,
     "tests": [],
-    "legacy_id": null,
+    "legacy_id": "VRQ-001",
+    "request_id": "VAL-027",
+    "type": "VAL",
+    "materiality": null,
+    "validation_subtype": "Ad-hoc",
     "thread": [
       {
-        "response_id": "VRQ-001-R1",
+        "response_id": "VAL-027-R1",
         "date": "2026-03-12",
         "author": "Hassan Al-Mohannadi",
         "role": "LOD2",
@@ -997,8 +1025,6 @@
     ]
   },
   {
-    "request_id": "VFI-001",
-    "type": "VFI",
     "model_id": "QDB-CR-002",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1013,12 +1039,15 @@
     "severity": "High",
     "remediation": "Recalibrate model on refreshed 2023-2025 behavioural data; interim tightening of auto-renewal limits for borderline grades.",
     "source": "Validation",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-001",
+    "request_id": "FND-001",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": [
       {
-        "response_id": "VFI-001-R1",
+        "response_id": "FND-001-R1",
         "date": "2026-05-10",
         "author": "Lina Haddad",
         "role": "LOD1",
@@ -1030,8 +1059,6 @@
     ]
   },
   {
-    "request_id": "VFI-002",
-    "type": "VFI",
     "model_id": "QDB-CR-002",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1046,14 +1073,15 @@
     "severity": "Medium",
     "remediation": "Commission periodic validation immediately; combine with recalibration review.",
     "source": "MRM Monitoring",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-002",
+    "request_id": "FND-002",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-003",
-    "type": "VFI",
     "model_id": "QDB-CR-002",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1068,14 +1096,15 @@
     "severity": "Low",
     "remediation": "Complete DQ assessment as part of upcoming recalibration workstream.",
     "source": "Validation",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-003",
+    "request_id": "FND-003",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-004",
-    "type": "VFI",
     "model_id": "QDB-CR-003",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1090,12 +1119,15 @@
     "severity": "High",
     "remediation": "Root-cause review of override drivers; recalibrate qualitative module weights; enforce structured override justification in workflow; monthly override reporting to MRC.",
     "source": "Validation",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-004",
+    "request_id": "FND-004",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": [
       {
-        "response_id": "VFI-004-R1",
+        "response_id": "FND-004-R1",
         "date": "2026-03-18",
         "author": "Ahmed Al-Kuwari",
         "role": "LOD1",
@@ -1105,7 +1137,7 @@
         ]
       },
       {
-        "response_id": "VFI-004-R2",
+        "response_id": "FND-004-R2",
         "date": "2026-06-25",
         "author": "Hassan Al-Mohannadi",
         "role": "LOD2",
@@ -1115,8 +1147,6 @@
     ]
   },
   {
-    "request_id": "VFI-005",
-    "type": "VFI",
     "model_id": "QDB-CR-003",
     "status": "Closed",
     "initiated_by": "Abdulla Al-Sayed",
@@ -1131,14 +1161,15 @@
     "severity": "Medium",
     "remediation": "Mandatory justification field with taxonomy implemented in credit workflow; retrospective documentation of 2025 overrides.",
     "source": "Internal Audit",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-005",
+    "request_id": "FND-005",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-006",
-    "type": "VFI",
     "model_id": "QDB-CR-004",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1153,12 +1184,15 @@
     "severity": "High",
     "remediation": "Full redevelopment of claim frequency component using 2022-2026 program data; conservative interim overlay of +35% applied to expected claims; quarterly claims backtest reporting to MRC until closure.",
     "source": "Validation",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-006",
+    "request_id": "FND-006",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": [
       {
-        "response_id": "VFI-006-R1",
+        "response_id": "FND-006-R1",
         "date": "2026-04-22",
         "author": "Rajesh Nair",
         "role": "LOD1",
@@ -1168,8 +1202,6 @@
     ]
   },
   {
-    "request_id": "VFI-007",
-    "type": "VFI",
     "model_id": "QDB-CR-004",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1184,14 +1216,15 @@
     "severity": "Medium",
     "remediation": "Define monitoring KPIs (claims ratio, portfolio mix drift) with thresholds and quarterly reporting.",
     "source": "Validation",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-007",
+    "request_id": "FND-007",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-008",
-    "type": "VFI",
     "model_id": "QDB-IF-002",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1206,14 +1239,15 @@
     "severity": "Medium",
     "remediation": "Re-estimate equipment recovery rates with expanded workout dataset; apply interim segment overlay in ECL computation.",
     "source": "Validation",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-008",
+    "request_id": "FND-008",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-009",
-    "type": "VFI",
     "model_id": "QDB-IF-002",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1228,14 +1262,15 @@
     "severity": "Low",
     "remediation": "Complete DQ assessment; establish recovery data capture standards in collections workflow.",
     "source": "Validation",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-009",
+    "request_id": "FND-009",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-010",
-    "type": "VFI",
     "model_id": "QDB-IF-005",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1250,12 +1285,15 @@
     "severity": "High",
     "remediation": "Immediate: document current methodology and freeze scenario weights pending review. Commission independent validation; present to MRC for conditional approval; complete documentation suite.",
     "source": "MRM Monitoring",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-010",
+    "request_id": "FND-010",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": [
       {
-        "response_id": "VFI-010-R1",
+        "response_id": "FND-010-R1",
         "date": "2026-03-05",
         "author": "Fatima Al-Sulaiti",
         "role": "LOD1",
@@ -1267,8 +1305,6 @@
     ]
   },
   {
-    "request_id": "VFI-011",
-    "type": "VFI",
     "model_id": "QDB-IF-005",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1283,14 +1319,15 @@
     "severity": "Medium",
     "remediation": "Complete full documentation suite to Tier 1 standard as prerequisite for validation.",
     "source": "MRM Monitoring",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-011",
+    "request_id": "FND-011",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-012",
-    "type": "VFI",
     "model_id": "QDB-ML-003",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1305,14 +1342,15 @@
     "severity": "High",
     "remediation": "Commission external validation immediately; complete runoff assumption re-estimation as validation input.",
     "source": "MRM Monitoring",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-012",
+    "request_id": "FND-012",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-013",
-    "type": "VFI",
     "model_id": "QDB-ML-003",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1327,14 +1365,15 @@
     "severity": "Medium",
     "remediation": "Re-estimate using post-2024 deposit behaviour; sensitivity-test survival horizon to revised assumptions.",
     "source": "Validation",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-013",
+    "request_id": "FND-013",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-014",
-    "type": "VFI",
     "model_id": "QDB-OF-001",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1349,14 +1388,15 @@
     "severity": "High",
     "remediation": "Complete statistically supported threshold tuning for all remaining scenarios with above/below-the-line testing; monthly backlog reporting to Board Compliance Committee until cleared.",
     "source": "Validation",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-014",
+    "request_id": "FND-014",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-015",
-    "type": "VFI",
     "model_id": "QDB-OF-001",
     "status": "Closed",
     "initiated_by": "Abdulla Al-Sayed",
@@ -1371,14 +1411,15 @@
     "severity": "Medium",
     "remediation": "Temporary investigation surge team stood up; backlog reduced within standard as of May 2026.",
     "source": "Internal Audit",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-015",
+    "request_id": "FND-015",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-016",
-    "type": "VFI",
     "model_id": "QDB-ST-001",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1393,14 +1434,15 @@
     "severity": "Low",
     "remediation": "Automate data interfaces as part of the risk data aggregation roadmap (BCBS 239 alignment).",
     "source": "Validation",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-016",
+    "request_id": "FND-016",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-017",
-    "type": "VFI",
     "model_id": "QDB-CR-001",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1415,14 +1457,15 @@
     "severity": "Low",
     "remediation": "Quarterly PSI monitoring at segment level; assess need for startup-specific module at next annual validation.",
     "source": "Monitoring",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-017",
+    "request_id": "FND-017",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   },
   {
-    "request_id": "VFI-018",
-    "type": "VFI",
     "model_id": "QDB-ML-004",
     "status": "Open",
     "initiated_by": "Hassan Al-Mohannadi",
@@ -1437,9 +1480,12 @@
     "severity": "Low",
     "remediation": "Maintain challenger DCF pricing for affected names; review materiality quarterly.",
     "source": "Monitoring",
-    "validation_subtype": null,
     "tests": [],
     "legacy_id": "ISS-018",
+    "request_id": "FND-018",
+    "type": "FND",
+    "materiality": null,
+    "validation_subtype": null,
     "thread": []
   }
 ]

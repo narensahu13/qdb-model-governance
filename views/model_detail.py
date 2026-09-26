@@ -346,7 +346,7 @@ with tab_gov:
         st.warning(
             "**Material change recorded — independent revalidation pending.** "
             "Open the **Validation & Findings** tab to attach your development pack to the "
-            "Material Model Change (MMC) request (or to the change entry below).",
+            "Model Change (MC) request (or to the change entry below).",
             icon="⚠️",
         )
 
@@ -439,13 +439,14 @@ with tab_gov:
                     if chg_class == "Material":
                         flash_and_rerun(
                             f"Material change {change_id} (v{chg_version.strip()}) recorded — "
-                            "model is In Validation. An **MMC** request was opened on the "
+                            "model is In Validation. An **MC** request was opened on the "
                             "**Validation & Findings** tab for evidence and revalidation."
                         )
                     else:
                         flash_and_rerun(
                             f"Non-material change {change_id} (v{chg_version.strip()}) recorded. "
-                            "An **NMMC** notification was opened for MVU on Validation & Findings."
+                            "An **MC** notification (Non-material) was opened for MVU on "
+                            "Validation & Findings."
                         )
     else:
         auth.permission_denied("record_change")
@@ -479,28 +480,27 @@ with tab_gov:
 # ================================================================ Validation & Findings
 with tab_val:
     st.caption(
-        "Work is organised by typed request IDs: **MMC** (material change) · "
-        "**NMMC** (non-material) · **VAL** (independent validation) · "
-        "**VRQ** (LoD1 asks MVU to validate) · **VFI** (finding). "
-        "Closed requests are read-only."
+        "Three request types: **MC** (Model Change — materiality is a field) · "
+        "**VAL** (Validation — Initial / Periodic / Targeted / Ad-hoc) · "
+        "**FND** (Finding). Closed requests are read-only."
     )
     if m.get("pending_revalidation"):
         st.info(
             "**Revalidation pending after a material change.** "
-            "Open the related **MMC** request below to attach your development pack "
+            "Open the related **MC** request below to attach your development pack "
             "(or attach on the change entry under Governance & Lifecycle). "
-            "LoD 2 closes the MMC with an outcome when validation is complete.",
+            "LoD 2 closes the MC with an outcome when validation is complete.",
             icon="📎",
         )
 
     open_reqs = [r for r in model_requests if r["status"] != "Closed"]
     closed_reqs = [r for r in model_requests if r["status"] == "Closed"]
-    vfi_open = [r for r in open_reqs if r["type"] == "VFI"]
+    fnd_open = [r for r in open_reqs if r["type"] == "FND"]
     k1, k2, k3, k4 = st.columns(4)
     k1.metric("Open / In Progress", len(open_reqs))
     k2.metric("Closed", len(closed_reqs))
-    k3.metric("Open findings (VFI)", len(vfi_open))
-    k4.metric("High VFI open", sum(1 for r in vfi_open if r.get("severity") == "High"))
+    k3.metric("Open findings (FND)", len(fnd_open))
+    k4.metric("High FND open", sum(1 for r in fnd_open if r.get("severity") == "High"))
 
     # ------------------------------------------------ Initiate request
     can_types = auth.initiable_types()
@@ -538,6 +538,7 @@ with tab_val:
                 )
 
                 ir_subtype = None
+                ir_materiality = None
                 ir_outcome = None
                 ir_tests: list[str] = []
                 ir_severity = None
@@ -545,22 +546,30 @@ with tab_val:
                 ir_due = None
                 close_immediately = False
 
-                if ir_type == "VAL":
+                if ir_type == "MC":
+                    ir_materiality = st.selectbox(
+                        "Materiality *",
+                        data_store.MATERIALITY_OPTIONS,
+                        key="ir_materiality",
+                    )
+                elif ir_type == "VAL":
                     ir_subtype = st.selectbox(
-                        "Validation subtype *", data_store.VAL_SUBTYPES, key="ir_subtype",
+                        "Nature *", data_store.VAL_SUBTYPES, key="ir_subtype",
                     )
-                    close_immediately = st.checkbox(
-                        "Record as completed (close with outcome now)",
-                        value=True, key="ir_close_now",
-                    )
-                    if close_immediately:
-                        ir_outcome = st.selectbox(
-                            "Outcome *", data_store.VALIDATION_OUTCOMES, key="ir_outcome",
+                    # LoD2/ADMIN may record a completed validation immediately
+                    if auth.get_current_user()["role"] in ("LOD2", "ADMIN"):
+                        close_immediately = st.checkbox(
+                            "Record as completed (close with outcome now)",
+                            value=True, key="ir_close_now",
                         )
-                        ir_tests = st.multiselect(
-                            "Tests performed", data_store.COMMON_TESTS, key="val_tests",
-                        )
-                elif ir_type == "VFI":
+                        if close_immediately:
+                            ir_outcome = st.selectbox(
+                                "Outcome *", data_store.VALIDATION_OUTCOMES, key="ir_outcome",
+                            )
+                            ir_tests = st.multiselect(
+                                "Tests performed", data_store.COMMON_TESTS, key="val_tests",
+                            )
+                elif ir_type == "FND":
                     c_a, c_b = st.columns(2)
                     with c_a:
                         ir_severity = st.selectbox(
@@ -577,17 +586,19 @@ with tab_val:
             if ir_submit:
                 if not ir_title.strip() or not ir_desc.strip():
                     st.error("Title and description are required.")
-                elif ir_type == "VFI" and not (ir_rem or "").strip():
-                    st.error("Remediation is required for a finding (VFI).")
+                elif ir_type == "FND" and not (ir_rem or "").strip():
+                    st.error("Remediation is required for a finding (FND).")
                 elif ir_type == "VAL" and close_immediately and not ir_tests:
                     st.error("Record at least one test for a completed validation.")
                 else:
+                    role = auth.get_current_user()["role"]
                     payload = {
                         "type": ir_type,
                         "title": ir_title.strip(),
                         "description": ir_desc.strip(),
                         "assigned_to": ir_assigned,
                         "status": "Closed" if (ir_type == "VAL" and close_immediately) else "In Progress",
+                        "materiality": ir_materiality,
                         "validation_subtype": ir_subtype,
                         "outcome": ir_outcome if close_immediately else None,
                         "closed_date": date.today().isoformat() if close_immediately else None,
@@ -596,8 +607,9 @@ with tab_val:
                         "remediation": (ir_rem or "").strip() if ir_rem else None,
                         "due_date": ir_due.isoformat() if ir_due else None,
                         "source": (
-                            "Validation" if ir_type in ("VAL", "VFI") and auth.get_current_user()["role"] == "LOD2"
-                            else "Internal Audit" if auth.get_current_user()["role"] == "LOD3"
+                            "Validation" if ir_type in ("VAL", "FND") and role == "LOD2"
+                            else "Internal Audit" if role == "LOD3"
+                            else "Model Change" if ir_type == "MC"
                             else "LoD1 Request"
                         ),
                     }
@@ -620,14 +632,20 @@ with tab_val:
 
     # ------------------------------------------------ Filters + list + detail
     st.subheader("Requests for this model")
+    type_chip_labels = {
+        t: f"{t} — {auth.REQUEST_TYPES[t]['label']}" for t in auth.REQUEST_TYPE_ORDER
+    }
     f1, f2 = st.columns(2)
     with f1:
-        type_f = st.multiselect(
+        type_f_labels = st.multiselect(
             "Type",
-            auth.REQUEST_TYPE_ORDER,
-            default=auth.REQUEST_TYPE_ORDER,
+            [type_chip_labels[t] for t in auth.REQUEST_TYPE_ORDER],
+            default=[type_chip_labels[t] for t in auth.REQUEST_TYPE_ORDER],
             key="req_type_filter",
         )
+        type_f = [
+            t for t, lab in type_chip_labels.items() if lab in type_f_labels
+        ]
     with f2:
         status_f = st.multiselect(
             "Status",
@@ -700,10 +718,12 @@ with tab_val:
         )
         if req.get("remediation"):
             st.markdown(f"**Remediation.** {req['remediation']}")
+        if req.get("materiality"):
+            st.caption(f"Materiality: {req['materiality']}")
         if req.get("tests"):
             st.markdown("**Tests:** " + ", ".join(req["tests"]))
         if req.get("validation_subtype"):
-            st.caption(f"Subtype: {req['validation_subtype']}")
+            st.caption(f"Nature: {req['validation_subtype']}")
 
         if is_closed:
             st.warning("This request is **Closed** — read-only (no upload, edit, or new comments).")
@@ -770,10 +790,9 @@ with tab_val:
                     data_store.assign_request(req["request_id"], new_assignee)
                     flash_and_rerun(f"{req['request_id']} assigned to {new_assignee}.")
 
-            # Respond (LoD1 on VFI; any participant with respond_request for comments —
-            # keep LoD1 for findings; allow LOD2 on other types via upload + close)
+            # Respond (LoD1 on FND; LOD2/ADMIN may comment on MC/VAL via respond path)
             can_respond = auth.has_permission("respond_request") or (
-                req["type"] != "VFI" and auth.get_current_user()["role"] in ("LOD2", "ADMIN")
+                req["type"] != "FND" and auth.get_current_user()["role"] in ("LOD2", "ADMIN")
             )
             if can_respond and auth.has_permission("respond_request"):
                 with st.form(f"resp_form_{req['request_id']}", clear_on_submit=True):
@@ -811,7 +830,7 @@ with tab_val:
                             req["request_id"], resp_text.strip(), ev_ids,
                         )
                         flash_and_rerun(f"Response {rid} added to {req['request_id']}.")
-            elif req["type"] == "VFI" and not auth.has_permission("respond_request"):
+            elif req["type"] == "FND" and not auth.has_permission("respond_request"):
                 st.caption(
                     f"Findings are answered by the first line "
                     f"({auth.who_can('respond_request')})."
@@ -825,12 +844,12 @@ with tab_val:
                     )
                     close_outcome = None
                     close_tests: list[str] = []
-                    if req["type"] in ("VAL", "MMC", "NMMC", "VRQ"):
+                    if req["type"] in ("VAL", "MC"):
                         close_outcome = st.selectbox(
                             "Outcome *", data_store.VALIDATION_OUTCOMES,
                             key=f"close_out_{req['request_id']}",
                         )
-                        if req["type"] in ("VAL", "MMC"):
+                        if req["type"] == "VAL" or req.get("materiality") == "Material":
                             close_tests = st.multiselect(
                                 "Tests performed (optional)", data_store.COMMON_TESTS,
                                 key=f"close_tests_{req['request_id']}",
@@ -852,7 +871,7 @@ with tab_val:
                 if close_submit:
                     if not close_comment.strip():
                         st.error("A closure comment is required.")
-                    elif req["type"] in ("VAL", "MMC", "NMMC", "VRQ") and not close_outcome:
+                    elif req["type"] in ("VAL", "MC") and not close_outcome:
                         st.error("Outcome is required to close this request.")
                     elif close_file is not None and not close_desc.strip():
                         st.error("Provide a short evidence description when attaching a file.")

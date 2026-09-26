@@ -7,25 +7,26 @@ import streamlit as st
 import utils
 from data_loader import load_issues, load_models, load_validation_requests
 
+
 utils.header(
     "Findings & Remediation Tracker",
-    "Bank-wide view of open validation findings (VFI) and related open requests "
-    "(MMC / VRQ). Detail and actions live on each model's Validation & Findings tab.",
+    "Bank-wide view of open findings (FND) and related open Model Change / Validation "
+    "requests. Detail and actions live on each model's Validation & Findings tab.",
 )
 
 models = load_models()
 model_names = {m["model_id"]: m["name"] for m in models}
 model_tiers = {m["model_id"]: m["tier"] for m in models}
 
-# Primary register: VFI (migrated issues)
+# Primary register: FND
 issues = load_issues()
 issues["Model"] = issues["model_id"].map(lambda x: f"{x} — {model_names.get(x, x)}")
 issues["Tier"] = issues["model_id"].map(lambda x: model_tiers.get(x, "—"))
 
-# Also surface other open workflow requests (MMC, VRQ, open VAL)
+# Also surface other open workflow requests (MC, VAL)
 other_open = []
 for r in load_validation_requests():
-    if r["type"] == "VFI":
+    if r["type"] == "FND":
         continue
     if r["status"] == "Closed":
         continue
@@ -39,16 +40,17 @@ for r in load_validation_requests():
         "assigned_to": r.get("assigned_to") or "",
         "initiated_by": r.get("initiated_by") or "",
         "created_date": r.get("created_date"),
+        "materiality": r.get("materiality") or "",
     })
 
 open_issues = issues[issues["status"] != "Closed"]
 
 # ---------------------------------------------------------------- KPIs
 c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("Total Findings (VFI)", len(issues))
-c2.metric("Open VFI", len(open_issues))
+c1.metric("Total Findings (FND)", len(issues))
+c2.metric("Open FND", len(open_issues))
 c3.metric("High Severity Open", int((open_issues["severity"] == "High").sum()))
-c4.metric("Overdue VFI", int((open_issues["status"] == "Overdue").sum()))
+c4.metric("Overdue FND", int((open_issues["status"] == "Overdue").sum()))
 c5.metric("Other open requests", len(other_open))
 
 st.markdown("")
@@ -111,8 +113,8 @@ with col_r:
         fig.update_layout(height=320, margin=dict(l=0, r=10, t=10, b=10), yaxis_title=None)
         st.plotly_chart(fig, width="stretch")
 
-# ---------------------------------------------------------------- VFI table
-st.subheader(f"Findings Register — VFI ({len(filtered)} shown)")
+# ---------------------------------------------------------------- FND table
+st.subheader(f"Findings Register — FND ({len(filtered)} shown)")
 
 severity_order = {"High": 0, "Medium": 1, "Low": 2}
 status_order = {"Overdue": 0, "Open": 1, "Closed": 2}
@@ -158,18 +160,19 @@ for _, iss in filtered.iterrows():
     st.divider()
 
 # ---------------------------------------------------------------- other open requests
-st.subheader(f"Other open validation requests ({len(other_open)})")
-st.caption("MMC / NMMC / VAL / VRQ that are still Open or In Progress.")
+st.subheader(f"Other open requests — MC / VAL ({len(other_open)})")
+st.caption("Model Change and Validation requests that are still Open or In Progress.")
 if not other_open:
     st.success("No other open validation requests.")
 else:
     for row in other_open:
         left, mid, right = st.columns([4.2, 4, 1])
         with left:
+            badges = utils.badge(row["type"], utils.NAVY) + utils.badge(row["status"], utils.AMBER)
+            if row.get("materiality"):
+                badges += utils.badge(row["materiality"], utils.GREY)
             st.markdown(
-                f"**[{row['request_id']}] {row['title']}**<br>"
-                + utils.badge(row["type"], utils.NAVY)
-                + utils.badge(row["status"], utils.AMBER),
+                f"**[{row['request_id']}] {row['title']}**<br>" + badges,
                 unsafe_allow_html=True,
             )
         with mid:

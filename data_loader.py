@@ -24,7 +24,7 @@ def load_models() -> list[dict]:
 
 @st.cache_data
 def load_validation_requests() -> list[dict]:
-    """Unified validation workflow: MMC / NMMC / VAL / VRQ / VFI."""
+    """Unified validation workflow: MC / VAL / FND."""
     path = DATA_DIR / "validation_requests.json"
     with open(path, encoding="utf-8") as f:
         return json.load(f)
@@ -32,22 +32,25 @@ def load_validation_requests() -> list[dict]:
 
 @st.cache_data
 def load_validations() -> pd.DataFrame:
-    """Completed VAL / MMC / NMMC requests as a validation-history view."""
+    """Completed VAL / MC requests as a validation-history view."""
     rows = []
     for r in load_validation_requests():
-        if r["type"] not in ("VAL", "MMC", "NMMC"):
+        if r["type"] not in ("VAL", "MC"):
             continue
         if r.get("status") != "Closed" and not r.get("outcome"):
-            # Include in-progress MMC that already has an interim outcome label
-            if r["type"] != "MMC":
+            # Include in-progress Material MC that already has an interim outcome
+            if not (r["type"] == "MC" and r.get("materiality") == "Material"):
                 continue
         vtype = r.get("validation_subtype")
         if not vtype:
-            vtype = {
-                "MMC": "Material Model Change",
-                "NMMC": "Non-material Model Change Review",
-                "VAL": "Periodic (annual/biennial)",
-            }.get(r["type"], r["type"])
+            if r["type"] == "MC":
+                mat = r.get("materiality") or "Material"
+                vtype = (
+                    "Material Model Change" if mat == "Material"
+                    else "Non-material Model Change Review"
+                )
+            else:
+                vtype = "Periodic"
         rows.append({
             "validation_id": r["request_id"],
             "model_id": r["model_id"],
@@ -58,12 +61,13 @@ def load_validations() -> pd.DataFrame:
             "tests": r.get("tests") or [],
             "summary": r.get("description") or "",
             "status": r["status"],
+            "materiality": r.get("materiality"),
         })
     df = pd.DataFrame(rows)
     if df.empty:
         return pd.DataFrame(columns=[
             "validation_id", "model_id", "date", "type", "outcome",
-            "validator", "tests", "summary", "status",
+            "validator", "tests", "summary", "status", "materiality",
         ])
     df["date"] = pd.to_datetime(df["date"])
     return df.sort_values("date", ascending=False)
@@ -71,11 +75,11 @@ def load_validations() -> pd.DataFrame:
 
 @st.cache_data
 def load_issues() -> pd.DataFrame:
-    """VFI findings as the bank-wide issues/findings view (for dashboard & tracker)."""
+    """Findings (FND) as the bank-wide issues/findings view (for dashboard & tracker)."""
     rows = []
     today = pd.Timestamp(date.today())
     for r in load_validation_requests():
-        if r["type"] != "VFI":
+        if r["type"] != "FND":
             continue
         status = r["status"]
         due = r.get("due_date")
@@ -104,7 +108,7 @@ def load_issues() -> pd.DataFrame:
             "raised_by": r.get("initiated_by"),
             "raised_by_role": r.get("initiated_by_role"),
             "responses": r.get("thread") or [],
-            "request_type": "VFI",
+            "request_type": "FND",
             "workflow_status": r["status"],
         })
     df = pd.DataFrame(rows)
