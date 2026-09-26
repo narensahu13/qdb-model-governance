@@ -130,15 +130,21 @@ for _, iss in filtered.iterrows():
     status_color = {"Open": utils.AMBER, "Overdue": utils.RED, "Closed": utils.GREEN}.get(
         iss["status"], utils.GREY
     )
+    rid = iss["issue_id"]
     left, mid, right = st.columns([4.2, 4, 1])
     with left:
-        st.markdown(
-            f"**[{iss['issue_id']}] {iss['title']}**<br>"
-            + utils.severity_badge(iss["severity"])
-            + utils.badge(iss["status"], status_color)
-            + utils.badge(iss["source"], utils.GREY),
-            unsafe_allow_html=True,
-        )
+        id_col, title_col = st.columns([1.15, 3.2])
+        with id_col:
+            if st.button(rid, key=f"fnd_id_{rid}", type="tertiary", width="stretch"):
+                utils.go_to_model(iss["model_id"], request_id=rid)
+        with title_col:
+            st.markdown(
+                f"**{iss['title']}**<br>"
+                + utils.severity_badge(iss["severity"])
+                + utils.badge(iss["status"], status_color)
+                + utils.badge(iss["source"], utils.GREY),
+                unsafe_allow_html=True,
+            )
     with mid:
         due = iss["due_date"].strftime("%d %b %Y") if pd.notna(iss["due_date"]) else "-"
         st.markdown(
@@ -147,8 +153,8 @@ for _, iss in filtered.iterrows():
             unsafe_allow_html=True,
         )
     with right:
-        if st.button("Model", key=f"goto_{iss['issue_id']}", width="stretch"):
-            utils.go_to_model(iss["model_id"])
+        if st.button("Open", key=f"goto_{rid}", width="stretch"):
+            utils.go_to_model(iss["model_id"], request_id=rid)
     with st.expander("Details"):
         st.markdown(f"**Finding.** {iss['description']}")
         st.markdown(f"**Remediation.** {iss['remediation']}")
@@ -166,15 +172,23 @@ if not other_open:
     st.success("No other open validation requests.")
 else:
     for row in other_open:
+        rid = row["request_id"]
         left, mid, right = st.columns([4.2, 4, 1])
         with left:
-            badges = utils.badge(row["type"], utils.NAVY) + utils.badge(row["status"], utils.AMBER)
-            if row.get("materiality"):
-                badges += utils.badge(row["materiality"], utils.GREY)
-            st.markdown(
-                f"**[{row['request_id']}] {row['title']}**<br>" + badges,
-                unsafe_allow_html=True,
-            )
+            id_col, title_col = st.columns([1.15, 3.2])
+            with id_col:
+                if st.button(rid, key=f"req_id_{rid}", type="tertiary", width="stretch"):
+                    utils.go_to_model(row["model_id"], request_id=rid)
+            with title_col:
+                badges = utils.badge(row["type"], utils.NAVY) + utils.badge(
+                    row["status"], utils.AMBER
+                )
+                if row.get("materiality"):
+                    badges += utils.badge(row["materiality"], utils.GREY)
+                st.markdown(
+                    f"**{row['title']}**<br>" + badges,
+                    unsafe_allow_html=True,
+                )
         with mid:
             st.markdown(
                 f"<span style='font-size:0.88rem;'>{row['Model']}</span><br>"
@@ -183,6 +197,6 @@ else:
                 unsafe_allow_html=True,
             )
         with right:
-            if st.button("Model", key=f"goto_req_{row['request_id']}", width="stretch"):
-                utils.go_to_model(row["model_id"])
+            if st.button("Open", key=f"goto_req_{rid}", width="stretch"):
+                utils.go_to_model(row["model_id"], request_id=rid)
         st.divider()

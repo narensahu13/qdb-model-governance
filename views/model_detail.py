@@ -116,11 +116,12 @@ if not model_ids:
     st.error("No models in the inventory.")
     st.stop()
 
-# Deep link support: /model_detail?model=<id> (inventory LinkColumn). Must run
-# before any use of selected_model_id. Consume only the model param so the
-# selectbox takes over on later interactions — do not clear the whole query
-# string (that can break st.navigation page routing in a new tab).
+# Deep link support: /model_detail?model=<id>[&request=<rid>]
+# (inventory LinkColumn / Findings Tracker). Consume params so the selectbox
+# takes over on later interactions — do not clear the whole query string
+# (that can break st.navigation page routing in a new tab).
 qp_model = utils.read_model_query_param()
+qp_request = utils.read_request_query_param()
 if qp_model:
     if qp_model in model_ids:
         st.session_state["selected_model_id"] = qp_model
@@ -154,8 +155,12 @@ if _prev_req_model is None:
 elif _prev_req_model != selected:
     st.session_state["_md_req_model"] = selected
     st.session_state.pop("md_selected_request", None)
-    st.session_state.pop("md_req_list_nonce", None)
-    st.session_state.pop("_md_req_auto", None)
+
+# Apply ?request= after model-scope handling so a deep link is not wiped
+# when landing from Findings Tracker / inventory.
+if qp_request:
+    st.session_state["md_selected_request"] = qp_request
+    utils.drop_request_query_param()
 
 m = get_model(selected)
 if m is None:
@@ -656,7 +661,7 @@ with tab_val:
         selected_rid = None
 
     if selected_rid is None:
-        # ---- LIST VIEW
+        # ---- LIST VIEW: clickable Request ID (same-tab detail via session)
         st.subheader("Request register")
         f1, f2 = st.columns(2)
         with f1:
@@ -679,82 +684,75 @@ with tab_val:
         ]
         # Open / In Progress first (newest), then Closed (newest).
         open_part = sorted(
-            [r for r in filtered if r["status"] != "Closed"],
+            [r for r in filtered if r.get("status") != "Closed"],
             key=lambda r: (r.get("created_date") or "", r["request_id"]),
             reverse=True,
         )
         closed_part = sorted(
-            [r for r in filtered if r["status"] == "Closed"],
+            [r for r in filtered if r.get("status") == "Closed"],
             key=lambda r: (r.get("created_date") or "", r["request_id"]),
             reverse=True,
         )
         filtered = open_part + closed_part
 
         st.caption(
-            f"{len(filtered)} request(s) · click a row checkbox to open detail, "
-            "or select a row and press **Open**."
+            f"{len(filtered)} request(s) · click a **Request ID** to open detail "
+            "(same page — use ← Back to list to return)."
         )
 
         if not filtered:
             st.info("No requests match the current filters.")
         else:
-            register_df = pd.DataFrame([
-                {
-                    "Request ID": r["request_id"],
-                    "Type": _type_cell(r),
-                    "Title": r.get("title") or "",
-                    "Status": r.get("status") or "",
-                    "Initiated by": r.get("initiated_by") or "—",
-                    "Assigned to": r.get("assigned_to") or "—",
-                    "Created": r.get("created_date") or "—",
-                }
-                for r in filtered
-            ])
-            list_nonce = st.session_state.get("md_req_list_nonce", 0)
-            event = st.dataframe(
-                register_df,
-                hide_index=True,
-                width="stretch",
-                height=min(420, 56 + 36 * max(len(register_df), 1)),
-                on_select="rerun",
-                selection_mode="single-row",
-                key=f"req_register_{selected}_{list_nonce}",
-                column_config={
-                    "Request ID": st.column_config.TextColumn(width="small"),
-                    "Type": st.column_config.TextColumn(width="medium"),
-                    "Title": st.column_config.TextColumn(width="large"),
-                    "Status": st.column_config.TextColumn(width="small"),
-                    "Created": st.column_config.TextColumn(width="small"),
-                },
-            )
-            sel_rows = (
-                list(event.selection.rows)
-                if event.selection and event.selection.rows
-                else []
-            )
-            open_col, hint_col = st.columns([1.2, 4])
-            with open_col:
-                open_clicked = st.button(
-                    "Open",
-                    type="primary",
-                    disabled=not sel_rows,
-                    key="req_register_open",
-                    width="stretch",
+            PAGE = 50
+            total = len(filtered)
+            if total > PAGE:
+                n_pages = (total + PAGE - 1) // PAGE
+                page_i = st.number_input(
+                    "Page",
+                    min_value=1,
+                    max_value=n_pages,
+                    value=1,
+                    key="req_register_page",
                 )
-            with hint_col:
-                if sel_rows:
-                    st.caption(
-                        f"Selected: **{register_df.iloc[sel_rows[0]]['Request ID']}**"
-                    )
-            # Navigate on Open click, or auto-open once per new row selection
-            # (inventory-style). Nonce on "Back" resets the dataframe so we
-            # do not immediately re-enter detail.
-            if sel_rows:
-                rid = str(register_df.iloc[sel_rows[0]]["Request ID"])
-                if open_clicked or st.session_state.get("_md_req_auto") != rid:
-                    st.session_state["md_selected_request"] = rid
-                    st.session_state["_md_req_auto"] = rid
-                    st.rerun()
+                start = (int(page_i) - 1) * PAGE
+                page_rows = filtered[start:start + PAGE]
+                st.caption(f"Showing {start + 1}–{start + len(page_rows)} of {total}")
+            else:
+                page_rows = filtered
+
+            h1, h2, h3, h4, h5, h6 = st.columns([1.15, 1.35, 2.6, 1.0, 1.4, 1.0])
+            h1.caption("Request ID")
+            h2.caption("Type")
+            h3.caption("Title")
+            h4.caption("Status")
+            h5.caption("Assigned")
+            h6.caption("Created")
+
+            for r in page_rows:
+                rid = r["request_id"]
+                c1, c2, c3, c4, c5, c6 = st.columns(
+                    [1.15, 1.35, 2.6, 1.0, 1.4, 1.0]
+                )
+                with c1:
+                    if st.button(
+                        rid,
+                        key=f"req_open_{selected}_{rid}",
+                        type="tertiary",
+                        width="stretch",
+                    ):
+                        st.session_state["md_selected_request"] = rid
+                        st.rerun()
+                c2.markdown(f"`{_type_cell(r)}`")
+                title = (r.get("title") or "—").strip() or "—"
+                if len(title) > 48:
+                    title = title[:47] + "…"
+                c3.markdown(title)
+                c4.caption(r.get("status") or "—")
+                assigned = (r.get("assigned_to") or "—").split("(")[0].strip()
+                if len(assigned) > 22:
+                    assigned = assigned[:21] + "…"
+                c5.caption(assigned)
+                c6.caption(r.get("created_date") or "—")
 
         with st.expander("Counts by type", expanded=False):
             counts = []
@@ -784,10 +782,6 @@ with tab_val:
         with back_col:
             if st.button("← Back to list", key="req_back_to_list", width="stretch"):
                 st.session_state.pop("md_selected_request", None)
-                st.session_state.pop("_md_req_auto", None)
-                st.session_state["md_req_list_nonce"] = (
-                    st.session_state.get("md_req_list_nonce", 0) + 1
-                )
                 st.rerun()
 
         st.markdown(

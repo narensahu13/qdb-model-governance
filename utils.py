@@ -66,6 +66,31 @@ def drop_model_query_param() -> None:
         pass
 
 
+def read_request_query_param() -> str | None:
+    """Return `?request=` from the URL, or None. Accepts str or list values."""
+    try:
+        raw = st.query_params.get("request")
+    except Exception:
+        return None
+    if raw is None:
+        return None
+    if isinstance(raw, (list, tuple)):
+        raw = raw[0] if raw else None
+    if raw is None:
+        return None
+    rid = str(raw).strip()
+    return rid or None
+
+
+def drop_request_query_param() -> None:
+    """Remove only `request` from the query string after it is consumed."""
+    try:
+        if "request" in st.query_params:
+            del st.query_params["request"]
+    except Exception:
+        pass
+
+
 def page_setup(title: str):
     st.set_page_config(
         page_title=f"{title} | QDB Model Governance",
@@ -158,19 +183,25 @@ def severity_badge(sev: str) -> str:
     return badge(sev, SEVERITY_COLORS.get(sev, GREY))
 
 
-def go_to_model(model_id: str):
-    """Navigate to the Model Detail page for a given model.
+def go_to_model(model_id: str, request_id: str | None = None):
+    """Navigate to Model Detail for a model (optional request opens detail).
 
-    `st.switch_page` resolves paths against the running entrypoint. From
-    `app.py` that is `views/model_detail.py`; from a view run standalone
-    (AppTest) it is `model_detail.py`. Try both so neither path exceptions.
+    Same-tab via `st.switch_page`. Sets session state so Validation & Findings
+    opens the request when `request_id` is provided. Paths are tried against
+    both `app.py` and standalone view entrypoints.
     """
     from streamlit.errors import StreamlitAPIException
 
     st.session_state["selected_model_id"] = model_id
+    if request_id:
+        st.session_state["md_selected_request"] = request_id
+        st.session_state["_md_req_model"] = model_id
+    qp = {"model": model_id}
+    if request_id:
+        qp["request"] = request_id
     for target in ("views/model_detail.py", "model_detail.py"):
         try:
-            st.switch_page(target, query_params={"model": model_id})
+            st.switch_page(target, query_params=qp)
             return
         except TypeError:
             try:

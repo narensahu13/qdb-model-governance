@@ -97,6 +97,24 @@ if at is not None and not at.exception:
         print("FAIL  Validation register list unexpectedly opened a detail")
     else:
         print("OK    Validation register stays on list without selection")
+    # Click Request ID tertiary button → same-session detail (no new tab).
+    id_btns = [b for b in at.button if (b.label or "") == "VAL-001"]
+    if not id_btns:
+        failed = True
+        print("FAIL  Validation register missing VAL-001 Request ID button")
+    else:
+        id_btns[0].click().run()
+        if at.exception:
+            failed = True
+            print("FAIL  Clicking Request ID raised")
+            for exc in at.exception:
+                print(f"      {exc.value}")
+        elif ss_get(at, "md_selected_request") != "VAL-001":
+            failed = True
+            print(f"FAIL  Request ID click did not open detail "
+                  f"(got {ss_get(at, 'md_selected_request')!r})")
+        else:
+            print("OK    Request ID button opens detail in same session")
 
 at = run_page(
     "views/model_detail.py",
@@ -160,6 +178,24 @@ if at is not None and not at.exception:
         print("FAIL  Stale request selection was kept for the wrong model")
     else:
         print("OK    Stale request selection cleared for model mismatch")
+
+# Deep link ?model=&request= opens that request detail.
+at = run_page(
+    "views/model_detail.py",
+    "Deep link ?model=QDB-CR-001&request=VAL-001",
+    query={"model": "QDB-CR-001", "request": "VAL-001"},
+)
+if at is not None and not at.exception:
+    if ss_get(at, "selected_model_id") != "QDB-CR-001":
+        failed = True
+        print(f"FAIL  Request deep link model "
+              f"(got {ss_get(at, 'selected_model_id')!r})")
+    elif ss_get(at, "md_selected_request") != "VAL-001":
+        failed = True
+        print(f"FAIL  Request deep link selection "
+              f"(got {ss_get(at, 'md_selected_request')!r})")
+    else:
+        print("OK    Deep link selected model + request VAL-001")
 
 # ---------------------------------------------------------------- tiering
 from tiering import compute_tier
