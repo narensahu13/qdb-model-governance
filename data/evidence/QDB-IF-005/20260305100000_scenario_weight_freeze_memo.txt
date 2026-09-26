@@ -1,0 +1,7 @@
+PLACEHOLDER EVIDENCE FILE (PoC)
+
+Evidence ID: EV-004
+Model: QDB-IF-005
+Linked to: issue ISS-010
+Description: CFO memo freezing scenario weights pending independent validation
+Uploaded by: Fatima Al-Sulaiti (LOD1) at 2026-03-05T10:00:00

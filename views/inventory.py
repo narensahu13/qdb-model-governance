@@ -1,0 +1,84 @@
+import streamlit as st
+import utils
+from data_loader import models_dataframe
+
+utils.header(
+    "Model Inventory",
+    "Central register of models in use. Click a Model ID to open the governance record.",
+)
+
+df = models_dataframe()
+
+# ---------------------------------------------------------------- filters
+f1, f2, f3, f4, f5 = st.columns([1.6, 1, 1.3, 1.3, 1.8])
+with f1:
+    risk_types = st.multiselect("Risk Type", sorted(df["Risk Type"].unique()))
+with f2:
+    tiers = st.multiselect("Tier", [1, 2, 3])
+with f3:
+    statuses = st.multiselect("Model Status", sorted(df["Status"].unique()))
+with f4:
+    val_statuses = st.multiselect("Validation Status", ["On Track", "Due Soon", "Overdue", "Never Validated"])
+with f5:
+    search = st.text_input("Search", placeholder="Model name, ID, owner, methodology...")
+
+filtered = df.copy()
+if risk_types:
+    filtered = filtered[filtered["Risk Type"].isin(risk_types)]
+if tiers:
+    filtered = filtered[filtered["Tier"].isin(tiers)]
+if statuses:
+    filtered = filtered[filtered["Status"].isin(statuses)]
+if val_statuses:
+    filtered = filtered[filtered["Validation Status"].isin(val_statuses)]
+if search:
+    mask = (
+        filtered["Model Name"].str.contains(search, case=False)
+        | filtered["Model ID"].str.contains(search, case=False)
+        | filtered["Owner"].str.contains(search, case=False)
+        | filtered["Methodology"].str.contains(search, case=False)
+    )
+    filtered = filtered[mask]
+
+st.caption(f"{len(filtered)} of {len(df)} models shown")
+
+# ---------------------------------------------------------------- table
+display_cols = [
+    "Model ID", "Model Name", "Risk Type", "Tier", "Status",
+    "Validation Status", "Next Validation Due", "Open Issues",
+    "High Open Issues", "Doc Completeness (%)", "Owner", "Source",
+]
+
+# Render Model ID as an in-app link to the Model Detail page (?model=<id> is
+# picked up by views/model_detail.py via st.query_params).
+table = filtered[display_cols].copy()
+table["Model ID"] = "/model_detail?model=" + table["Model ID"]
+
+event = st.dataframe(
+    table,
+    hide_index=True,
+    width="stretch",
+    height=560,
+    on_select="rerun",
+    selection_mode="single-row",
+    column_config={
+        "Model ID": st.column_config.LinkColumn(
+            "Model ID",
+            display_text=r"model=(.+)$",
+            help="Click to open the model's full governance record",
+        ),
+        "Tier": st.column_config.NumberColumn(width="small"),
+        "Open Issues": st.column_config.NumberColumn(width="small"),
+        "High Open Issues": st.column_config.NumberColumn("High Issues", width="small"),
+        "Doc Completeness (%)": st.column_config.ProgressColumn(
+            "Docs", min_value=0, max_value=100, format="%d%%"
+        ),
+    },
+)
+
+# Secondary path: selecting a row (checkbox at the left edge) also navigates.
+if event.selection and event.selection.rows:
+    selected_row = filtered.iloc[event.selection.rows[0]]
+    utils.go_to_model(selected_row["Model ID"])
+
+st.caption("Click a Model ID or select a row to open the governance record.")

@@ -1,0 +1,15 @@
+[
+  { "name": "Ahmed Al-Kuwari", "title": "Head of Credit Risk", "role": "LOD1" },
+  { "name": "Lina Haddad", "title": "Credit Modelling Team", "role": "LOD1" },
+  { "name": "Rajesh Nair", "title": "Credit Modelling Team", "role": "LOD1" },
+  { "name": "Omar Farouk", "title": "Credit Modelling Team", "role": "LOD1" },
+  { "name": "David Chen", "title": "Data Science Team", "role": "LOD1" },
+  { "name": "Fatima Al-Sulaiti", "title": "Head of Financial Control", "role": "LOD1" },
+  { "name": "Mohammed Al-Marri", "title": "Head of Market & Liquidity Risk", "role": "LOD1" },
+  { "name": "Noora Al-Thani", "title": "MLRO / Head of Compliance", "role": "LOD1" },
+  { "name": "Sara Al-Naimi", "title": "Head of Operational Risk", "role": "LOD1" },
+  { "name": "Yousef Al-Emadi", "title": "Head of Strategy & Finance", "role": "LOD1" },
+  { "name": "Hassan Al-Mohannadi", "title": "Model Validation Unit", "role": "LOD2" },
+  { "name": "Abdulla Al-Sayed", "title": "Internal Audit", "role": "LOD3" },
+  { "name": "Maryam Al-Kaabi", "title": "MRM Administrator", "role": "ADMIN" }
+]

@@ -1,0 +1,401 @@
+[
+  {
+    "model_id": "QDB-CR-001",
+    "date": "2024-05-30",
+    "type": "Initial (pre-implementation)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "Discriminatory power (Gini/KS)",
+      "Calibration accuracy",
+      "Data quality review",
+      "Benchmarking vs v2.0",
+      "Sensitivity analysis"
+    ],
+    "summary": "Redeveloped scorecard shows strong discrimination (Gini 0.58 on OOT sample) and stable calibration. Approved for production use.",
+    "validation_id": "VAL-001"
+  },
+  {
+    "model_id": "QDB-CR-001",
+    "date": "2025-11-20",
+    "type": "Periodic (annual)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "Discriminatory power",
+      "Population stability (PSI)",
+      "Calibration backtest",
+      "Override analysis"
+    ],
+    "summary": "Performance remains within thresholds. Minor population shift noted in startup segment (PSI 0.09); recommend monitoring.",
+    "validation_id": "VAL-002"
+  },
+  {
+    "model_id": "QDB-CR-002",
+    "date": "2023-08-25",
+    "type": "Initial (pre-implementation)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "Discriminatory power",
+      "Calibration",
+      "Data quality review",
+      "Implementation testing"
+    ],
+    "summary": "Model approved. Data quality assessment for bureau feed to be completed post-implementation (condition, now overdue).",
+    "validation_id": "VAL-003"
+  },
+  {
+    "model_id": "QDB-CR-002",
+    "date": "2025-02-28",
+    "type": "Periodic (annual)",
+    "outcome": "Approved with Conditions",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "Discriminatory power",
+      "PSI",
+      "Calibration backtest",
+      "Use test review"
+    ],
+    "summary": "Gini declined from 0.55 to 0.48; utilisation volatility factor weakening. Conditional approval - recalibration required by Q4 2025 (not yet delivered). Annual revalidation due Feb 2026 was not scheduled.",
+    "validation_id": "VAL-004"
+  },
+  {
+    "model_id": "QDB-CR-003",
+    "date": "2025-06-01",
+    "type": "Periodic (annual, external)",
+    "outcome": "Approved with Conditions",
+    "validator": "Deloitte Middle East",
+    "tests": [
+      "Low-default portfolio benchmarking",
+      "Qualitative module review",
+      "Override analysis",
+      "Rating migration analysis"
+    ],
+    "summary": "Model conceptually sound but override rate of 31% undermines model use. Conditions: reduce override rate below 15%, strengthen override justification documentation, recalibrate qualitative weights.",
+    "validation_id": "VAL-005"
+  },
+  {
+    "model_id": "QDB-CR-004",
+    "date": "2024-01-20",
+    "type": "Initial (pre-implementation)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "Pricing logic review",
+      "PD/LGD input verification",
+      "Scenario testing",
+      "Benchmarking vs program actuals"
+    ],
+    "summary": "v2.0 approved with new claims-based LGD calibration.",
+    "validation_id": "VAL-006"
+  },
+  {
+    "model_id": "QDB-CR-004",
+    "date": "2026-04-10",
+    "type": "Targeted (triggered by claims experience)",
+    "outcome": "Not Fit for Purpose - Remediation Required",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "Claims backtest",
+      "Assumption review",
+      "Sensitivity analysis",
+      "Data quality deep-dive"
+    ],
+    "summary": "Realised claims running 40% above model expectation for the manufacturing segment. Claim frequency assumption based on stale partner-bank data. Model placed under remediation; interim conservative overlay applied to pricing and reserves.",
+    "validation_id": "VAL-007"
+  },
+  {
+    "model_id": "QDB-CR-005",
+    "date": "2025-03-01",
+    "type": "Initial (pre-implementation)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "Discriminatory power",
+      "Explainability review (SHAP)",
+      "Data leakage testing",
+      "Stability testing",
+      "Benchmark vs logistic challenger"
+    ],
+    "summary": "ML model outperforms logistic challenger (Gini 0.71 vs 0.62). Explainability framework adequate for advisory use. Approved for watchlist triggering only - no automated decisioning.",
+    "validation_id": "VAL-008"
+  },
+  {
+    "model_id": "QDB-CR-006",
+    "date": "2025-01-05",
+    "type": "Initial (formalisation)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "Benchmarking vs realised liquidation outcomes",
+      "Peer comparison",
+      "Conservatism assessment"
+    ],
+    "summary": "Haircut table conservative relative to realised recoveries over 2020-2024. Approved on triennial cycle given low complexity.",
+    "validation_id": "VAL-009"
+  },
+  {
+    "model_id": "QDB-IF-001",
+    "date": "2024-12-01",
+    "type": "Initial (pre-implementation, external)",
+    "outcome": "Fit for Purpose",
+    "validator": "KPMG Qatar",
+    "tests": [
+      "Transition matrix estimation review",
+      "Macro-conditioning methodology",
+      "Calibration backtest",
+      "Sensitivity to scenario weights",
+      "Replication testing"
+    ],
+    "summary": "v4.0 Markov framework validated. Replication successful within tolerance. Sensitivity to downside scenario weight flagged for monitoring.",
+    "validation_id": "VAL-010"
+  },
+  {
+    "model_id": "QDB-IF-001",
+    "date": "2025-12-05",
+    "type": "Periodic (annual, external)",
+    "outcome": "Fit for Purpose",
+    "validator": "KPMG Qatar",
+    "tests": [
+      "PD backtesting",
+      "PSI",
+      "Macro model re-estimation review",
+      "ECL attribution analysis"
+    ],
+    "summary": "PD backtest ratio 1.05 (actuals marginally above prediction) - within tolerance. Recommend deeper review of construction segment at next cycle.",
+    "validation_id": "VAL-011"
+  },
+  {
+    "model_id": "QDB-IF-002",
+    "date": "2024-11-15",
+    "type": "Initial (pre-implementation, external)",
+    "outcome": "Approved with Conditions",
+    "validator": "KPMG Qatar",
+    "tests": [
+      "Workout LGD estimation review",
+      "Cure rate analysis",
+      "Discount rate review",
+      "Data completeness assessment"
+    ],
+    "summary": "Methodology sound but recovery data history is thin (48 resolved cases). Conditions: expand recovery data capture, complete formal data quality assessment, benchmark against regional peers annually.",
+    "validation_id": "VAL-012"
+  },
+  {
+    "model_id": "QDB-IF-002",
+    "date": "2025-08-15",
+    "type": "Periodic (annual, external)",
+    "outcome": "Approved with Conditions",
+    "validator": "KPMG Qatar",
+    "tests": [
+      "LGD backtesting",
+      "Cure rate stability",
+      "Collateral valuation linkage review"
+    ],
+    "summary": "LGD backtest acceptable at portfolio level; equipment-collateral segment under-predicts losses. Data quality assessment condition from 2024 remains open.",
+    "validation_id": "VAL-013"
+  },
+  {
+    "model_id": "QDB-IF-003",
+    "date": "2025-02-01",
+    "type": "Periodic (biennial)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "CCF backtesting",
+      "Segment stability",
+      "Guarantee utilisation analysis"
+    ],
+    "summary": "CCF estimates conservative across all segments. New Al Dhameen CCF segment validated.",
+    "validation_id": "VAL-014"
+  },
+  {
+    "model_id": "QDB-IF-004",
+    "date": "2024-12-01",
+    "type": "Initial (pre-implementation, external)",
+    "outcome": "Fit for Purpose",
+    "validator": "KPMG Qatar",
+    "tests": [
+      "Threshold calibration review",
+      "Stage transition analysis",
+      "Backstop effectiveness",
+      "Benchmarking vs peer disclosure"
+    ],
+    "summary": "Relative threshold framework aligned with market practice. Stage 2 ratio in line with regional peers.",
+    "validation_id": "VAL-015"
+  },
+  {
+    "model_id": "QDB-IF-004",
+    "date": "2025-12-05",
+    "type": "Periodic (annual, external)",
+    "outcome": "Fit for Purpose",
+    "validator": "KPMG Qatar",
+    "tests": [
+      "Stage transition backtesting",
+      "Override analysis",
+      "Cliff-effect analysis"
+    ],
+    "summary": "Staging performing as designed; staging override rate 4% and well-documented.",
+    "validation_id": "VAL-016"
+  },
+  {
+    "model_id": "QDB-ML-001",
+    "date": "2025-10-01",
+    "type": "Periodic (biennial)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "Behavioural assumption review",
+      "Shock scenario replication",
+      "NII backtest",
+      "Benchmark vs full revaluation"
+    ],
+    "summary": "EVE and NII measures replicate within tolerance. Non-maturity deposit assumption of 3.2y supported by updated deposit study.",
+    "validation_id": "VAL-017"
+  },
+  {
+    "model_id": "QDB-ML-002",
+    "date": "2024-04-01",
+    "type": "Initial (formalisation)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "VaR methodology review",
+      "Backtesting",
+      "Correlation matrix review"
+    ],
+    "summary": "Parametric VaR adequate for immaterial FX book under pegged regime. Triennial cycle assigned.",
+    "validation_id": "VAL-018"
+  },
+  {
+    "model_id": "QDB-ML-003",
+    "date": "2024-08-01",
+    "type": "Initial (pre-implementation, external)",
+    "outcome": "Fit for Purpose",
+    "validator": "EY Qatar",
+    "tests": [
+      "Runoff assumption benchmarking",
+      "Scenario severity assessment",
+      "LCR/NSFR calculation verification",
+      "Data lineage review"
+    ],
+    "summary": "v3.0 validated including new combined stress scenario. Runoff assumptions at conservative end of peer range.",
+    "validation_id": "VAL-019"
+  },
+  {
+    "model_id": "QDB-ML-003",
+    "date": "2025-06-15",
+    "type": "Periodic (annual, external)",
+    "outcome": "Approved with Conditions",
+    "validator": "EY Qatar",
+    "tests": [
+      "Assumption refresh review",
+      "LCR forecast backtest",
+      "Intraday module review"
+    ],
+    "summary": "Core model sound. Condition: behavioural runoff assumptions for government-related deposits must be re-estimated with post-2024 data by Q2 2026. Annual revalidation due June 2026 has not been commissioned - now overdue.",
+    "validation_id": "VAL-020"
+  },
+  {
+    "model_id": "QDB-ML-004",
+    "date": "2025-05-20",
+    "type": "Periodic (biennial, vendor model review)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "IPV variance analysis",
+      "Vendor methodology documentation review",
+      "Challenger pricing on sample",
+      "Stale price detection"
+    ],
+    "summary": "BVAL pricing consistent with challenger DCF on liquid sukuk; wider variance on illiquid names mitigated by IPV overlay process.",
+    "validation_id": "VAL-021"
+  },
+  {
+    "model_id": "QDB-OF-001",
+    "date": "2024-09-15",
+    "type": "Periodic (annual, external)",
+    "outcome": "Approved with Conditions",
+    "validator": "Deloitte Middle East",
+    "tests": [
+      "Scenario coverage assessment",
+      "Above/below-the-line testing",
+      "Data completeness testing",
+      "Alert disposition quality review"
+    ],
+    "summary": "Scenario coverage adequate but thresholds not tuned since implementation. False positive rate 96% driving alert backlog. Conditions: complete threshold tuning, clear alert backlog.",
+    "validation_id": "VAL-022"
+  },
+  {
+    "model_id": "QDB-OF-001",
+    "date": "2025-09-30",
+    "type": "Periodic (annual, external)",
+    "outcome": "Approved with Conditions",
+    "validator": "Deloitte Middle East",
+    "tests": [
+      "Threshold tuning review",
+      "Below-the-line sampling",
+      "SAR conversion analysis",
+      "Data lineage testing"
+    ],
+    "summary": "Partial tuning completed for cash-intensive segments; remaining scenarios still untuned. False positive rate improved to 91% but remains excessive. High-severity finding kept open.",
+    "validation_id": "VAL-023"
+  },
+  {
+    "model_id": "QDB-OF-002",
+    "date": "2025-11-10",
+    "type": "Periodic (annual)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "Matching effectiveness testing (seeded names)",
+      "Threshold sensitivity analysis",
+      "List management review"
+    ],
+    "summary": "Seeded-name testing achieved 100% detection at current thresholds. List update controls operating effectively.",
+    "validation_id": "VAL-024"
+  },
+  {
+    "model_id": "QDB-ST-001",
+    "date": "2025-03-20",
+    "type": "Periodic (annual, external)",
+    "outcome": "Fit for Purpose",
+    "validator": "EY Qatar",
+    "tests": [
+      "Projection logic verification",
+      "Satellite model integration testing",
+      "Scenario severity benchmarking",
+      "Capital calculation verification"
+    ],
+    "summary": "ICAAP model validated for 2025 submission. Recommend automation of manual satellite-model data transfers (operational risk).",
+    "validation_id": "VAL-025"
+  },
+  {
+    "model_id": "QDB-ST-003",
+    "date": "2025-06-25",
+    "type": "Initial (formalisation)",
+    "outcome": "Fit for Purpose",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "RAROC logic review",
+      "FTP curve verification",
+      "EL/capital input reconciliation"
+    ],
+    "summary": "Pricing floors correctly reflect risk inputs; mandate-driven concessional pricing appropriately flagged as policy exceptions rather than model overrides.",
+    "validation_id": "VAL-026"
+  },
+  {
+    "validation_id": "VAL-027",
+    "model_id": "QDB-CR-002",
+    "date": "2026-08-01",
+    "type": "Material Model Change",
+    "outcome": "Approved with Conditions",
+    "validator": "Hassan Al-Mohannadi (Model Validation Unit)",
+    "tests": [
+      "Discriminatory power (Gini/KS)",
+      "Calibration accuracy / backtest",
+      "Documentation review"
+    ],
+    "summary": "Revalidation opened for the overdue behavioural-scorecard recalibration. Awaiting first-line development pack (code, change memo, OOT results)."
+  }
+]

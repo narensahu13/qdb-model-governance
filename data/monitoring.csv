@@ -1,0 +1,201 @@
+model_id,metric,period,value,amber_threshold,red_threshold,higher_is_better,rag
+QDB-CR-001,Gini,2024-Q4,0.5828,0.5,0.45,True,Green
+QDB-CR-001,Gini,2025-Q1,0.5676,0.5,0.45,True,Green
+QDB-CR-001,Gini,2025-Q2,0.5698,0.5,0.45,True,Green
+QDB-CR-001,Gini,2025-Q3,0.5659,0.5,0.45,True,Green
+QDB-CR-001,Gini,2025-Q4,0.5733,0.5,0.45,True,Green
+QDB-CR-001,Gini,2026-Q1,0.5692,0.5,0.45,True,Green
+QDB-CR-001,Gini,2026-Q2,0.5707,0.5,0.45,True,Green
+QDB-CR-001,Gini,2026-Q3,0.5517,0.5,0.45,True,Green
+QDB-CR-001,PSI,2024-Q4,0.0388,0.1,0.25,False,Green
+QDB-CR-001,PSI,2025-Q1,0.0396,0.1,0.25,False,Green
+QDB-CR-001,PSI,2025-Q2,0.0498,0.1,0.25,False,Green
+QDB-CR-001,PSI,2025-Q3,0.0615,0.1,0.25,False,Green
+QDB-CR-001,PSI,2025-Q4,0.061,0.1,0.25,False,Green
+QDB-CR-001,PSI,2026-Q1,0.0709,0.1,0.25,False,Green
+QDB-CR-001,PSI,2026-Q2,0.0853,0.1,0.25,False,Green
+QDB-CR-001,PSI,2026-Q3,0.0907,0.1,0.25,False,Green
+QDB-CR-002,Gini,2024-Q4,0.5433,0.5,0.45,True,Green
+QDB-CR-002,Gini,2025-Q1,0.5393,0.5,0.45,True,Green
+QDB-CR-002,Gini,2025-Q2,0.5317,0.5,0.45,True,Green
+QDB-CR-002,Gini,2025-Q3,0.4996,0.5,0.45,True,Amber
+QDB-CR-002,Gini,2025-Q4,0.5059,0.5,0.45,True,Green
+QDB-CR-002,Gini,2026-Q1,0.4905,0.5,0.45,True,Amber
+QDB-CR-002,Gini,2026-Q2,0.469,0.5,0.45,True,Amber
+QDB-CR-002,Gini,2026-Q3,0.4517,0.5,0.45,True,Amber
+QDB-CR-002,PSI,2024-Q4,0.0691,0.1,0.25,False,Green
+QDB-CR-002,PSI,2025-Q1,0.0667,0.1,0.25,False,Green
+QDB-CR-002,PSI,2025-Q2,0.0719,0.1,0.25,False,Green
+QDB-CR-002,PSI,2025-Q3,0.0819,0.1,0.25,False,Green
+QDB-CR-002,PSI,2025-Q4,0.1069,0.1,0.25,False,Amber
+QDB-CR-002,PSI,2026-Q1,0.1121,0.1,0.25,False,Amber
+QDB-CR-002,PSI,2026-Q2,0.1261,0.1,0.25,False,Amber
+QDB-CR-002,PSI,2026-Q3,0.1346,0.1,0.25,False,Amber
+QDB-CR-003,Gini,2024-Q4,0.5211,0.45,0.4,True,Green
+QDB-CR-003,Gini,2025-Q1,0.5328,0.45,0.4,True,Green
+QDB-CR-003,Gini,2025-Q2,0.5135,0.45,0.4,True,Green
+QDB-CR-003,Gini,2025-Q3,0.5173,0.45,0.4,True,Green
+QDB-CR-003,Gini,2025-Q4,0.5242,0.45,0.4,True,Green
+QDB-CR-003,Gini,2026-Q1,0.5164,0.45,0.4,True,Green
+QDB-CR-003,Gini,2026-Q2,0.5223,0.45,0.4,True,Green
+QDB-CR-003,Gini,2026-Q3,0.5123,0.45,0.4,True,Green
+QDB-CR-003,Override Rate (%),2024-Q4,28.6137,15.0,25.0,False,Red
+QDB-CR-003,Override Rate (%),2025-Q1,27.066,15.0,25.0,False,Red
+QDB-CR-003,Override Rate (%),2025-Q2,28.0408,15.0,25.0,False,Red
+QDB-CR-003,Override Rate (%),2025-Q3,28.6539,15.0,25.0,False,Red
+QDB-CR-003,Override Rate (%),2025-Q4,28.4537,15.0,25.0,False,Red
+QDB-CR-003,Override Rate (%),2026-Q1,29.3412,15.0,25.0,False,Red
+QDB-CR-003,Override Rate (%),2026-Q2,29.3744,15.0,25.0,False,Red
+QDB-CR-003,Override Rate (%),2026-Q3,30.3339,15.0,25.0,False,Red
+QDB-CR-004,Claims Ratio vs Expected (%),2024-Q4,109.0855,115.0,130.0,False,Green
+QDB-CR-004,Claims Ratio vs Expected (%),2025-Q1,111.7758,115.0,130.0,False,Green
+QDB-CR-004,Claims Ratio vs Expected (%),2025-Q2,116.6757,115.0,130.0,False,Amber
+QDB-CR-004,Claims Ratio vs Expected (%),2025-Q3,120.2475,115.0,130.0,False,Amber
+QDB-CR-004,Claims Ratio vs Expected (%),2025-Q4,125.5644,115.0,130.0,False,Amber
+QDB-CR-004,Claims Ratio vs Expected (%),2026-Q1,135.779,115.0,130.0,False,Red
+QDB-CR-004,Claims Ratio vs Expected (%),2026-Q2,138.3271,115.0,130.0,False,Red
+QDB-CR-004,Claims Ratio vs Expected (%),2026-Q3,142.873,115.0,130.0,False,Red
+QDB-CR-005,Gini,2024-Q4,0.7021,0.6,0.55,True,Green
+QDB-CR-005,Gini,2025-Q1,0.7126,0.6,0.55,True,Green
+QDB-CR-005,Gini,2025-Q2,0.6962,0.6,0.55,True,Green
+QDB-CR-005,Gini,2025-Q3,0.6985,0.6,0.55,True,Green
+QDB-CR-005,Gini,2025-Q4,0.7103,0.6,0.55,True,Green
+QDB-CR-005,Gini,2026-Q1,0.6991,0.6,0.55,True,Green
+QDB-CR-005,Gini,2026-Q2,0.6942,0.6,0.55,True,Green
+QDB-CR-005,Gini,2026-Q3,0.6944,0.6,0.55,True,Green
+QDB-CR-005,PSI,2024-Q4,0.0355,0.1,0.25,False,Green
+QDB-CR-005,PSI,2025-Q1,0.0387,0.1,0.25,False,Green
+QDB-CR-005,PSI,2025-Q2,0.0342,0.1,0.25,False,Green
+QDB-CR-005,PSI,2025-Q3,0.0354,0.1,0.25,False,Green
+QDB-CR-005,PSI,2025-Q4,0.0442,0.1,0.25,False,Green
+QDB-CR-005,PSI,2026-Q1,0.0477,0.1,0.25,False,Green
+QDB-CR-005,PSI,2026-Q2,0.0511,0.1,0.25,False,Green
+QDB-CR-005,PSI,2026-Q3,0.0671,0.1,0.25,False,Green
+QDB-IF-001,PD Backtest Ratio,2024-Q4,1.0351,1.2,1.4,False,Green
+QDB-IF-001,PD Backtest Ratio,2025-Q1,1.0183,1.2,1.4,False,Green
+QDB-IF-001,PD Backtest Ratio,2025-Q2,1.0376,1.2,1.4,False,Green
+QDB-IF-001,PD Backtest Ratio,2025-Q3,1.033,1.2,1.4,False,Green
+QDB-IF-001,PD Backtest Ratio,2025-Q4,1.0594,1.2,1.4,False,Green
+QDB-IF-001,PD Backtest Ratio,2026-Q1,1.0469,1.2,1.4,False,Green
+QDB-IF-001,PD Backtest Ratio,2026-Q2,1.0449,1.2,1.4,False,Green
+QDB-IF-001,PD Backtest Ratio,2026-Q3,1.0499,1.2,1.4,False,Green
+QDB-IF-001,PSI,2024-Q4,0.041,0.1,0.25,False,Green
+QDB-IF-001,PSI,2025-Q1,0.0405,0.1,0.25,False,Green
+QDB-IF-001,PSI,2025-Q2,0.0499,0.1,0.25,False,Green
+QDB-IF-001,PSI,2025-Q3,0.0592,0.1,0.25,False,Green
+QDB-IF-001,PSI,2025-Q4,0.0555,0.1,0.25,False,Green
+QDB-IF-001,PSI,2026-Q1,0.0569,0.1,0.25,False,Green
+QDB-IF-001,PSI,2026-Q2,0.0737,0.1,0.25,False,Green
+QDB-IF-001,PSI,2026-Q3,0.0702,0.1,0.25,False,Green
+QDB-IF-002,LGD Backtest Ratio,2024-Q4,1.0255,1.15,1.3,False,Green
+QDB-IF-002,LGD Backtest Ratio,2025-Q1,1.0328,1.15,1.3,False,Green
+QDB-IF-002,LGD Backtest Ratio,2025-Q2,1.0466,1.15,1.3,False,Green
+QDB-IF-002,LGD Backtest Ratio,2025-Q3,1.0876,1.15,1.3,False,Green
+QDB-IF-002,LGD Backtest Ratio,2025-Q4,1.1075,1.15,1.3,False,Green
+QDB-IF-002,LGD Backtest Ratio,2026-Q1,1.0953,1.15,1.3,False,Green
+QDB-IF-002,LGD Backtest Ratio,2026-Q2,1.0838,1.15,1.3,False,Green
+QDB-IF-002,LGD Backtest Ratio,2026-Q3,1.1129,1.15,1.3,False,Green
+QDB-IF-003,CCF Backtest Ratio,2024-Q4,0.9398,1.1,1.25,False,Green
+QDB-IF-003,CCF Backtest Ratio,2025-Q1,0.9255,1.1,1.25,False,Green
+QDB-IF-003,CCF Backtest Ratio,2025-Q2,0.9474,1.1,1.25,False,Green
+QDB-IF-003,CCF Backtest Ratio,2025-Q3,0.9473,1.1,1.25,False,Green
+QDB-IF-003,CCF Backtest Ratio,2025-Q4,0.9176,1.1,1.25,False,Green
+QDB-IF-003,CCF Backtest Ratio,2026-Q1,0.9503,1.1,1.25,False,Green
+QDB-IF-003,CCF Backtest Ratio,2026-Q2,0.953,1.1,1.25,False,Green
+QDB-IF-003,CCF Backtest Ratio,2026-Q3,0.9515,1.1,1.25,False,Green
+QDB-IF-004,Stage 2 Ratio (%),2024-Q4,8.3135,14.0,18.0,False,Green
+QDB-IF-004,Stage 2 Ratio (%),2025-Q1,8.7985,14.0,18.0,False,Green
+QDB-IF-004,Stage 2 Ratio (%),2025-Q2,8.5607,14.0,18.0,False,Green
+QDB-IF-004,Stage 2 Ratio (%),2025-Q3,9.005,14.0,18.0,False,Green
+QDB-IF-004,Stage 2 Ratio (%),2025-Q4,9.2058,14.0,18.0,False,Green
+QDB-IF-004,Stage 2 Ratio (%),2026-Q1,9.7916,14.0,18.0,False,Green
+QDB-IF-004,Stage 2 Ratio (%),2026-Q2,9.915,14.0,18.0,False,Green
+QDB-IF-004,Stage 2 Ratio (%),2026-Q3,9.6107,14.0,18.0,False,Green
+QDB-IF-004,Staging Override Rate (%),2024-Q4,3.5005,8.0,12.0,False,Green
+QDB-IF-004,Staging Override Rate (%),2025-Q1,3.3429,8.0,12.0,False,Green
+QDB-IF-004,Staging Override Rate (%),2025-Q2,4.0301,8.0,12.0,False,Green
+QDB-IF-004,Staging Override Rate (%),2025-Q3,4.0964,8.0,12.0,False,Green
+QDB-IF-004,Staging Override Rate (%),2025-Q4,3.7388,8.0,12.0,False,Green
+QDB-IF-004,Staging Override Rate (%),2026-Q1,4.1112,8.0,12.0,False,Green
+QDB-IF-004,Staging Override Rate (%),2026-Q2,4.1872,8.0,12.0,False,Green
+QDB-IF-004,Staging Override Rate (%),2026-Q3,3.9223,8.0,12.0,False,Green
+QDB-IF-005,Scenario Forecast Error (%),2024-Q4,6.525,10.0,15.0,False,Green
+QDB-IF-005,Scenario Forecast Error (%),2025-Q1,6.5788,10.0,15.0,False,Green
+QDB-IF-005,Scenario Forecast Error (%),2025-Q2,7.5573,10.0,15.0,False,Green
+QDB-IF-005,Scenario Forecast Error (%),2025-Q3,7.5607,10.0,15.0,False,Green
+QDB-IF-005,Scenario Forecast Error (%),2025-Q4,7.0011,10.0,15.0,False,Green
+QDB-IF-005,Scenario Forecast Error (%),2026-Q1,8.1483,10.0,15.0,False,Green
+QDB-IF-005,Scenario Forecast Error (%),2026-Q2,8.039,10.0,15.0,False,Green
+QDB-IF-005,Scenario Forecast Error (%),2026-Q3,10.3582,10.0,15.0,False,Amber
+QDB-ML-001,NII Forecast Error (%),2024-Q4,3.4545,6.0,10.0,False,Green
+QDB-ML-001,NII Forecast Error (%),2025-Q1,3.5409,6.0,10.0,False,Green
+QDB-ML-001,NII Forecast Error (%),2025-Q2,3.0547,6.0,10.0,False,Green
+QDB-ML-001,NII Forecast Error (%),2025-Q3,2.8981,6.0,10.0,False,Green
+QDB-ML-001,NII Forecast Error (%),2025-Q4,4.025,6.0,10.0,False,Green
+QDB-ML-001,NII Forecast Error (%),2026-Q1,4.2506,6.0,10.0,False,Green
+QDB-ML-001,NII Forecast Error (%),2026-Q2,3.3599,6.0,10.0,False,Green
+QDB-ML-001,NII Forecast Error (%),2026-Q3,3.9832,6.0,10.0,False,Green
+QDB-ML-002,VaR Backtesting Exceptions,2024-Q4,-0.5169,3.0,5.0,False,Green
+QDB-ML-002,VaR Backtesting Exceptions,2025-Q1,0.4556,3.0,5.0,False,Green
+QDB-ML-002,VaR Backtesting Exceptions,2025-Q2,0.6047,3.0,5.0,False,Green
+QDB-ML-002,VaR Backtesting Exceptions,2025-Q3,-0.0174,3.0,5.0,False,Green
+QDB-ML-002,VaR Backtesting Exceptions,2025-Q4,0.5418,3.0,5.0,False,Green
+QDB-ML-002,VaR Backtesting Exceptions,2026-Q1,0.7741,3.0,5.0,False,Green
+QDB-ML-002,VaR Backtesting Exceptions,2026-Q2,0.5752,3.0,5.0,False,Green
+QDB-ML-002,VaR Backtesting Exceptions,2026-Q3,1.4469,3.0,5.0,False,Green
+QDB-ML-003,LCR Forecast Error (%),2024-Q4,2.3924,5.0,8.0,False,Green
+QDB-ML-003,LCR Forecast Error (%),2025-Q1,2.3822,5.0,8.0,False,Green
+QDB-ML-003,LCR Forecast Error (%),2025-Q2,3.1264,5.0,8.0,False,Green
+QDB-ML-003,LCR Forecast Error (%),2025-Q3,3.679,5.0,8.0,False,Green
+QDB-ML-003,LCR Forecast Error (%),2025-Q4,3.2245,5.0,8.0,False,Green
+QDB-ML-003,LCR Forecast Error (%),2026-Q1,3.665,5.0,8.0,False,Green
+QDB-ML-003,LCR Forecast Error (%),2026-Q2,4.9075,5.0,8.0,False,Green
+QDB-ML-003,LCR Forecast Error (%),2026-Q3,4.7098,5.0,8.0,False,Green
+QDB-ML-004,Price Verification Variance (%),2024-Q4,0.2438,0.5,0.8,False,Green
+QDB-ML-004,Price Verification Variance (%),2025-Q1,0.276,0.5,0.8,False,Green
+QDB-ML-004,Price Verification Variance (%),2025-Q2,0.2607,0.5,0.8,False,Green
+QDB-ML-004,Price Verification Variance (%),2025-Q3,0.2953,0.5,0.8,False,Green
+QDB-ML-004,Price Verification Variance (%),2025-Q4,0.331,0.5,0.8,False,Green
+QDB-ML-004,Price Verification Variance (%),2026-Q1,0.3803,0.5,0.8,False,Green
+QDB-ML-004,Price Verification Variance (%),2026-Q2,0.3687,0.5,0.8,False,Green
+QDB-ML-004,Price Verification Variance (%),2026-Q3,0.392,0.5,0.8,False,Green
+QDB-OF-001,False Positive Rate (%),2024-Q4,95.3136,85.0,92.0,False,Red
+QDB-OF-001,False Positive Rate (%),2025-Q1,95.4955,85.0,92.0,False,Red
+QDB-OF-001,False Positive Rate (%),2025-Q2,94.1377,85.0,92.0,False,Red
+QDB-OF-001,False Positive Rate (%),2025-Q3,94.5058,85.0,92.0,False,Red
+QDB-OF-001,False Positive Rate (%),2025-Q4,93.7183,85.0,92.0,False,Red
+QDB-OF-001,False Positive Rate (%),2026-Q1,91.7419,85.0,92.0,False,Amber
+QDB-OF-001,False Positive Rate (%),2026-Q2,91.2951,85.0,92.0,False,Amber
+QDB-OF-001,False Positive Rate (%),2026-Q3,91.2704,85.0,92.0,False,Amber
+QDB-OF-001,SAR Conversion Rate (%),2024-Q4,1.0571,1.5,0.8,True,Amber
+QDB-OF-001,SAR Conversion Rate (%),2025-Q1,1.1447,1.5,0.8,True,Amber
+QDB-OF-001,SAR Conversion Rate (%),2025-Q2,1.6749,1.5,0.8,True,Green
+QDB-OF-001,SAR Conversion Rate (%),2025-Q3,1.6212,1.5,0.8,True,Green
+QDB-OF-001,SAR Conversion Rate (%),2025-Q4,1.7006,1.5,0.8,True,Green
+QDB-OF-001,SAR Conversion Rate (%),2026-Q1,1.9852,1.5,0.8,True,Green
+QDB-OF-001,SAR Conversion Rate (%),2026-Q2,2.1252,1.5,0.8,True,Green
+QDB-OF-001,SAR Conversion Rate (%),2026-Q3,1.9452,1.5,0.8,True,Green
+QDB-OF-002,False Positive Rate (%),2024-Q4,76.7908,80.0,90.0,False,Green
+QDB-OF-002,False Positive Rate (%),2025-Q1,76.936,80.0,90.0,False,Green
+QDB-OF-002,False Positive Rate (%),2025-Q2,76.0565,80.0,90.0,False,Green
+QDB-OF-002,False Positive Rate (%),2025-Q3,75.3296,80.0,90.0,False,Green
+QDB-OF-002,False Positive Rate (%),2025-Q4,75.2587,80.0,90.0,False,Green
+QDB-OF-002,False Positive Rate (%),2026-Q1,74.2344,80.0,90.0,False,Green
+QDB-OF-002,False Positive Rate (%),2026-Q2,74.3096,80.0,90.0,False,Green
+QDB-OF-002,False Positive Rate (%),2026-Q3,70.7953,80.0,90.0,False,Green
+QDB-ST-001,Capital Forecast Error (%),2024-Q4,1.9221,5.0,8.0,False,Green
+QDB-ST-001,Capital Forecast Error (%),2025-Q1,1.9857,5.0,8.0,False,Green
+QDB-ST-001,Capital Forecast Error (%),2025-Q2,2.5179,5.0,8.0,False,Green
+QDB-ST-001,Capital Forecast Error (%),2025-Q3,2.1418,5.0,8.0,False,Green
+QDB-ST-001,Capital Forecast Error (%),2025-Q4,2.2093,5.0,8.0,False,Green
+QDB-ST-001,Capital Forecast Error (%),2026-Q1,2.5303,5.0,8.0,False,Green
+QDB-ST-001,Capital Forecast Error (%),2026-Q2,2.6232,5.0,8.0,False,Green
+QDB-ST-001,Capital Forecast Error (%),2026-Q3,2.6228,5.0,8.0,False,Green
+QDB-ST-003,Margin Variance (%),2024-Q4,3.6497,8.0,12.0,False,Green
+QDB-ST-003,Margin Variance (%),2025-Q1,4.8069,8.0,12.0,False,Green
+QDB-ST-003,Margin Variance (%),2025-Q2,4.349,8.0,12.0,False,Green
+QDB-ST-003,Margin Variance (%),2025-Q3,5.1487,8.0,12.0,False,Green
+QDB-ST-003,Margin Variance (%),2025-Q4,4.9276,8.0,12.0,False,Green
+QDB-ST-003,Margin Variance (%),2026-Q1,4.4423,8.0,12.0,False,Green
+QDB-ST-003,Margin Variance (%),2026-Q2,5.9847,8.0,12.0,False,Green
+QDB-ST-003,Margin Variance (%),2026-Q3,5.9704,8.0,12.0,False,Green

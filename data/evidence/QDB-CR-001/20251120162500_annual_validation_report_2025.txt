@@ -1,0 +1,7 @@
+PLACEHOLDER EVIDENCE FILE (PoC)
+
+Evidence ID: EV-003
+Model: QDB-CR-001
+Linked to: validation VAL-QDB-CR-001-2025-11-20
+Description: 2025 annual validation report — SME Application Scorecard
+Uploaded by: Hassan Al-Mohannadi (LOD2) at 2025-11-20T16:25:00
