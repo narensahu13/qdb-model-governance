@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Ahmed Al-Kuwari",
+    "title": "Head of Credit Risk",
+    "role": "LOD1"
+  },
+  {
+    "name": "Lina Haddad",
+    "title": "Risk Analytics",
+    "role": "LOD1"
+  },
+  {
+    "name": "Rajesh Nair",
+    "title": "Risk Analytics",
+    "role": "LOD1"
+  },
+  {
+    "name": "Omar Farouk",
+    "title": "Credit Modelling",
+    "role": "LOD1"
+  },
+  {
+    "name": "David Chen",
+    "title": "Data Science",
+    "role": "LOD1"
+  },
+  {
+    "name": "Fatima Al-Sulaiti",
+    "title": "Head of Financial Control",
+    "role": "LOD1"
+  },
+  {
+    "name": "Mohammed Al-Marri",
+    "title": "Head of Market & Liquidity Risk",
+    "role": "LOD1"
+  },
+  {
+    "name": "Noora Al-Thani",
+    "title": "MLRO / Head of Compliance",
+    "role": "LOD1"
+  },
+  {
+    "name": "Sara Al-Naimi",
+    "title": "Head of Operational Risk",
+    "role": "LOD1"
+  },
+  {
+    "name": "Yousef Al-Emadi",
+    "title": "Head of Pricing & Strategy",
+    "role": "LOD1"
+  },
+  {
+    "name": "Hassan Al-Mohannadi",
+    "title": "Model Validator (QDB)",
+    "role": "LOD2"
+  },
+  {
+    "name": "Priya Menon",
+    "title": "External Validation Consultant",
+    "role": "LOD2"
+  },
+  {
+    "name": "Abdulla Al-Sayed",
+    "title": "Internal Audit",
+    "role": "LOD3"
+  },
+  {
+    "name": "Maryam Al-Kaabi",
+    "title": "MRM Administrator",
+    "role": "ADMIN"
+  }
+]

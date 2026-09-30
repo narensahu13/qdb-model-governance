@@ -3,3 +3,7 @@ __pycache__/
 .venv/
 venv/
 .streamlit/secrets.toml
+# Runtime state (rebuilt from data/seed/ on first run)
+data/*.db
+data/evidence/
+.pytest_cache/

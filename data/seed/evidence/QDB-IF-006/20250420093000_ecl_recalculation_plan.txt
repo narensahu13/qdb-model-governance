@@ -1,0 +1,4 @@
+Independent ECL recalculation plan
+Scope: sample of 200 facilities across stages.
+
+(Placeholder evidence file for the PoC.)

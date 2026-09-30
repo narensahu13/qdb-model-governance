@@ -1,1 +1,0 @@
-Outline of development pack for Material Model Change revalidation (code + OOT results pending).

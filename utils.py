@@ -12,16 +12,17 @@ RED = "#c62828"
 GREY = "#607d8b"
 
 RISK_TYPE_COLORS = {
-    "Credit Risk": "#1f77b4",
     "IFRS 9 / Provisioning": "#9467bd",
+    "Credit Rating & Scoring": "#1f77b4",
+    "Pricing": "#8c564b",
     "Market & Liquidity Risk": "#2ca02c",
-    "Operational & Financial Crime": "#d62728",
-    "Strategic & Enterprise": "#8c564b",
+    "Operational & Non-Financial Risk": "#d62728",
 }
 
 STATUS_COLORS = {
     "In Production": GREEN,
     "Approved with Conditions": AMBER,
+    "Restricted Use": RED,
     "Under Remediation": RED,
     "In Production - Approval Pending": RED,
     "In Validation": "#0288d1",
@@ -34,6 +35,14 @@ VALIDATION_STATUS_COLORS = {
     "Due Soon": AMBER,
     "Overdue": RED,
     "Never Validated": RED,
+    "Pre-implementation": GREY,
+}
+
+RATING_COLORS = {
+    "Fit for Purpose": GREEN,
+    "Fit with Conditions": AMBER,
+    "Restricted Use": RED,
+    "Not Fit for Purpose": "#7f0000",
 }
 
 SEVERITY_COLORS = {"High": RED, "Medium": AMBER, "Low": GREY}
@@ -144,7 +153,7 @@ def page_setup(title: str):
                 Model Risk Management
               </div>
               <div style="font-size: 0.75rem; opacity: 0.7; margin-top: 4px;">
-                Proof of Concept — mock data
+                Proof of concept — pilot models, mock details
               </div>
             </div>
             """,
@@ -163,6 +172,41 @@ def header(title: str, subtitle: str = ""):
     )
 
 
+def fmt_date(iso: str | None, empty: str = "—") -> str:
+    """'2025-11-20' -> '20 Nov 2025'."""
+    if not iso:
+        return empty
+    from datetime import date as _date
+    try:
+        return _date.fromisoformat(str(iso)[:10]).strftime("%d %b %Y")
+    except ValueError:
+        return str(iso)
+
+
+def kpi_cards(items: list[tuple[str, str, str | None]]) -> None:
+    """A row of small cards that wrap instead of truncating (st.metric cuts
+    long values such as dates). items: (label, value, optional note)."""
+    cells = []
+    for label, value, note in items:
+        note_html = (
+            f'<div style="font-size:0.78rem; color:#666; margin-top:2px;">{note}</div>'
+            if note else ""
+        )
+        cells.append(
+            f'<div style="flex:1 1 130px; min-width:120px; background:#fff; '
+            f'border:1px solid #e0e0e0; border-left:4px solid {GOLD}; border-radius:8px; '
+            f'padding:10px 14px;">'
+            f'<div style="font-size:0.8rem; color:#555;">{label}</div>'
+            f'<div style="font-size:1.3rem; font-weight:600; color:#1a1a2e; '
+            f'line-height:1.3; overflow-wrap:anywhere;">{value}</div>{note_html}</div>'
+        )
+    st.markdown(
+        '<div style="display:flex; flex-wrap:wrap; gap:12px; margin:4px 0 12px 0;">'
+        + "".join(cells) + "</div>",
+        unsafe_allow_html=True,
+    )
+
+
 def badge(text: str, color: str) -> str:
     return f'<span class="qdb-badge" style="background:{color};">{text}</span>'
 
@@ -177,6 +221,12 @@ def status_badge(status: str) -> str:
 
 def validation_badge(vstatus: str) -> str:
     return badge(vstatus, VALIDATION_STATUS_COLORS.get(vstatus, GREY))
+
+
+def rating_badge(rating: str | None) -> str:
+    if not rating:
+        return ""
+    return badge(rating, RATING_COLORS.get(rating, GREY))
 
 
 def severity_badge(sev: str) -> str:

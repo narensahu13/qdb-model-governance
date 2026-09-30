@@ -1,7 +1,0 @@
-PLACEHOLDER EVIDENCE FILE (PoC)
-
-Evidence ID: EV-001
-Model: QDB-CR-002
-Linked to: issue ISS-001
-Description: Recalibration project plan and timeline (target Q4 2026)
-Uploaded by: Lina Haddad (LOD1) at 2026-05-10T09:00:00

@@ -1,7 +1,0 @@
-PLACEHOLDER EVIDENCE FILE (PoC)
-
-Evidence ID: EV-005
-Model: QDB-ML-003
-Linked to: issue ISS-012
-Description: RFP issued for external validation of the liquidity stress testing model
-Uploaded by: Mohammed Al-Marri (LOD1) at 2026-07-10T08:30:00

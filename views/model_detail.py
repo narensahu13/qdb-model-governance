@@ -7,9 +7,12 @@ import plotly.graph_objects as go
 import streamlit as st
 import auth
 import data_store
+import governance
+import repository
 import tiering
 import utils
 from data_loader import (
+    documentation_status,
     get_model,
     load_audit_log,
     load_evidence,
@@ -21,6 +24,12 @@ from data_loader import (
 )
 
 ROOT = Path(__file__).resolve().parent.parent
+
+INTEGRITY_LABEL = {
+    "ok": "hash verified",
+    "altered": "FILE ALTERED since upload",
+    "missing": "file missing from evidence folder",
+}
 
 
 def flash_and_rerun(msg: str):
@@ -49,19 +58,22 @@ def _render_evidence_rows(items: list[dict], key_prefix: str) -> None:
                 f"<span style='color:#666; font-size:0.84rem;'>{ev.get('description', '')}</span>",
                 unsafe_allow_html=True,
             )
+        data, state = data_store.read_evidence(ev)
         with c2:
+            color = utils.GREEN if state == "ok" else utils.RED
             st.markdown(
                 utils.badge(ev["category"], utils.GOLD)
                 + f"<span style='font-size:0.8rem; color:#888;'> "
-                f"{ev['uploaded_by']} · {ev['uploaded_at'][:10]}</span>",
+                f"{ev['uploaded_by']} · {utils.fmt_date(ev['uploaded_at'])}</span><br>"
+                f"<span style='font-size:0.75rem; color:{color};'>"
+                f"{INTEGRITY_LABEL[state]}</span>",
                 unsafe_allow_html=True,
             )
         with c3:
-            fpath = ROOT / ev["stored_path"]
-            if fpath.exists():
+            if data is not None:
                 st.download_button(
                     "Download",
-                    data=fpath.read_bytes(),
+                    data=data,
                     file_name=ev["filename"],
                     key=f"dl_{key_prefix}_{ev['evidence_id']}",
                     width="stretch",
@@ -98,10 +110,14 @@ def _render_attach_form(
         elif not desc.strip():
             st.error("A short description is required.")
         else:
-            eid = data_store.attach_evidence(
-                model_id, linked_type, linked_id, up, cat, desc.strip(),
-            )
-            flash_and_rerun(f"Evidence {eid} attached to {linked_type} {linked_id}.")
+            try:
+                eid = data_store.attach_evidence(
+                    model_id, linked_type, linked_id, up, cat, desc.strip(),
+                )
+            except (PermissionError, ValueError) as exc:
+                st.error(str(exc))
+            else:
+                flash_and_rerun(f"Evidence {eid} attached to {linked_type} {linked_id}.")
 
 
 # Fresh-session identity: a new tab has no sidebar selector until page_setup
@@ -178,10 +194,14 @@ st.markdown(
     utils.tier_badge(tier_info["tier"])
     + utils.status_badge(m["status"])
     + utils.validation_badge(f"Validation: {vstatus}")
+    + (utils.rating_badge(m["last_rating"]) if m.get("last_rating") else "")
     + utils.badge(m["risk_type"], utils.RISK_TYPE_COLORS.get(m["risk_type"], utils.GREY))
-    + utils.badge(m["source"], utils.NAVY),
+    + utils.badge(m["source"] + (f" · {m['vendor']}" if m.get("vendor") else ""), utils.NAVY)
+    + (utils.badge("AI system (QCB AI Guideline)", "#6a1b9a") if m.get("ai_system") else ""),
     unsafe_allow_html=True,
 )
+if m.get("placeholder"):
+    st.caption("Placeholder record — details are illustrative and to be confirmed by the model owner.")
 st.markdown("")
 
 validations = load_validations()
@@ -207,16 +227,20 @@ with tab_overview:
     st.markdown(f"**Purpose.** {m['description']}")
 
     scores = m["tier_scores"]
-    k1, k2, k3, k4, k5, k6 = st.columns(6)
-    k1.metric("Tier", f"T{tier_info['tier']}", f"{tier_info['composite']}/9")
-    k2.metric("Materiality", scores["materiality"])
-    k3.metric("Complexity", scores["complexity"])
-    k4.metric("Reg. Impact", scores["regulatory_impact"])
-    k5.metric("Last validation", m["last_validation"] or "Never")
-    k6.metric("Next due", m["next_validation_due"] or "—")
+    utils.kpi_cards([
+        ("Tier", f"Tier {tier_info['tier']}", f"score {tier_info['composite']} / 9"),
+        ("Materiality", scores["materiality"], None),
+        ("Complexity", scores["complexity"], None),
+        ("Regulatory impact", scores["regulatory_impact"], None),
+        ("Last validation", utils.fmt_date(m["last_validation"], "Never"), m.get("last_rating")),
+        ("Next validation due", utils.fmt_date(m["next_validation_due"]), m["validation_frequency"]),
+    ])
 
     d1, d2, d3 = st.columns(3)
-    d1.caption(f"Approved **{m['approval_date'] or 'not approved'}** · {m['validation_frequency']}")
+    d1.caption(
+        f"Approved **{utils.fmt_date(m['approval_date'], 'not approved')}** · "
+        f"approval body: {m['approval_body']}"
+    )
     d2.caption(f"Exposure **QAR {m['exposure_covered_qar_mn']:,} mn**")
     d3.caption(f"Platform **{m['implementation_platform']}** · {m['usage_frequency']}")
 
@@ -224,12 +248,17 @@ with tab_overview:
         ident = pd.DataFrame(
             {
                 "Field": ["Model ID", "Version", "Risk Type", "Category", "Business Line",
-                          "Methodology", "Source", "Implementation Platform", "Usage Frequency",
-                          "Exposure Covered (QAR mn)", "Last Review Date"],
+                          "Methodology", "Source", "Vendor", "Implementation Platform",
+                          "Usage Frequency", "Exposure Covered (QAR mn)",
+                          "AI system (QCB AI Guideline)", "Last Review Date"],
                 "Value": [m["model_id"], m["version"], m["risk_type"], m["category"],
                           m["business_line"], m["methodology"], m["source"],
+                          m.get("vendor") or "—",
                           m["implementation_platform"], m["usage_frequency"],
-                          f"{m['exposure_covered_qar_mn']:,}", m["last_review_date"] or "-"],
+                          f"{m['exposure_covered_qar_mn']:,}",
+                          ("Yes — high-risk" if m.get("qcb_ai_high_risk") else "Yes")
+                          if m.get("ai_system") else "No",
+                          utils.fmt_date(m["last_review_date"])],
             }
         )
         st.dataframe(ident, hide_index=True, width="stretch")
@@ -320,7 +349,7 @@ with tab_gov:
         st.subheader("Ownership & Accountability")
         own = pd.DataFrame(
             {
-                "Role": ["Model Owner", "Developer", "Independent Validator", "Business Sponsor", "Approval Body"],
+                "Role": ["Model Owner", "Developer", "Validator", "Business Sponsor", "Approval Body"],
                 "Assigned": [m["owner"], m["developer"], m["validator"], m["sponsor"], m["approval_body"]],
             }
         )
@@ -338,13 +367,20 @@ with tab_gov:
         st.dataframe(lod_df, hide_index=True, width="stretch")
 
     st.subheader("Lifecycle & Validation Schedule")
-    l1, l2, l3, l4 = st.columns(4)
-    l1.metric("Approval Date", m["approval_date"] or "Not approved")
-    l2.metric("Last Validation", m["last_validation"] or "Never")
-    l3.metric("Next Validation Due", m["next_validation_due"] or "-")
-    l4.metric("Frequency", m["validation_frequency"])
+    utils.kpi_cards([
+        ("Approval date", utils.fmt_date(m["approval_date"], "Not approved"), m["approval_body"]),
+        ("Last validation", utils.fmt_date(m["last_validation"], "Never"), m.get("last_rating")),
+        ("Next validation due", utils.fmt_date(m["next_validation_due"]), None),
+        ("Frequency", m["validation_frequency"], f"Tier {tier_info['tier']}"),
+    ])
+    st.caption(
+        "Validation dates and the rating are derived from closed validation requests; "
+        "frequency and approval body follow from the tier."
+    )
 
-    if vstatus in ("Overdue", "Never Validated"):
+    if vstatus == "Pre-implementation":
+        st.info("Model not yet in use: an initial validation is required before approval and use.")
+    elif vstatus in ("Overdue", "Never Validated"):
         st.error(f"Validation status: **{vstatus}**. This Tier {tier_info['tier']} model requires immediate scheduling of independent validation.")
     elif vstatus == "Due Soon":
         st.warning("Validation due within 90 days — validation should be commissioned now.")
@@ -352,7 +388,15 @@ with tab_gov:
         st.success("Validation schedule on track.")
 
     if m["approval_date"] is None and m["status"].startswith("In Production"):
-        st.error("This model is in production **without formal approval** — a breach of the model governance policy requiring escalation to the Model Risk Committee.")
+        st.error(
+            "This model is in production **without formal approval** — a breach of the "
+            f"model governance policy requiring escalation to the {m['approval_body']}."
+        )
+    if m["status"] == "In Production - Approval Pending":
+        st.warning(
+            "A new version is in use before its revalidation and approval are complete. "
+            f"Escalate to the {m['approval_body']} and record compensating controls."
+        )
 
     if m.get("pending_revalidation"):
         st.warning(
@@ -400,7 +444,7 @@ with tab_gov:
                 "assumptions, scope/use extension, or recalibration materially affecting outputs — "
                 "require **independent revalidation before deployment** (model moves to "
                 "*In Validation*). **Non-material** changes — parameter refresh within approved "
-                "ranges, cosmetic/reporting changes — require **MVU notification only**.",
+                "ranges, cosmetic/reporting changes — require **notification to the validator only**.",
                 icon="📋",
             )
             with st.form("change_form", clear_on_submit=True):
@@ -435,30 +479,34 @@ with tab_gov:
                 elif chg_file is not None and not chg_ev_desc.strip():
                     st.error("Provide a short evidence description when attaching a file.")
                 else:
-                    change_id = data_store.add_change_entry(selected, {
+                    change_id = None
+                    try:
+                        change_id = data_store.add_change_entry(selected, {
                         "date": chg_date.isoformat(),
                         "version": chg_version.strip(),
                         "description": chg_desc.strip(),
                         "author": auth.get_current_user()["name"],
                         "classification": chg_class,
                         "justification": chg_just.strip(),
-                    })
-                    if chg_file is not None:
+                        })
+                    except (PermissionError, ValueError) as exc:
+                        st.error(str(exc))
+                    if change_id and chg_file is not None:
                         data_store.attach_evidence(
                             selected, "change", change_id, chg_file,
                             chg_ev_cat, chg_ev_desc.strip(),
                         )
-                    if chg_class == "Material":
+                    if change_id and chg_class == "Material":
                         flash_and_rerun(
                             f"Material change {change_id} (v{chg_version.strip()}) recorded — "
                             "model is In Validation. An **MC** request was opened on the "
                             "**Validation & Findings** tab for evidence and revalidation."
                         )
-                    else:
+                    elif change_id:
                         flash_and_rerun(
                             f"Non-material change {change_id} (v{chg_version.strip()}) recorded. "
-                            "An **MC** notification (Non-material) was opened for MVU on "
-                            "Validation & Findings."
+                            "An **MC** notification (Non-material) was opened for the validator "
+                            "on Validation & Findings."
                         )
     else:
         auth.permission_denied("record_change")
@@ -532,9 +580,10 @@ with tab_val:
             st.caption(meta["description"])
 
             assignee_roles = meta["default_assignee_roles"]
-            assignee_opts = auth.user_option_labels(*assignee_roles) or [
-                auth.user_option_label(auth.get_current_user())
-            ]
+            assignee_opts = [
+                auth.user_option_label(u) for u in auth.users_for_roles(*assignee_roles)
+                if not governance.independence_conflict(m, u["name"], ir_type)
+            ] or [auth.user_option_label(auth.get_current_user())]
             preferred = m.get("validator") if "LOD2" in assignee_roles else m.get("owner")
             a_idx = auth.default_option_index(assignee_opts, preferred)
 
@@ -545,8 +594,8 @@ with tab_val:
                     "Assign to *", assignee_opts, index=a_idx, key="ir_assigned",
                 )
                 st.caption(
-                    "Assigning sets the request **In Progress**. "
-                    "Production would also notify the assignee by email."
+                    "Assigning sets the request **In Progress**. Validators who own or "
+                    "developed this model are excluded (independence rule)."
                 )
 
                 ir_subtype = None
@@ -568,15 +617,18 @@ with tab_val:
                     ir_subtype = st.selectbox(
                         "Nature *", data_store.VAL_SUBTYPES, key="ir_subtype",
                     )
-                    # LoD2/ADMIN may record a completed validation immediately
-                    if auth.get_current_user()["role"] in ("LOD2", "ADMIN"):
+                    # Only a validator may record a completed, rated validation
+                    if auth.get_current_user()["role"] == "LOD2":
                         close_immediately = st.checkbox(
                             "Record as completed (close with outcome now)",
                             value=True, key="ir_close_now",
                         )
                         if close_immediately:
                             ir_outcome = st.selectbox(
-                                "Outcome *", data_store.VALIDATION_OUTCOMES, key="ir_outcome",
+                                "Rating *", data_store.VALIDATION_OUTCOMES, key="ir_outcome",
+                                help=" · ".join(
+                                    f"{k}: {v}" for k, v in governance.RATING_DESCRIPTIONS.items()
+                                ),
                             )
                             ir_tests = st.multiselect(
                                 "Tests performed", data_store.COMMON_TESTS, key="val_tests",
@@ -634,8 +686,12 @@ with tab_val:
                             "text": ir_desc.strip(),
                             "evidence_ids": [],
                         }]
-                    new_rid = data_store.create_request(selected, payload)
-                    flash_and_rerun(f"Request {new_rid} created.")
+                    try:
+                        new_rid = data_store.create_request(selected, payload)
+                    except (PermissionError, ValueError) as exc:
+                        st.error(str(exc))
+                    else:
+                        flash_and_rerun(f"Request {new_rid} created.")
     else:
         st.caption(
             f"No initiate actions for your role "
@@ -752,7 +808,7 @@ with tab_val:
                 if len(assigned) > 22:
                     assigned = assigned[:21] + "…"
                 c5.caption(assigned)
-                c6.caption(r.get("created_date") or "—")
+                c6.caption(utils.fmt_date(r.get("created_date")))
 
         with st.expander("Counts by type", expanded=False):
             counts = []
@@ -789,7 +845,11 @@ with tab_val:
             + utils.badge(auth.REQUEST_TYPES[req["type"]]["label"], utils.NAVY)
             + utils.badge(req["status"], status_color)
             + (utils.severity_badge(req["severity"]) if req.get("severity") else "")
-            + (utils.badge(req["outcome"], utils.GREEN) if req.get("outcome") else ""),
+            + (
+                utils.rating_badge(req["outcome"])
+                if req.get("outcome") in governance.RATING_SCALE
+                else utils.badge(req["outcome"], utils.GREEN) if req.get("outcome") else ""
+            ),
             unsafe_allow_html=True,
         )
         st.markdown(f"### {req['title']}")
@@ -797,10 +857,10 @@ with tab_val:
         m1, m2, m3, m4 = st.columns(4)
         m1.markdown(f"**Initiated by:** {req.get('initiated_by', '—')}")
         m2.markdown(f"**Assigned to:** {req.get('assigned_to', '—')}")
-        m3.markdown(f"**Created:** {req.get('created_date', '—')}")
+        m3.markdown(f"**Created:** {utils.fmt_date(req.get('created_date'))}")
         m4.markdown(
-            f"**Closed:** {req['closed_date']}" if req.get("closed_date")
-            else f"**Due:** {req.get('due_date') or '—'}"
+            f"**Closed:** {utils.fmt_date(req['closed_date'])}" if req.get("closed_date")
+            else f"**Due:** {utils.fmt_date(req.get('due_date'))}"
         )
         if req.get("remediation"):
             st.markdown(f"**Remediation.** {req['remediation']}")
@@ -808,6 +868,8 @@ with tab_val:
             st.caption(f"Materiality: {req['materiality']}")
         if req.get("tests"):
             st.markdown("**Tests:** " + ", ".join(req["tests"]))
+        if req.get("outcome") in governance.RATING_DESCRIPTIONS:
+            st.caption(f"Rating meaning: {governance.RATING_DESCRIPTIONS[req['outcome']]}")
         if req.get("validation_subtype"):
             st.caption(f"Nature: {req['validation_subtype']}")
 
@@ -865,23 +927,30 @@ with tab_val:
         if not is_closed:
             if auth.has_permission("assign_request"):
                 with st.form(f"assign_form_{req['request_id']}", clear_on_submit=True):
-                    all_opts = auth.user_option_labels("LOD1", "LOD2", "LOD3", "ADMIN")
+                    roles = auth.REQUEST_TYPES[req["type"]]["default_assignee_roles"]
+                    all_opts = [
+                        auth.user_option_label(u) for u in auth.users_for_roles(*roles)
+                        if not governance.independence_conflict(m, u["name"], req["type"])
+                    ]
                     a_idx = auth.default_option_index(all_opts, req.get("assigned_to"))
                     new_assignee = st.selectbox(
                         "Send / assign to", all_opts, index=a_idx,
                         key=f"assign_to_{req['request_id']}",
                     )
-                    st.caption("Production would notify the assignee by email.")
+                    st.caption(
+                        "Validations and model changes go to validators; findings go to "
+                        "model owners. The assignee sees it in the request register."
+                    )
                     assign_go = st.form_submit_button("Update assignment")
                 if assign_go:
-                    data_store.assign_request(req["request_id"], new_assignee)
-                    flash_and_rerun(f"{req['request_id']} assigned to {new_assignee}.")
+                    try:
+                        data_store.assign_request(req["request_id"], new_assignee)
+                    except (PermissionError, ValueError) as exc:
+                        st.error(str(exc))
+                    else:
+                        flash_and_rerun(f"{req['request_id']} assigned to {new_assignee}.")
 
-            can_respond = auth.has_permission("respond_request") or (
-                req["type"] != "FND"
-                and auth.get_current_user()["role"] in ("LOD2", "ADMIN")
-            )
-            if can_respond and auth.has_permission("respond_request"):
+            if auth.has_permission("respond_request"):
                 with st.form(f"resp_form_{req['request_id']}", clear_on_submit=True):
                     resp_text = st.text_area(
                         "Add response *", key=f"resp_txt_{req['request_id']}",
@@ -909,23 +978,22 @@ with tab_val:
                         )
                     else:
                         rid = data_store.peek_next_thread_id(req["request_id"])
-                        ev_ids = []
-                        if resp_file is not None:
-                            ev_ids.append(data_store.attach_evidence(
-                                selected, "request_response", rid, resp_file,
-                                resp_cat, resp_desc.strip() or f"Evidence on {rid}",
-                            ))
-                        data_store.add_request_response(
-                            req["request_id"], resp_text.strip(), ev_ids,
-                        )
-                        flash_and_rerun(
-                            f"Response {rid} added to {req['request_id']}."
-                        )
-            elif req["type"] == "FND" and not auth.has_permission("respond_request"):
-                st.caption(
-                    f"Findings are answered by the first line "
-                    f"({auth.who_can('respond_request')})."
-                )
+                        try:
+                            ev_ids = []
+                            if resp_file is not None:
+                                ev_ids.append(data_store.attach_evidence(
+                                    selected, "request_response", rid, resp_file,
+                                    resp_cat, resp_desc.strip() or f"Evidence on {rid}",
+                                ))
+                            data_store.add_request_response(
+                                req["request_id"], resp_text.strip(), ev_ids,
+                            )
+                        except (PermissionError, ValueError) as exc:
+                            st.error(str(exc))
+                        else:
+                            flash_and_rerun(
+                                f"Response {rid} added to {req['request_id']}."
+                            )
 
             if auth.can_close_request(req):
                 with st.form(f"close_form_{req['request_id']}", clear_on_submit=True):
@@ -936,8 +1004,11 @@ with tab_val:
                     close_tests: list[str] = []
                     if req["type"] in ("VAL", "MC"):
                         close_outcome = st.selectbox(
-                            "Outcome *", data_store.VALIDATION_OUTCOMES,
+                            "Rating *", data_store.VALIDATION_OUTCOMES,
                             key=f"close_out_{req['request_id']}",
+                            help=" · ".join(
+                                f"{k}: {v}" for k, v in governance.RATING_DESCRIPTIONS.items()
+                            ),
                         )
                         if req["type"] == "VAL" or req.get("materiality") == "Material":
                             close_tests = st.multiselect(
@@ -972,25 +1043,31 @@ with tab_val:
                         )
                     else:
                         rid = data_store.peek_next_thread_id(req["request_id"])
-                        ev_ids = []
-                        if close_file is not None:
-                            ev_ids.append(data_store.attach_evidence(
-                                selected, "request_response", rid, close_file,
-                                close_cat,
-                                close_desc.strip()
-                                or f"Closure evidence on {req['request_id']}",
-                            ))
-                        data_store.close_request(
-                            req["request_id"],
-                            close_comment.strip(),
-                            outcome=close_outcome,
-                            evidence_ids=ev_ids,
-                            tests=close_tests or None,
-                        )
-                        flash_and_rerun(f"Request {req['request_id']} closed.")
+                        try:
+                            ev_ids = []
+                            if close_file is not None:
+                                ev_ids.append(data_store.attach_evidence(
+                                    selected, "request_response", rid, close_file,
+                                    close_cat,
+                                    close_desc.strip()
+                                    or f"Closure evidence on {req['request_id']}",
+                                ))
+                            data_store.close_request(
+                                req["request_id"],
+                                close_comment.strip(),
+                                outcome=close_outcome,
+                                evidence_ids=ev_ids,
+                                tests=close_tests or None,
+                            )
+                        except (PermissionError, ValueError) as exc:
+                            st.error(str(exc))
+                        else:
+                            flash_and_rerun(f"Request {req['request_id']} closed.")
             else:
                 st.caption(
-                    "You cannot close this request under the current role rules."
+                    "Closing: findings are closed by the line that raised them; "
+                    "validations and model changes by a validator. "
+                    "The MRM Administrator cannot close requests (segregation of duties)."
                 )
 
 # ================================================================ Monitoring
@@ -1033,12 +1110,18 @@ with tab_docs:
     c1, c2 = st.columns([1, 1.4])
     with c1:
         st.subheader("Documentation Checklist")
-        docs = m["documentation"]
+        docs = documentation_status(m, evidence_all)
         complete = sum(docs.values())
         st.progress(complete / len(docs), text=f"{complete} of {len(docs)} artefacts in place")
+        model_docs = [e for e in model_evidence if e.get("linked_type") == "model"]
         for doc, ok in docs.items():
             icon = "✅" if ok else "❌"
-            st.markdown(f"{icon} {doc}")
+            n_files = sum(1 for e in model_docs if e.get("doc_type") == doc)
+            where = f" · {n_files} file(s) uploaded" if n_files else (
+                " · recorded as held outside the platform" if ok else ""
+            )
+            st.markdown(f"{icon} {doc}<span style='color:#888; font-size:0.8rem;'>{where}</span>",
+                        unsafe_allow_html=True)
         if complete < len(docs):
             st.warning("Documentation gaps must be closed to meet the standard for this model's tier.")
 
@@ -1136,37 +1219,95 @@ with tab_docs:
         else:
             auth.permission_denied("record_audit")
 
-    # Read-only inventory of all files for this model (no dedicated Evidence tab)
-    with st.expander("Attached files (this model)", expanded=False):
-        st.caption(
-            "Read-only inventory. Attach new files on open Validation & Findings "
-            "requests, or on Governance / Audit workflows where they belong."
-        )
+    # ------------------------------------------------ Model documents (upload)
+    st.subheader("Model documents")
+    st.caption(
+        "Upload model documentation here (development document, methodology, data quality "
+        "assessment, user guide, monitoring plan and any other supporting file). Files go to "
+        "the dedicated evidence folder with a SHA-256 fingerprint; choosing a checklist type "
+        "ticks that item."
+    )
+    model_docs = sorted(
+        [e for e in model_evidence if e.get("linked_type") == "model"],
+        key=lambda e: e.get("uploaded_at", ""), reverse=True,
+    )
+    _render_evidence_rows(model_docs, "modeldoc")
+    if auth.has_permission("upload_evidence"):
+        with st.form("model_doc_form", clear_on_submit=True):
+            md_file = st.file_uploader(
+                "File *", type=data_store.ALLOWED_UPLOAD_TYPES, key="md_doc_file",
+            )
+            dc1, dc2 = st.columns(2)
+            with dc1:
+                md_type = st.selectbox(
+                    "Document type *",
+                    list(m["documentation"].keys()) + [data_store.OTHER_DOC_TYPE],
+                    key="md_doc_type",
+                )
+            with dc2:
+                md_desc = st.text_input("Short description *", key="md_doc_desc")
+            md_submit = st.form_submit_button("Upload document")
+        if md_submit:
+            if md_file is None:
+                st.error("Choose a file to upload.")
+            elif not md_desc.strip():
+                st.error("A short description is required.")
+            else:
+                try:
+                    eid = data_store.attach_evidence(
+                        selected, "model", selected, md_file, "Document", md_desc.strip(),
+                        doc_type=md_type,
+                    )
+                except (PermissionError, ValueError) as exc:
+                    st.error(str(exc))
+                else:
+                    flash_and_rerun(f"Document {eid} uploaded ({md_type}).")
+
+    # Inventory of every file held for this model, with integrity status
+    with st.expander(f"All files for this model ({len(model_evidence)})", expanded=False):
         if model_evidence:
-            inv = pd.DataFrame([
-                {
+            rows = []
+            for e in sorted(model_evidence, key=lambda x: x["uploaded_at"], reverse=True):
+                _, state = data_store.read_evidence(e)
+                rows.append({
                     "ID": e["evidence_id"],
                     "File": e["filename"],
                     "Linked to": f"{e['linked_type']}: {e['linked_id']}",
-                    "Category": e["category"],
-                    "Uploaded": e["uploaded_at"][:10],
+                    "Type": e.get("doc_type") or e["category"],
+                    "Uploaded": utils.fmt_date(e["uploaded_at"]),
                     "By": e["uploaded_by"],
-                }
-                for e in sorted(model_evidence, key=lambda x: x["uploaded_at"], reverse=True)
-            ])
-            st.dataframe(inv, hide_index=True, width="stretch")
+                    "SHA-256": (e.get("sha256") or "")[:12] + "…",
+                    "Integrity": INTEGRITY_LABEL[state],
+                })
+            st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
         else:
-            st.caption("No evidence registered for this model yet.")
+            st.caption("No files registered for this model yet.")
 
     st.subheader("Audit Trail")
-    st.caption("Workflow actions on this model, most recent first.")
+    chain_ok, broken_at = repository.verify_audit_chain()
+    if chain_ok:
+        st.caption(
+            "Workflow actions on this model, most recent first. The log is append-only and "
+            "hash-chained: integrity check passed."
+        )
+    else:
+        st.error(
+            f"Audit log integrity check FAILED at event #{broken_at}: the log was changed "
+            "outside the platform."
+        )
     trail = [e for e in load_audit_log() if e["model_id"] == selected]
     if trail:
-        tr = pd.DataFrame(sorted(trail, key=lambda e: e["timestamp"], reverse=True))
+        tr = pd.DataFrame(sorted(trail, key=lambda e: e["seq"], reverse=True))
+        tr["Change recorded"] = tr.apply(
+            lambda r: "before and after" if r["before"] and r["after"]
+            else "new record" if r["after"] else "—",
+            axis=1,
+        )
         tr = tr.rename(columns={
-            "timestamp": "Timestamp", "user": "User", "role": "Role", "action": "Action",
-            "entity_type": "Entity Type", "entity_id": "Entity", "details": "Details",
-        })[["Timestamp", "User", "Role", "Action", "Entity Type", "Entity", "Details"]]
+            "seq": "#", "timestamp": "Timestamp", "user": "User", "role": "Role",
+            "action": "Action", "entity_type": "Entity Type", "entity_id": "Entity",
+            "details": "Details",
+        })[["#", "Timestamp", "User", "Role", "Action", "Entity", "Details", "Change recorded"]]
         st.dataframe(tr, hide_index=True, width="stretch")
     else:
         st.caption("No audit trail events recorded for this model yet.")

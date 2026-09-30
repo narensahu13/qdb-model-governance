@@ -18,7 +18,10 @@ with f2:
 with f3:
     statuses = st.multiselect("Model Status", sorted(df["Status"].unique()))
 with f4:
-    val_statuses = st.multiselect("Validation Status", ["On Track", "Due Soon", "Overdue", "Never Validated"])
+    val_statuses = st.multiselect(
+        "Validation Status",
+        ["On Track", "Due Soon", "Overdue", "Never Validated", "Pre-implementation"],
+    )
 with f5:
     search = st.text_input("Search", placeholder="Model name, ID, owner, methodology...")
 
@@ -44,9 +47,9 @@ st.caption(f"{len(filtered)} of {len(df)} models shown")
 
 # ---------------------------------------------------------------- table
 display_cols = [
-    "Model ID", "Model Name", "Risk Type", "Tier", "Status",
+    "Model ID", "Model Name", "Risk Type", "Tier", "Status", "Last Rating",
     "Validation Status", "Next Validation Due", "Open Issues",
-    "High Open Issues", "Doc Completeness (%)", "Owner", "Source",
+    "High Open Issues", "Doc Completeness (%)", "Owner", "Source", "AI System",
 ]
 
 # Render Model ID as an in-app link to the Model Detail page (?model=<id> is
@@ -70,6 +73,9 @@ event = st.dataframe(
         "Tier": st.column_config.NumberColumn(width="small"),
         "Open Issues": st.column_config.NumberColumn(width="small"),
         "High Open Issues": st.column_config.NumberColumn("High Issues", width="small"),
+        "AI System": st.column_config.CheckboxColumn(
+            "AI", width="small", help="AI system under the QCB AI Guideline",
+        ),
         "Doc Completeness (%)": st.column_config.ProgressColumn(
             "Docs", min_value=0, max_value=100, format="%d%%"
         ),

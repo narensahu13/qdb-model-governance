@@ -1,0 +1,4 @@
+Override extract Q2 2026
+Overrides: 24% of rated obligors.
+
+(Placeholder evidence file for the PoC.)

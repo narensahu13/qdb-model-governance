@@ -1,0 +1,4 @@
+Scenario weights v2.0 — design note
+Weights = normal density at each fixed scenario anchor, centred on the IMF forecast, normalised to 100%.
+
+(Placeholder evidence file for the PoC.)

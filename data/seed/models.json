@@ -1,0 +1,1468 @@
+[
+  {
+    "model_id": "QDB-IF-001",
+    "name": "IFRS 9 PD Model (point-in-time term structure)",
+    "version": "2.1",
+    "risk_type": "IFRS 9 / Provisioning",
+    "category": "Parameter estimation",
+    "business_line": "Finance & Risk — IFRS 9",
+    "methodology": "Through-the-cycle rating-to-PD mapping with macro-linked point-in-time adjustment and lifetime term structure",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Converts obligor ratings into 12-month and lifetime point-in-time PDs for ECL, using the scenario-weighted macroeconomic outlook.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "developer": "Lina Haddad (Risk Analytics)",
+    "validator": "Priya Menon (External Validation Consultant)",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "High",
+      "complexity": "High",
+      "regulatory_impact": "High"
+    },
+    "tier_rationale": "Drives Stage 1 and Stage 2 ECL across the whole financing book; output feeds the financial statements.",
+    "status": "Approved with Conditions",
+    "approval_date": "2023-12-18",
+    "regulatory_mapping": [
+      "IFRS 9 Financial Instruments",
+      "QCB IFRS 9 implementation instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [
+        "QDB-CR-001",
+        "QDB-CR-002",
+        "QDB-IF-005"
+      ],
+      "downstream": [
+        "QDB-IF-004",
+        "QDB-IF-006",
+        "QDB-PR-001"
+      ]
+    },
+    "documentation": {
+      "Model Development Document": true,
+      "Methodology Document": true,
+      "Data Quality Assessment": true,
+      "User Guide / Operating Manual": false,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": true
+    },
+    "change_log": [
+      {
+        "date": "2023-11-01",
+        "version": "2.0",
+        "description": "Redevelopment with lifetime term structure and macro-linked PiT adjustment.",
+        "author": "Lina Haddad",
+        "classification": "Material",
+        "justification": "New methodology.",
+        "change_id": "CHG-007"
+      },
+      {
+        "date": "2026-04-02",
+        "version": "2.1",
+        "description": "Annual PD recalibration within approved ranges.",
+        "author": "Lina Haddad",
+        "classification": "Non-material",
+        "justification": "Parameter refresh within the approved methodology.",
+        "change_id": "CHG-008"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [
+      "PD Backtest Ratio",
+      "PSI"
+    ],
+    "data_sources": [
+      "Core banking loan tape",
+      "CreditLens rating history",
+      "Default register"
+    ],
+    "implementation_platform": "Python (Risk Analytics) feeding the ECL engine",
+    "usage_frequency": "Monthly batch",
+    "model_users": [
+      "Risk Analytics",
+      "Financial Control"
+    ],
+    "key_assumptions": [
+      "Default definition: 90+ DPD or unlikely to pay, per QDB interpretation",
+      "Rating migration history 2016 onward is representative"
+    ],
+    "known_limitations": [
+      "Low default counts in some sectors; sector PDs pooled",
+      "Point-in-time adjustment not yet back-tested by segment"
+    ],
+    "exposure_covered_qar_mn": 9500,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-IF-002",
+    "name": "IFRS 9 LGD Model (collateral haircut approach)",
+    "version": "0.9",
+    "risk_type": "IFRS 9 / Provisioning",
+    "category": "Parameter estimation",
+    "business_line": "Finance & Risk — IFRS 9",
+    "methodology": "Collateral haircut approach; LGD decomposed into cure rate and workout LGD with discounted recoveries",
+    "source": "In-house",
+    "vendor": null,
+    "description": "New LGD model for the SME and corporate book, built from a 10-year account-level loan tape. Replaces the current expert LGD assumptions once validated.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "developer": "Rajesh Nair (Risk Analytics)",
+    "validator": "Not yet assigned",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "High",
+      "complexity": "High",
+      "regulatory_impact": "High"
+    },
+    "tier_rationale": "Will drive ECL for every exposure; feeds the financial statements.",
+    "status": "In Development",
+    "approval_date": null,
+    "regulatory_mapping": [
+      "IFRS 9 Financial Instruments",
+      "QCB IFRS 9 implementation instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": [
+        "QDB-IF-006",
+        "QDB-PR-001"
+      ]
+    },
+    "documentation": {
+      "Model Development Document": false,
+      "Methodology Document": false,
+      "Data Quality Assessment": true,
+      "User Guide / Operating Manual": false,
+      "Validation Report": false,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2026-06-15",
+        "version": "0.9",
+        "description": "Development build: default population and recovery curves.",
+        "author": "Rajesh Nair",
+        "classification": "Material",
+        "justification": "New model under development.",
+        "change_id": "CHG-009"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [],
+    "data_sources": [
+      "Core banking loan tape 2016–2026",
+      "Collection report",
+      "Collateral register (requested)",
+      "Guarantee register (requested)"
+    ],
+    "implementation_platform": "Python (Risk Analytics)",
+    "usage_frequency": "Monthly batch (planned)",
+    "model_users": [
+      "Risk Analytics",
+      "Financial Control"
+    ],
+    "key_assumptions": [
+      "Recovery cash flows discounted at the effective interest rate",
+      "Haircuts by collateral type calibrated on realised sale proceeds"
+    ],
+    "known_limitations": [
+      "Collateral data not in the current extract",
+      "Workout recoveries cannot yet be separated from normal repayments"
+    ],
+    "exposure_covered_qar_mn": 9500,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-IF-003",
+    "name": "IFRS 9 EAD / CCF Model",
+    "version": "1.2",
+    "risk_type": "IFRS 9 / Provisioning",
+    "category": "Parameter estimation",
+    "business_line": "Finance & Risk — IFRS 9",
+    "methodology": "Amortisation schedules for term financing; credit conversion factors for undrawn limits",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Projects exposure at default over the lifetime of each facility, including drawdown of undrawn limits on revolving products.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "developer": "Omar Farouk (Credit Modelling)",
+    "validator": "Priya Menon (External Validation Consultant)",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "Medium",
+      "complexity": "Medium",
+      "regulatory_impact": "High"
+    },
+    "tier_rationale": "Feeds ECL directly; regulatory impact drives Tier 1.",
+    "status": "In Production",
+    "approval_date": "2023-12-18",
+    "regulatory_mapping": [
+      "IFRS 9 Financial Instruments",
+      "QCB IFRS 9 implementation instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": [
+        "QDB-IF-006"
+      ]
+    },
+    "documentation": {
+      "Model Development Document": true,
+      "Methodology Document": true,
+      "Data Quality Assessment": true,
+      "User Guide / Operating Manual": true,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": true
+    },
+    "change_log": [
+      {
+        "date": "2023-10-20",
+        "version": "1.2",
+        "description": "CCF re-estimation on 2016–2023 data.",
+        "author": "Omar Farouk",
+        "classification": "Material",
+        "justification": "Parameter re-estimation.",
+        "change_id": "CHG-010"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [
+      "CCF Backtest Ratio"
+    ],
+    "data_sources": [
+      "Core banking limits and utilisation",
+      "Repayment schedules"
+    ],
+    "implementation_platform": "Python (Risk Analytics)",
+    "usage_frequency": "Monthly batch",
+    "model_users": [
+      "Risk Analytics",
+      "Financial Control"
+    ],
+    "key_assumptions": [
+      "Contractual schedules hold absent prepayment",
+      "CCF stable across the cycle"
+    ],
+    "known_limitations": [
+      "Limited history of drawdowns before default"
+    ],
+    "exposure_covered_qar_mn": 3100,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-IF-004",
+    "name": "IFRS 9 Staging Model (SICR)",
+    "version": "1.3",
+    "risk_type": "IFRS 9 / Provisioning",
+    "category": "Classification rules",
+    "business_line": "Finance & Risk — IFRS 9",
+    "methodology": "Rules: 30 DPD backstop, rating-downgrade thresholds, watch-list and restructuring triggers, cure periods",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Allocates each exposure to Stage 1, 2 or 3 using significant-increase-in-credit-risk criteria and default triggers.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "developer": "Lina Haddad (Risk Analytics)",
+    "validator": "Priya Menon (External Validation Consultant)",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "High",
+      "complexity": "Low",
+      "regulatory_impact": "High"
+    },
+    "tier_rationale": "Stage allocation decides 12-month vs lifetime ECL for the whole book.",
+    "status": "In Production",
+    "approval_date": "2023-12-18",
+    "regulatory_mapping": [
+      "IFRS 9 Financial Instruments",
+      "QCB IFRS 9 implementation instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [
+        "QDB-IF-001"
+      ],
+      "downstream": [
+        "QDB-IF-006"
+      ]
+    },
+    "documentation": {
+      "Model Development Document": true,
+      "Methodology Document": true,
+      "Data Quality Assessment": true,
+      "User Guide / Operating Manual": false,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": true
+    },
+    "change_log": [
+      {
+        "date": "2024-02-10",
+        "version": "1.3",
+        "description": "Added restructuring flag as a Stage 2 trigger.",
+        "author": "Lina Haddad",
+        "classification": "Material",
+        "justification": "New SICR trigger.",
+        "change_id": "CHG-011"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [
+      "Stage 2 Ratio (%)",
+      "Staging Override Rate (%)"
+    ],
+    "data_sources": [
+      "Core banking DPD",
+      "CreditLens ratings",
+      "Watch-list register"
+    ],
+    "implementation_platform": "ETL tool feeding the ECL engine",
+    "usage_frequency": "Monthly batch",
+    "model_users": [
+      "Risk Analytics",
+      "Financial Control",
+      "Credit Administration"
+    ],
+    "key_assumptions": [
+      "Rating downgrade of three notches since origination signals SICR"
+    ],
+    "known_limitations": [
+      "Cure period rule applied but not documented"
+    ],
+    "exposure_covered_qar_mn": 9500,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-IF-005",
+    "name": "IFRS 9 Macroeconomic Scenario Weights",
+    "version": "2.0",
+    "risk_type": "IFRS 9 / Provisioning",
+    "category": "Forward-looking information",
+    "business_line": "Finance & Risk — IFRS 9",
+    "methodology": "Five scenarios on Qatar non-oil GDP; density-based likelihood weights centred on the current IMF forecast",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Sets the probability weights of the five macroeconomic scenarios used in the PD model and the ECL engine.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "developer": "Lina Haddad (Risk Analytics)",
+    "validator": "Hassan Al-Mohannadi (Model Validator (QDB))",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "High",
+      "complexity": "Medium",
+      "regulatory_impact": "High"
+    },
+    "tier_rationale": "Weights move ECL for every exposure; expert judgement involved.",
+    "status": "In Production - Approval Pending",
+    "approval_date": "2024-12-20",
+    "regulatory_mapping": [
+      "IFRS 9 Financial Instruments",
+      "QCB IFRS 9 implementation instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": [
+        "QDB-IF-001",
+        "QDB-IF-006"
+      ]
+    },
+    "documentation": {
+      "Model Development Document": false,
+      "Methodology Document": true,
+      "Data Quality Assessment": false,
+      "User Guide / Operating Manual": false,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2024-11-15",
+        "version": "1.0",
+        "description": "First documented version: weights from historical mean.",
+        "author": "Lina Haddad",
+        "classification": "Material",
+        "justification": "New model.",
+        "change_id": "CHG-012"
+      },
+      {
+        "date": "2026-07-20",
+        "version": "2.0",
+        "description": "Redesigned to density-based weights centred on the current IMF forecast; fixes downside weights moving the wrong way.",
+        "author": "Lina Haddad",
+        "classification": "Material",
+        "justification": "Methodology change.",
+        "change_id": "CHG-013"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [
+      "Scenario Forecast Error (%)"
+    ],
+    "data_sources": [
+      "IMF World Economic Outlook",
+      "Planning and Statistics Authority GDP releases"
+    ],
+    "implementation_platform": "Excel workbook (controlled)",
+    "usage_frequency": "Quarterly",
+    "model_users": [
+      "Risk Analytics",
+      "Financial Control"
+    ],
+    "key_assumptions": [
+      "The IMF forecast is the central (base) scenario",
+      "Scenario anchors are fixed and reviewed annually"
+    ],
+    "known_limitations": [
+      "Weights are a likelihood weighting of fixed states, not integrated probability mass",
+      "Version 2.0 in use before revalidation"
+    ],
+    "exposure_covered_qar_mn": 9500,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": true
+  },
+  {
+    "model_id": "QDB-IF-006",
+    "name": "ECL Calculation Engine (LIC)",
+    "version": "4.2",
+    "risk_type": "IFRS 9 / Provisioning",
+    "category": "Calculation engine",
+    "business_line": "Finance & Risk — IFRS 9",
+    "methodology": "Vendor engine: PD × LGD × EAD, discounted at the effective interest rate and probability-weighted across scenarios",
+    "source": "Vendor",
+    "vendor": "LIC",
+    "description": "Web-based vendor engine that computes ECL from the staged data prepared by the ETL tool.",
+    "owner": "Fatima Al-Sulaiti (Head of Financial Control)",
+    "developer": "Vendor (LIC), configured by Risk Analytics",
+    "validator": "Priya Menon (External Validation Consultant)",
+    "sponsor": "Chief Financial Officer",
+    "lod_mapping": {
+      "first_line": "Financial Control (use of ECL results, vendor configuration)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "High",
+      "complexity": "Medium",
+      "regulatory_impact": "High"
+    },
+    "tier_rationale": "Produces the reported ECL figure.",
+    "status": "Approved with Conditions",
+    "approval_date": "2023-12-18",
+    "regulatory_mapping": [
+      "IFRS 9 Financial Instruments",
+      "QCB IFRS 9 implementation instructions",
+      "SR 26-2 (benchmark)",
+      "QCB outsourcing instructions"
+    ],
+    "dependencies": {
+      "upstream": [
+        "QDB-IF-001",
+        "QDB-IF-002",
+        "QDB-IF-003",
+        "QDB-IF-004",
+        "QDB-IF-005"
+      ],
+      "downstream": []
+    },
+    "documentation": {
+      "Model Development Document": false,
+      "Methodology Document": false,
+      "Data Quality Assessment": false,
+      "User Guide / Operating Manual": true,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2023-09-01",
+        "version": "4.2",
+        "description": "Upgrade to vendor release 4.2.",
+        "author": "Fatima Al-Sulaiti",
+        "classification": "Material",
+        "justification": "Vendor release upgrade.",
+        "change_id": "CHG-014"
+      }
+    ],
+    "audit_reviews": [
+      {
+        "date": "2025-09-22",
+        "auditor": "Abdulla Al-Sayed (Internal Audit)",
+        "rating": "Needs Improvement",
+        "scope": "Controls over vendor ECL engine configuration and change management.",
+        "audit_id": "AUD-001"
+      }
+    ],
+    "monitoring_metrics": [
+      "Unexplained ECL Movement (%)"
+    ],
+    "data_sources": [
+      "ETL consolidated data template"
+    ],
+    "implementation_platform": "LIC web tool (vendor-hosted SQL procedures)",
+    "usage_frequency": "Monthly",
+    "model_users": [
+      "Financial Control",
+      "Risk Analytics"
+    ],
+    "key_assumptions": [
+      "Vendor SQL procedures implement the approved methodology"
+    ],
+    "known_limitations": [
+      "Engine internals are a black box; no independent recalculation yet"
+    ],
+    "exposure_covered_qar_mn": 9500,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-CR-001",
+    "name": "Obligor Rating Model — Manufacturing (CreditLens)",
+    "version": "3.0",
+    "risk_type": "Credit Rating & Scoring",
+    "category": "Rating",
+    "business_line": "SME & Corporate Lending",
+    "methodology": "Vendor scorecard (financial and qualitative factors) calibrated to QDB's manufacturing portfolio",
+    "source": "Vendor",
+    "vendor": "Moody's CreditLens",
+    "description": "Assigns obligor risk grades to manufacturing borrowers at origination and annual review.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "developer": "Moody's CreditLens (vendor), calibrated by Credit Modelling",
+    "validator": "Priya Menon (External Validation Consultant)",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "High",
+      "complexity": "Medium",
+      "regulatory_impact": "High"
+    },
+    "tier_rationale": "Largest sector in the book; grades feed IFRS 9 PD and approval authority.",
+    "status": "Approved with Conditions",
+    "approval_date": "2025-12-10",
+    "regulatory_mapping": [
+      "QCB credit risk instructions",
+      "IFRS 9 (feeds PD)",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": [
+        "QDB-IF-001",
+        "QDB-CR-013"
+      ]
+    },
+    "documentation": {
+      "Model Development Document": true,
+      "Methodology Document": true,
+      "Data Quality Assessment": false,
+      "User Guide / Operating Manual": true,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": true
+    },
+    "change_log": [
+      {
+        "date": "2025-09-01",
+        "version": "3.0",
+        "description": "Calibration of vendor scorecard to QDB manufacturing default history.",
+        "author": "Omar Farouk",
+        "classification": "Material",
+        "justification": "Recalibration.",
+        "change_id": "CHG-001"
+      }
+    ],
+    "audit_reviews": [
+      {
+        "date": "2026-01-15",
+        "auditor": "Abdulla Al-Sayed (Internal Audit)",
+        "rating": "Satisfactory",
+        "scope": "Override governance in the rating process.",
+        "audit_id": "AUD-002"
+      }
+    ],
+    "monitoring_metrics": [
+      "Gini",
+      "Override Rate (%)"
+    ],
+    "data_sources": [
+      "Audited financial statements",
+      "CreditLens spreading",
+      "Relationship manager assessments"
+    ],
+    "implementation_platform": "Moody's CreditLens",
+    "usage_frequency": "At origination and annual review",
+    "model_users": [
+      "Credit Underwriting",
+      "Relationship Managers",
+      "Credit Risk"
+    ],
+    "key_assumptions": [
+      "Vendor factor weights hold for Qatari manufacturing SMEs after calibration"
+    ],
+    "known_limitations": [
+      "Override rate above policy threshold",
+      "Thin history for start-ups"
+    ],
+    "exposure_covered_qar_mn": 4200,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-CR-002",
+    "name": "Obligor Rating Model — Services (CreditLens)",
+    "version": "3.0",
+    "risk_type": "Credit Rating & Scoring",
+    "category": "Rating",
+    "business_line": "SME & Corporate Lending",
+    "methodology": "Vendor scorecard (financial and qualitative factors) calibrated to QDB's services portfolio",
+    "source": "Vendor",
+    "vendor": "Moody's CreditLens",
+    "description": "Assigns obligor risk grades to services-sector borrowers at origination and annual review.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "developer": "Moody's CreditLens (vendor), calibrated by Credit Modelling",
+    "validator": "Priya Menon (External Validation Consultant)",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "High",
+      "complexity": "Medium",
+      "regulatory_impact": "High"
+    },
+    "tier_rationale": "Second-largest sector; grades feed IFRS 9 PD and approval authority.",
+    "status": "In Production",
+    "approval_date": "2025-12-10",
+    "regulatory_mapping": [
+      "QCB credit risk instructions",
+      "IFRS 9 (feeds PD)",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": [
+        "QDB-IF-001",
+        "QDB-CR-013"
+      ]
+    },
+    "documentation": {
+      "Model Development Document": true,
+      "Methodology Document": true,
+      "Data Quality Assessment": true,
+      "User Guide / Operating Manual": true,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": true
+    },
+    "change_log": [
+      {
+        "date": "2025-09-01",
+        "version": "3.0",
+        "description": "Calibration of vendor scorecard to QDB services default history.",
+        "author": "Omar Farouk",
+        "classification": "Material",
+        "justification": "Recalibration.",
+        "change_id": "CHG-002"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [
+      "Gini",
+      "PSI"
+    ],
+    "data_sources": [
+      "Audited financial statements",
+      "CreditLens spreading",
+      "Relationship manager assessments"
+    ],
+    "implementation_platform": "Moody's CreditLens",
+    "usage_frequency": "At origination and annual review",
+    "model_users": [
+      "Credit Underwriting",
+      "Relationship Managers",
+      "Credit Risk"
+    ],
+    "key_assumptions": [
+      "Vendor factor weights hold for Qatari services SMEs after calibration"
+    ],
+    "known_limitations": [
+      "Discriminatory power drifting down since 2025"
+    ],
+    "exposure_covered_qar_mn": 2600,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-PR-001",
+    "name": "Risk-Based Pricing Model",
+    "version": "1.4",
+    "risk_type": "Pricing",
+    "category": "Decision support",
+    "business_line": "SME & Corporate Lending",
+    "methodology": "Cost-plus pricing: funding cost, operating cost, expected loss (PD × LGD) and capital charge",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Sets the minimum profit rate for new financing from the obligor's risk grade and facility terms.",
+    "owner": "Yousef Al-Emadi (Head of Pricing & Strategy)",
+    "developer": "Rajesh Nair (Risk Analytics)",
+    "validator": "Hassan Al-Mohannadi (Model Validator (QDB))",
+    "sponsor": "Chief Executive Officer",
+    "lod_mapping": {
+      "first_line": "Pricing & Strategy (use), Risk Analytics (development)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "Medium",
+      "complexity": "Medium",
+      "regulatory_impact": "Medium"
+    },
+    "tier_rationale": "Influences margins on new business; no direct regulatory output.",
+    "status": "In Production",
+    "approval_date": "2022-11-30",
+    "regulatory_mapping": [
+      "QCB pricing and fees instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [
+        "QDB-IF-001",
+        "QDB-IF-002"
+      ],
+      "downstream": []
+    },
+    "documentation": {
+      "Model Development Document": true,
+      "Methodology Document": true,
+      "Data Quality Assessment": false,
+      "User Guide / Operating Manual": true,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2024-10-01",
+        "version": "1.4",
+        "description": "Funding curve and cost allocation refresh.",
+        "author": "Rajesh Nair",
+        "classification": "Non-material",
+        "justification": "Parameter refresh.",
+        "change_id": "CHG-019"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [
+      "Realised vs Priced Margin Variance (%)"
+    ],
+    "data_sources": [
+      "Treasury funding curve",
+      "Cost allocation",
+      "Rating grade"
+    ],
+    "implementation_platform": "Excel pricing tool",
+    "usage_frequency": "Per financing proposal",
+    "model_users": [
+      "Relationship Managers",
+      "Credit Committee"
+    ],
+    "key_assumptions": [
+      "Expected loss uses current IFRS 9 PD and expert LGD"
+    ],
+    "known_limitations": [
+      "Will need recalibration when the new LGD model goes live"
+    ],
+    "exposure_covered_qar_mn": 1800,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-CR-010",
+    "name": "Transaction Scoring Model (bank-statement based)",
+    "version": "0.5",
+    "risk_type": "Credit Rating & Scoring",
+    "category": "Scoring",
+    "business_line": "SME Lending",
+    "methodology": "Gradient-boosted model on cash-flow, turnover and repayment-behaviour features from bank statements",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Scores thin-file SMEs where audited financials are unreliable, using transaction behaviour from bank statements.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "developer": "David Chen (Data Science)",
+    "validator": "Priya Menon (External Validation Consultant)",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "Medium",
+      "complexity": "High",
+      "regulatory_impact": "Medium"
+    },
+    "tier_rationale": "Machine-learning model that will influence credit decisions for thin-file SMEs.",
+    "status": "In Development",
+    "approval_date": null,
+    "regulatory_mapping": [
+      "QCB Artificial Intelligence Guideline (2024)",
+      "QCB credit risk instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": [
+        "QDB-CR-013"
+      ]
+    },
+    "documentation": {
+      "Model Development Document": false,
+      "Methodology Document": false,
+      "Data Quality Assessment": true,
+      "User Guide / Operating Manual": false,
+      "Validation Report": false,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2026-08-15",
+        "version": "0.5",
+        "description": "Prototype with 42 engineered features.",
+        "author": "David Chen",
+        "classification": "Material",
+        "justification": "New model under development.",
+        "change_id": "CHG-003"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [],
+    "data_sources": [
+      "Bank statements (customer-provided)",
+      "Core banking repayment history"
+    ],
+    "implementation_platform": "Python",
+    "usage_frequency": "At application (planned)",
+    "model_users": [
+      "Credit Underwriting (planned)"
+    ],
+    "key_assumptions": [
+      "Statement features are stable across banks and formats"
+    ],
+    "known_limitations": [
+      "Short performance window",
+      "Explainability and bias testing required under the QCB AI Guideline"
+    ],
+    "exposure_covered_qar_mn": 600,
+    "ai_system": true,
+    "qcb_ai_high_risk": true,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-CR-011",
+    "name": "Credit Bureau Score — Individual",
+    "version": "0.3",
+    "risk_type": "Credit Rating & Scoring",
+    "category": "Scoring",
+    "business_line": "SME Lending",
+    "methodology": "Logistic regression on Qatar Credit Bureau attributes of owners and guarantors",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Scores the individuals behind an SME (owners, guarantors) from their credit bureau records.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "developer": "Omar Farouk (Credit Modelling)",
+    "validator": "Not yet assigned",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "Medium",
+      "complexity": "Medium",
+      "regulatory_impact": "Medium"
+    },
+    "tier_rationale": "One input to the combination module; moderate influence on decisions.",
+    "status": "In Development",
+    "approval_date": null,
+    "regulatory_mapping": [
+      "QCB credit risk instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": [
+        "QDB-CR-013"
+      ]
+    },
+    "documentation": {
+      "Model Development Document": false,
+      "Methodology Document": false,
+      "Data Quality Assessment": false,
+      "User Guide / Operating Manual": false,
+      "Validation Report": false,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2026-07-01",
+        "version": "0.3",
+        "description": "Variable selection on bureau attributes.",
+        "author": "Omar Farouk",
+        "classification": "Material",
+        "justification": "New model under development.",
+        "change_id": "CHG-004"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [],
+    "data_sources": [
+      "Qatar Credit Bureau — individual reports"
+    ],
+    "implementation_platform": "Python",
+    "usage_frequency": "At application (planned)",
+    "model_users": [
+      "Credit Underwriting (planned)"
+    ],
+    "key_assumptions": [
+      "Bureau coverage of owners is sufficient"
+    ],
+    "known_limitations": [
+      "Bureau history for expatriate owners is limited"
+    ],
+    "exposure_covered_qar_mn": 600,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-CR-012",
+    "name": "Credit Bureau Score — Corporate",
+    "version": "0.3",
+    "risk_type": "Credit Rating & Scoring",
+    "category": "Scoring",
+    "business_line": "SME & Corporate Lending",
+    "methodology": "Logistic regression on Qatar Credit Bureau company attributes",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Scores the borrowing company from its credit bureau record.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "developer": "Omar Farouk (Credit Modelling)",
+    "validator": "Not yet assigned",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "Medium",
+      "complexity": "Medium",
+      "regulatory_impact": "Medium"
+    },
+    "tier_rationale": "One input to the combination module; moderate influence on decisions.",
+    "status": "In Development",
+    "approval_date": null,
+    "regulatory_mapping": [
+      "QCB credit risk instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": [
+        "QDB-CR-013"
+      ]
+    },
+    "documentation": {
+      "Model Development Document": false,
+      "Methodology Document": false,
+      "Data Quality Assessment": false,
+      "User Guide / Operating Manual": false,
+      "Validation Report": false,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2026-07-01",
+        "version": "0.3",
+        "description": "Variable selection on bureau attributes.",
+        "author": "Omar Farouk",
+        "classification": "Material",
+        "justification": "New model under development.",
+        "change_id": "CHG-005"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [],
+    "data_sources": [
+      "Qatar Credit Bureau — company reports"
+    ],
+    "implementation_platform": "Python",
+    "usage_frequency": "At application (planned)",
+    "model_users": [
+      "Credit Underwriting (planned)"
+    ],
+    "key_assumptions": [
+      "Bureau coverage of companies is sufficient"
+    ],
+    "known_limitations": [
+      "New companies have no bureau history"
+    ],
+    "exposure_covered_qar_mn": 1500,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-CR-013",
+    "name": "Combination Module (rating, bureau and transaction scores)",
+    "version": "0.2",
+    "risk_type": "Credit Rating & Scoring",
+    "category": "Decision",
+    "business_line": "SME & Corporate Lending",
+    "methodology": "Weighted combination of rating, bureau and transaction scores into a final grade, with an override matrix",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Combines the CreditLens rating, the two bureau scores and the transaction score into one final risk grade for decisioning.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "developer": "David Chen (Data Science)",
+    "validator": "Not yet assigned",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "High",
+      "complexity": "Medium",
+      "regulatory_impact": "Medium"
+    },
+    "tier_rationale": "Will set the final grade used for approval authority across SME lending.",
+    "status": "In Development",
+    "approval_date": null,
+    "regulatory_mapping": [
+      "QCB credit risk instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [
+        "QDB-CR-001",
+        "QDB-CR-002",
+        "QDB-CR-010",
+        "QDB-CR-011",
+        "QDB-CR-012"
+      ],
+      "downstream": []
+    },
+    "documentation": {
+      "Model Development Document": false,
+      "Methodology Document": false,
+      "Data Quality Assessment": false,
+      "User Guide / Operating Manual": false,
+      "Validation Report": false,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2026-08-20",
+        "version": "0.2",
+        "description": "Initial weighting scheme agreed with Credit.",
+        "author": "David Chen",
+        "classification": "Material",
+        "justification": "New model under development.",
+        "change_id": "CHG-006"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [],
+    "data_sources": [
+      "Outputs of upstream models"
+    ],
+    "implementation_platform": "Python",
+    "usage_frequency": "At application (planned)",
+    "model_users": [
+      "Credit Underwriting (planned)"
+    ],
+    "key_assumptions": [
+      "Component scores are complementary"
+    ],
+    "known_limitations": [
+      "Weights are expert-set until outcome data accumulates"
+    ],
+    "exposure_covered_qar_mn": 4500,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": false,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-ML-001",
+    "name": "Liquidity Stress Testing Model",
+    "version": "1.1",
+    "risk_type": "Market & Liquidity Risk",
+    "category": "Projection",
+    "business_line": "Treasury / ALM",
+    "methodology": "Cash-flow projection under idiosyncratic and market-wide stress scenarios",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Placeholder record — projects the survival horizon under liquidity stress.",
+    "owner": "Mohammed Al-Marri (Head of Market & Liquidity Risk)",
+    "developer": "Treasury analytics",
+    "validator": "Hassan Al-Mohannadi (Model Validator (QDB))",
+    "sponsor": "Chief Financial Officer",
+    "lod_mapping": {
+      "first_line": "Market & Liquidity Risk / Treasury (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "Medium",
+      "complexity": "Medium",
+      "regulatory_impact": "High"
+    },
+    "tier_rationale": "Feeds regulatory liquidity reporting.",
+    "status": "In Production",
+    "approval_date": "2021-06-30",
+    "regulatory_mapping": [
+      "QCB liquidity instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": []
+    },
+    "documentation": {
+      "Model Development Document": true,
+      "Methodology Document": true,
+      "Data Quality Assessment": false,
+      "User Guide / Operating Manual": false,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2021-05-01",
+        "version": "1.1",
+        "description": "Scenario update.",
+        "author": "Mohammed Al-Marri",
+        "classification": "Non-material",
+        "justification": "Scenario parameters refresh.",
+        "change_id": "CHG-015"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [
+      "LCR Forecast Error (%)"
+    ],
+    "data_sources": [
+      "ALM system",
+      "Treasury positions"
+    ],
+    "implementation_platform": "Excel / ALM system",
+    "usage_frequency": "Monthly",
+    "model_users": [
+      "Treasury",
+      "ALCO"
+    ],
+    "key_assumptions": [
+      "Behavioural run-off rates per product"
+    ],
+    "known_limitations": [
+      "Run-off assumptions not evidenced"
+    ],
+    "exposure_covered_qar_mn": 3000,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": true,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-ML-002",
+    "name": "IRRBB Model (EVE and NII sensitivity)",
+    "version": "1.0",
+    "risk_type": "Market & Liquidity Risk",
+    "category": "Measurement",
+    "business_line": "Treasury / ALM",
+    "methodology": "Repricing gap with standard rate shocks for economic value and net profit income",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Placeholder record — measures interest (profit) rate risk in the banking book.",
+    "owner": "Mohammed Al-Marri (Head of Market & Liquidity Risk)",
+    "developer": "Treasury analytics",
+    "validator": "Hassan Al-Mohannadi (Model Validator (QDB))",
+    "sponsor": "Chief Financial Officer",
+    "lod_mapping": {
+      "first_line": "Market & Liquidity Risk / Treasury (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "Medium",
+      "complexity": "Medium",
+      "regulatory_impact": "Medium"
+    },
+    "tier_rationale": "Internal limits with regulatory visibility.",
+    "status": "In Production",
+    "approval_date": "2022-03-15",
+    "regulatory_mapping": [
+      "QCB IRRBB instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": []
+    },
+    "documentation": {
+      "Model Development Document": true,
+      "Methodology Document": true,
+      "Data Quality Assessment": false,
+      "User Guide / Operating Manual": false,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": true
+    },
+    "change_log": [
+      {
+        "date": "2022-02-01",
+        "version": "1.0",
+        "description": "First version.",
+        "author": "Mohammed Al-Marri",
+        "classification": "Material",
+        "justification": "New model.",
+        "change_id": "CHG-016"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [
+      "NII Forecast Error (%)"
+    ],
+    "data_sources": [
+      "ALM system"
+    ],
+    "implementation_platform": "ALM system",
+    "usage_frequency": "Monthly",
+    "model_users": [
+      "Treasury",
+      "ALCO"
+    ],
+    "key_assumptions": [
+      "Repricing buckets per product"
+    ],
+    "known_limitations": [
+      "No behavioural prepayment model"
+    ],
+    "exposure_covered_qar_mn": 2000,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": true,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-OR-001",
+    "name": "Operational Risk Scenario Analysis",
+    "version": "1.0",
+    "risk_type": "Operational & Non-Financial Risk",
+    "category": "Assessment",
+    "business_line": "Operational Risk",
+    "methodology": "Expert-elicited frequency and severity per scenario, aggregated to an annual loss estimate",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Placeholder record — estimates severe but plausible operational losses for risk appetite.",
+    "owner": "Sara Al-Naimi (Head of Operational Risk)",
+    "developer": "Operational Risk team",
+    "validator": "Hassan Al-Mohannadi (Model Validator (QDB))",
+    "sponsor": "Chief Risk Officer",
+    "lod_mapping": {
+      "first_line": "Operational Risk (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "Low",
+      "complexity": "Low",
+      "regulatory_impact": "Medium"
+    },
+    "tier_rationale": "Management information and risk appetite only.",
+    "status": "In Production",
+    "approval_date": "2023-02-28",
+    "regulatory_mapping": [
+      "QCB operational risk instructions"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": []
+    },
+    "documentation": {
+      "Model Development Document": false,
+      "Methodology Document": true,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2023-01-15",
+        "version": "1.0",
+        "description": "First version.",
+        "author": "Sara Al-Naimi",
+        "classification": "Material",
+        "justification": "New model.",
+        "change_id": "CHG-018"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [],
+    "data_sources": [
+      "Loss event database",
+      "Workshop outputs"
+    ],
+    "implementation_platform": "Excel",
+    "usage_frequency": "Annual",
+    "model_users": [
+      "Operational Risk",
+      "Management Risk Committee"
+    ],
+    "key_assumptions": [
+      "Workshop estimates are unbiased"
+    ],
+    "known_limitations": [
+      "Few internal loss events"
+    ],
+    "exposure_covered_qar_mn": 0,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": true,
+    "pending_revalidation": false
+  },
+  {
+    "model_id": "QDB-NF-001",
+    "name": "AML Customer Risk Rating",
+    "version": "2.0",
+    "risk_type": "Operational & Non-Financial Risk",
+    "category": "Rating",
+    "business_line": "Compliance",
+    "methodology": "Weighted risk factors (customer type, geography, product, channel) with vendor defaults",
+    "source": "Vendor",
+    "vendor": "AML platform vendor",
+    "description": "Placeholder record — rates customers for AML/CFT due diligence under Law No. 20 of 2019.",
+    "owner": "Noora Al-Thani (MLRO / Head of Compliance)",
+    "developer": "Vendor, configured by Compliance",
+    "validator": "Priya Menon (External Validation Consultant)",
+    "sponsor": "Chief Compliance Officer",
+    "lod_mapping": {
+      "first_line": "Compliance / MLRO (configuration, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "Medium",
+      "complexity": "Medium",
+      "regulatory_impact": "High"
+    },
+    "tier_rationale": "Statutory AML/CFT compliance.",
+    "status": "Approved with Conditions",
+    "approval_date": "2024-06-30",
+    "regulatory_mapping": [
+      "Qatar AML/CFT Law No. 20 of 2019",
+      "QCB AML/CFT instructions"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": []
+    },
+    "documentation": {
+      "Model Development Document": false,
+      "Methodology Document": false,
+      "Data Quality Assessment": false,
+      "User Guide / Operating Manual": true,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2024-05-01",
+        "version": "2.0",
+        "description": "Vendor upgrade.",
+        "author": "Noora Al-Thani",
+        "classification": "Material",
+        "justification": "Vendor release.",
+        "change_id": "CHG-017"
+      }
+    ],
+    "audit_reviews": [],
+    "monitoring_metrics": [
+      "High-Risk Customer Share (%)"
+    ],
+    "data_sources": [
+      "Customer master",
+      "Transaction monitoring alerts"
+    ],
+    "implementation_platform": "AML platform",
+    "usage_frequency": "Daily",
+    "model_users": [
+      "Compliance"
+    ],
+    "key_assumptions": [
+      "Vendor factor weights suit QDB's customer base"
+    ],
+    "known_limitations": [
+      "Weights not calibrated to QDB"
+    ],
+    "exposure_covered_qar_mn": 0,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "placeholder": true,
+    "pending_revalidation": false
+  }
+]

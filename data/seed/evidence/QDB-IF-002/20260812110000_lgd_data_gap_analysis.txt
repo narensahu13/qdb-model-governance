@@ -1,0 +1,4 @@
+LGD data gap analysis
+Missing: collateral register, guarantee register, collection split by cash type.
+
+(Placeholder evidence file for the PoC.)

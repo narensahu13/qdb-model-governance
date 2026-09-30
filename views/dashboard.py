@@ -17,20 +17,28 @@ issues = load_issues()
 open_issues = issues[issues["status"] != "Closed"]
 
 # ---------------------------------------------------------------- KPI row
+IN_USE = ["In Production", "Approved with Conditions", "Restricted Use",
+          "Under Remediation", "In Production - Approval Pending"]
 total = len(df)
-in_prod = df["Status"].str.startswith("In Production").sum()
-overdue_val = (df["Validation Status"].isin(["Overdue", "Never Validated"])).sum()
-validated_on_time = total - overdue_val
+in_use = df["Status"].isin(IN_USE).sum()
+in_scope = df[df["Validation Status"] != "Pre-implementation"]
+overdue_val = (in_scope["Validation Status"].isin(["Overdue", "Never Validated"])).sum()
+on_track_share = (len(in_scope) - overdue_val) / len(in_scope) if len(in_scope) else 1.0
 high_open = int((open_issues["severity"] == "High").sum())
 overdue_findings = int((open_issues["status"] == "Overdue").sum())
 
-c1, c2, c3, c4, c5, c6 = st.columns(6)
-c1.metric("Models in Inventory", total)
-c2.metric("In Production", int(in_prod))
-c3.metric("Validation On Track", f"{validated_on_time / total:.0%}")
-c4.metric("Overdue / Never Validated", int(overdue_val), delta="requires action" if overdue_val else None, delta_color="inverse")
-c5.metric("Open High Findings", high_open, delta="requires action" if high_open else None, delta_color="inverse")
-c6.metric("Overdue Findings", overdue_findings, delta="past due date" if overdue_findings else None, delta_color="inverse")
+def _alert(n: int, text: str) -> str | None:
+    return f"<span style='color:{utils.RED}; font-weight:600;'>{text}</span>" if n else "none"
+
+
+utils.kpi_cards([
+    ("Models in inventory", str(total), f"{int((df['AI System']).sum())} AI system(s)"),
+    ("In use", str(int(in_use)), f"{total - int(in_use)} in development"),
+    ("Validations on schedule", f"{on_track_share:.0%}", "of models in use"),
+    ("Overdue validations", str(int(overdue_val)), _alert(overdue_val, "requires action")),
+    ("Open high findings", str(high_open), _alert(high_open, "requires action")),
+    ("Overdue findings", str(overdue_findings), _alert(overdue_findings, "past due date")),
+])
 
 st.markdown("")
 
@@ -62,7 +70,7 @@ with col_b:
 
 with col_c:
     st.subheader("Validation Status by Tier")
-    order = ["On Track", "Due Soon", "Overdue", "Never Validated"]
+    order = ["On Track", "Due Soon", "Overdue", "Never Validated", "Pre-implementation"]
     heat = df.groupby(["Tier", "Validation Status"]).size().reset_index(name="Models")
     heat["Tier"] = "Tier " + heat["Tier"].astype(str)
     fig = px.bar(
@@ -76,12 +84,12 @@ with col_c:
 
 # ---------------------------------------------------------------- attention required
 st.subheader("Attention Required")
-st.caption("Models with overdue or missing validations, high-severity open findings, or non-standard status.")
+st.caption("Models with overdue or missing validations, high-severity open findings, or a status needing escalation.")
 
 attention = df[
     df["Validation Status"].isin(["Overdue", "Never Validated"])
     | (df["High Open Issues"] > 0)
-    | df["Status"].isin(["Under Remediation", "In Production - Approval Pending"])
+    | df["Status"].isin(["Under Remediation", "Restricted Use", "In Production - Approval Pending"])
 ].copy()
 attention = attention.sort_values(["High Open Issues", "Overdue Issues"], ascending=False)
 
@@ -96,7 +104,7 @@ else:
             reasons.append(f"{row['High Open Issues']} high-severity open finding(s)")
         if row["Overdue Issues"]:
             reasons.append(f"{row['Overdue Issues']} overdue finding(s)")
-        if row["Status"] in ("Under Remediation", "In Production - Approval Pending"):
+        if row["Status"] in ("Under Remediation", "Restricted Use", "In Production - Approval Pending"):
             reasons.append(row["Status"].lower())
 
         left, mid, right = st.columns([3.2, 4.5, 1.1])
@@ -123,7 +131,7 @@ col_l, col_r = st.columns(2)
 with col_l:
     st.subheader("Upcoming Validation Calendar")
     cal = df[df["Next Validation Due"] != "-"][
-        ["Model ID", "Model Name", "Tier", "Next Validation Due", "Validation Status"]
+        ["Model ID", "Model Name", "Tier", "Last Rating", "Next Validation Due", "Validation Status"]
     ].copy()
     cal["Next Validation Due"] = pd.to_datetime(cal["Next Validation Due"])
     cal = cal.sort_values("Next Validation Due").head(10)

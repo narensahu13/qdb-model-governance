@@ -7,3 +7,6 @@ textColor = "#1a1a2e"
 
 [server]
 headless = true
+
+[client]
+toolbarMode = "viewer"

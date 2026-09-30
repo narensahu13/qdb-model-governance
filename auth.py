@@ -2,22 +2,19 @@
 
 ALL identity and permission checks in the app go through this module only.
 In this PoC the "logged-in" user is simulated with a sidebar selector backed
-by a mock user directory (data/users.json). In production this module is the
+by a mock user directory (users table, seeded from data/seed/users.json). In production this module is the
 single place to swap in real authentication (SSO / AD groups): replace
 `get_current_user` with the SSO principal lookup and every page keeps working
 unchanged.
 """
 
-import json
-from pathlib import Path
-
 import streamlit as st
 
-USERS_FILE = Path(__file__).resolve().parent / "data" / "users.json"
+import repository
 
 ROLE_LABELS = {
     "LOD1": "1st Line — Model Owner / Developer",
-    "LOD2": "2nd Line — Model Validation Unit",
+    "LOD2": "2nd Line — Validator (QDB or consultant)",
     "LOD3": "3rd Line — Internal Audit",
     "ADMIN": "MRM Administrator",
 }
@@ -34,30 +31,29 @@ REQUEST_TYPES = {
     "MC": {
         "label": "Model Change",
         "short": "MC",
-        "initiate_roles": ["LOD1", "LOD2", "ADMIN"],
         "default_assignee_roles": ["LOD2"],
         "description": (
-            "Record a model change for MVU review. Materiality (Material / Non-material) "
-            "is a field on the request — Material changes require revalidation before deployment."
+            "Record a model change for the validator's review. Materiality (Material / "
+            "Non-material) is a field on the request — Material changes require "
+            "revalidation before the new version is used."
         ),
     },
     "VAL": {
         "label": "Validation",
         "short": "VAL",
-        "initiate_roles": ["LOD1", "LOD2", "LOD3", "ADMIN"],
         "default_assignee_roles": ["LOD2"],
         "description": (
-            "Validation request or independent validation (initial, periodic, targeted, or ad-hoc). "
-            "LoD1 may request validation; LoD2/LoD3 may record or commission it."
+            "Validation request or independent validation (initial, periodic, targeted, "
+            "or ad-hoc). Owners may request one; the validator records it with a rating."
         ),
     },
     "FND": {
         "label": "Finding",
         "short": "FND",
-        "initiate_roles": ["LOD2", "LOD3", "ADMIN"],
         "default_assignee_roles": ["LOD1"],
         "description": (
-            "Validation or audit finding. LoD2/LoD3 raises; LoD1 responds; the raiser's line closes."
+            "Validation or audit finding. The validator or Internal Audit raises it; the "
+            "owner responds; the line that raised it closes it."
         ),
     },
 }
@@ -65,52 +61,50 @@ REQUEST_TYPES = {
 REQUEST_TYPE_ORDER = ["MC", "VAL", "FND"]
 
 # Permission matrix as data: action -> roles allowed to perform it.
+# Segregation of duties: the MRM Administrator coordinates (schedules and
+# assigns work) but cannot raise findings, close requests or record changes.
 PERMISSIONS = {
-    "initiate_model_change": ["LOD1", "LOD2", "ADMIN"],
+    "initiate_model_change": ["LOD1", "LOD2"],
     "initiate_validation": ["LOD1", "LOD2", "LOD3", "ADMIN"],
-    "initiate_finding": ["LOD2", "LOD3", "ADMIN"],
-    "respond_request": ["LOD1", "ADMIN"],
-    "close_request": ["LOD2", "LOD3", "ADMIN"],  # further restricted to raiser's role for FND
-    "assign_request": ["LOD1", "LOD2", "LOD3", "ADMIN"],
+    "initiate_finding": ["LOD2", "LOD3"],
+    "respond_request": ["LOD1", "LOD2", "LOD3", "ADMIN"],
+    "close_request": ["LOD2", "LOD3"],  # further restricted to the raiser's line for FND
+    "assign_request": ["LOD2", "ADMIN"],
     "upload_evidence": ["LOD1", "LOD2", "LOD3", "ADMIN"],
-    "record_change": ["LOD1", "ADMIN"],
-    "record_audit": ["LOD3", "ADMIN"],
-    # Aliases kept for gradual migration / smoke tests
-    "add_validation": ["LOD2", "ADMIN"],
-    "raise_issue": ["LOD2", "LOD3", "ADMIN"],
-    "respond_issue": ["LOD1", "ADMIN"],
-    "close_issue": ["LOD2", "LOD3", "ADMIN"],
+    "record_change": ["LOD1"],
+    "record_audit": ["LOD3"],
 }
 
 ACTION_LABELS = {
     "initiate_model_change": "Initiate a Model Change (MC)",
     "initiate_validation": "Initiate a Validation (VAL)",
     "initiate_finding": "Raise a Finding (FND)",
-    "respond_request": "Respond on an open request",
+    "respond_request": "Post in a request thread",
     "close_request": "Close a request (raiser's line only for findings)",
-    "assign_request": "Assign / send a request to a validator or owner",
-    "upload_evidence": "Attach evidence (open requests only)",
+    "assign_request": "Assign a request to a validator or owner",
+    "upload_evidence": "Upload evidence and model documents",
     "record_change": "Record a model change",
     "record_audit": "Record an internal audit review",
-    "add_validation": "Record a validation (VAL)",
-    "raise_issue": "Raise a finding (FND)",
-    "respond_issue": "Respond to a finding",
-    "close_issue": "Close a finding (raiser's line only)",
 }
 
-_INITIATE_ACTION = {
+INITIATE_ACTION = {
     "MC": "initiate_model_change",
     "VAL": "initiate_validation",
     "FND": "initiate_finding",
 }
+_INITIATE_ACTION = INITIATE_ACTION
 
 _SESSION_KEY = "current_user_name"
 _DEFAULT_USER = "Maryam Al-Kaabi"  # MRM Administrator
 
 
+@st.cache_data
+def _users() -> list[dict]:
+    return repository.list_users()
+
+
 def load_users() -> list[dict]:
-    with open(USERS_FILE, encoding="utf-8") as f:
-        return json.load(f)
+    return _users()
 
 
 def get_user(name: str) -> dict | None:
@@ -174,6 +168,16 @@ def has_permission(action: str) -> bool:
     return get_current_user()["role"] in PERMISSIONS[action]
 
 
+def require(action: str) -> None:
+    """Raise PermissionError unless the acting user may perform `action`."""
+    if not has_permission(action):
+        user = get_current_user()
+        raise PermissionError(
+            f"{user['name']} ({ROLE_LABELS[user['role']]}) cannot: "
+            f"{ACTION_LABELS.get(action, action)}."
+        )
+
+
 def can_initiate(request_type: str) -> bool:
     action = _INITIATE_ACTION.get(request_type)
     return bool(action) and has_permission(action)
@@ -183,23 +187,14 @@ def initiable_types() -> list[str]:
     return [t for t in REQUEST_TYPE_ORDER if can_initiate(t)]
 
 
-def can_close_issue(raised_by_role: str) -> bool:
-    """Legacy alias: finding closed by the line that raised it, or ADMIN."""
-    role = get_current_user()["role"]
-    return role == "ADMIN" or (role in PERMISSIONS["close_issue"] and role == raised_by_role)
-
-
 def can_close_request(req: dict) -> bool:
-    """Close rules by request type.
+    """Close rules by request type (no administrator override).
 
-    - FND: raiser's line (LOD2/LOD3) or ADMIN
-    - MC / VAL: LoD2 (MVU) or ADMIN
+    - FND: only the line that raised it (validator or Internal Audit)
+    - MC / VAL: a validator (LoD2)
     """
     role = get_current_user()["role"]
-    if role == "ADMIN":
-        return True
-    rtype = req.get("type")
-    if rtype == "FND":
+    if req.get("type") == "FND":
         return role == req.get("initiated_by_role") and role in ("LOD2", "LOD3")
     return role == "LOD2"
 
@@ -231,8 +226,9 @@ def user_selector():
         format_func=lambda n: labels.get(n, n),
     )
     u = get_current_user()
-    st.caption(f"{u['title']} · {ROLE_LABELS[u['role']]}")
-    st.caption("PoC: role simulation — replaced by single sign-on in production")
+    role_label = ROLE_LABELS[u["role"]]
+    st.caption(u["title"] if u["title"] == role_label else f"{u['title']} · {role_label}")
+    st.caption("PoC: role simulation — replaced by single sign-on if the platform goes to production")
 
 
 def role_badge_html(role: str) -> str:
