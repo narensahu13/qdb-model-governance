@@ -32,21 +32,23 @@ random.seed(7)
 
 # ---------------------------------------------------------------- people (mock)
 USERS = [
-    {"name": "Owner 1", "title": "Head of Credit Risk", "role": "LOD1"},
-    {"name": "Developer 1", "title": "Risk Analytics", "role": "LOD1"},
-    {"name": "Developer 2", "title": "Risk Analytics", "role": "LOD1"},
-    {"name": "Developer 3", "title": "Credit Modelling", "role": "LOD1"},
-    {"name": "Developer 4", "title": "Data Science", "role": "LOD1"},
-    {"name": "Owner 2", "title": "Head of Financial Control", "role": "LOD1"},
-    {"name": "Owner 3", "title": "Head of Market & Liquidity Risk", "role": "LOD1"},
-    {"name": "Owner 4", "title": "MLRO / Head of Compliance", "role": "LOD1"},
-    {"name": "Owner 5", "title": "Head of Operational Risk", "role": "LOD1"},
-    {"name": "Owner 6", "title": "Head of Pricing & Strategy", "role": "LOD1"},
-    {"name": "Validator 1", "title": "Model Validator (QDB)", "role": "LOD2"},
-    {"name": "Validator 2", "title": "External Validation Consultant", "role": "LOD2"},
-    {"name": "Auditor 1", "title": "Internal Audit", "role": "LOD3"},
-    {"name": "MRM Admin 1", "title": "MRM Administrator", "role": "ADMIN"},
-    {"name": "CRO 1", "title": "Chief Risk Officer", "role": "CRO"},
+    {"name": "Model Owner 1", "title": "Head of Credit Risk", "role": "LOD1"},
+    {"name": "Model Owner 2", "title": "Head of Financial Control", "role": "LOD1"},
+    {"name": "Model Owner 3", "title": "Head of Market & Liquidity Risk", "role": "LOD1"},
+    {"name": "Model Owner 4", "title": "MLRO / Head of Compliance", "role": "LOD1"},
+    {"name": "Model Owner 5", "title": "Head of Operational Risk", "role": "LOD1"},
+    {"name": "Model Owner 6", "title": "Head of Pricing & Strategy", "role": "LOD1"},
+    {"name": "Model Developer 1", "title": "Risk Analytics", "role": "LOD1"},
+    {"name": "Model Developer 2", "title": "Risk Analytics", "role": "LOD1"},
+    {"name": "Model Developer 3", "title": "Credit Modelling", "role": "LOD1"},
+    {"name": "Model Developer 4", "title": "Data Science", "role": "LOD1"},
+    {"name": "Model Sponsor 1", "title": "Head of SME & Corporate Lending", "role": "VIEWER"},
+    {"name": "Model User 1", "title": "Credit Underwriting", "role": "VIEWER"},
+    {"name": "Model Validator 1", "title": "QDB validator", "role": "LOD2"},
+    {"name": "Model Validator 2", "title": "External validation consultant", "role": "LOD2"},
+    {"name": "Internal Auditor 1", "title": "Internal Audit", "role": "LOD3"},
+    {"name": "MRM Administrator 1", "title": "MRM Administrator", "role": "ADMIN"},
+    {"name": "CRO", "title": "Chief Risk Officer", "role": "CRO"},
 ]
 TITLE = {u["name"]: u["title"] for u in USERS}
 ROLE = {u["name"]: u["role"] for u in USERS}
@@ -56,9 +58,9 @@ def label(name: str) -> str:
     return f"{name} ({TITLE[name]})" if name in TITLE else name
 
 
-HASSAN = "Validator 1"
-PRIYA = "Validator 2"
-AUDITOR = "Auditor 1"
+HASSAN = "Model Validator 1"
+PRIYA = "Model Validator 2"
+AUDITOR = "Internal Auditor 1"
 
 FULL_DOCS = [
     "Model Development Document",
@@ -150,7 +152,7 @@ def model(
             "proposed_by": owner,
             "proposed_on": (approval_date or change_log[0]["date"]),
             "status": "Confirmed",
-            "confirmed_by": "MRM Admin 1",
+            "confirmed_by": "MRM Administrator 1",
             "confirmed_on": (approval_date or change_log[0]["date"]),
             "override_tier": None,
             "override_reason": None,
@@ -178,8 +180,8 @@ MODELS = [
         business_line="Finance & Risk — IFRS 9", source="In-house",
         methodology="Through-the-cycle rating-to-PD mapping with macro-linked point-in-time adjustment and lifetime term structure",
         description="Converts obligor ratings into 12-month and lifetime point-in-time PDs for ECL, using the scenario-weighted macroeconomic outlook.",
-        owner="Owner 1", developer="Developer 1", validator=PRIYA,
-        sponsor="Chief Risk Officer", area="credit",
+        owner="Model Owner 1", developer="Model Developer 1", validator=PRIYA,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="credit",
         scores={"materiality": "High", "complexity": "High", "regulatory_impact": "High"},
         tier_rationale="Drives Stage 1 and Stage 2 ECL across the whole financing book; output feeds the financial statements.",
         status="Approved with Conditions", approval_date="2023-12-18",
@@ -193,8 +195,8 @@ MODELS = [
         limitations=["Low default counts in some sectors; sector PDs pooled", "Point-in-time adjustment not yet back-tested by segment"],
         exposure=9500,
         change_log=[
-            chg("2023-11-01", "2.0", "Redevelopment with lifetime term structure and macro-linked PiT adjustment.", "Developer 1", "Material", "New methodology."),
-            chg("2026-04-02", "2.1", "Annual PD recalibration within approved ranges.", "Developer 1", "Non-material", "Parameter refresh within the approved methodology."),
+            chg("2023-11-01", "2.0", "Redevelopment with lifetime term structure and macro-linked PiT adjustment.", "Model Developer 1", "Material", "New methodology."),
+            chg("2026-04-02", "2.1", "Annual PD recalibration within approved ranges.", "Model Developer 1", "Non-material", "Parameter refresh within the approved methodology."),
         ],
     ),
     model(
@@ -203,8 +205,8 @@ MODELS = [
         business_line="Finance & Risk — IFRS 9", source="In-house",
         methodology="Collateral haircut approach; LGD decomposed into cure rate and workout LGD with discounted recoveries",
         description="New LGD model for the SME and corporate book, built from a 10-year account-level loan tape. Replaces the current expert LGD assumptions once validated.",
-        owner="Owner 1", developer="Developer 2", validator=None,
-        sponsor="Chief Risk Officer", area="credit",
+        owner="Model Owner 1", developer="Model Developer 2", validator=None,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="credit",
         scores={"materiality": "High", "complexity": "High", "regulatory_impact": "High"},
         tier_rationale="Will drive ECL for every exposure; feeds the financial statements.",
         status="In Development", approval_date=None,
@@ -217,7 +219,7 @@ MODELS = [
         assumptions=["Recovery cash flows discounted at the effective interest rate", "Haircuts by collateral type calibrated on realised sale proceeds"],
         limitations=["Collateral data not in the current extract", "Workout recoveries cannot yet be separated from normal repayments"],
         exposure=9500,
-        change_log=[chg("2026-06-15", "0.9", "Development build: default population and recovery curves.", "Developer 2", "Material", "New model under development.")],
+        change_log=[chg("2026-06-15", "0.9", "Development build: default population and recovery curves.", "Model Developer 2", "Material", "New model under development.")],
     ),
     model(
         "QDB-003", "IFRS 9 EAD / CCF Model",
@@ -225,8 +227,8 @@ MODELS = [
         business_line="Finance & Risk — IFRS 9", source="In-house",
         methodology="Amortisation schedules for term financing; credit conversion factors for undrawn limits",
         description="Projects exposure at default over the lifetime of each facility, including drawdown of undrawn limits on revolving products.",
-        owner="Owner 1", developer="Developer 3", validator=PRIYA,
-        sponsor="Chief Risk Officer", area="credit",
+        owner="Model Owner 1", developer="Model Developer 3", validator=PRIYA,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="credit",
         scores={"materiality": "Medium", "complexity": "Medium", "regulatory_impact": "High"},
         tier_rationale="Feeds ECL directly; regulatory impact drives Tier 1.",
         status="In Production", approval_date="2023-12-18",
@@ -238,7 +240,7 @@ MODELS = [
         assumptions=["Contractual schedules hold absent prepayment", "CCF stable across the cycle"],
         limitations=["Limited history of drawdowns before default"],
         exposure=3100,
-        change_log=[chg("2023-10-20", "1.2", "CCF re-estimation on 2016–2023 data.", "Developer 3", "Material", "Parameter re-estimation.")],
+        change_log=[chg("2023-10-20", "1.2", "CCF re-estimation on 2016–2023 data.", "Model Developer 3", "Material", "Parameter re-estimation.")],
     ),
     model(
         "QDB-004", "IFRS 9 Staging Model (SICR)",
@@ -246,8 +248,8 @@ MODELS = [
         business_line="Finance & Risk — IFRS 9", source="In-house",
         methodology="Rules: 30 DPD backstop, rating-downgrade thresholds, watch-list and restructuring triggers, cure periods",
         description="Allocates each exposure to Stage 1, 2 or 3 using significant-increase-in-credit-risk criteria and default triggers.",
-        owner="Owner 1", developer="Developer 1", validator=PRIYA,
-        sponsor="Chief Risk Officer", area="credit",
+        owner="Model Owner 1", developer="Model Developer 1", validator=PRIYA,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="credit",
         scores={"materiality": "High", "complexity": "Low", "regulatory_impact": "High"},
         tier_rationale="Stage allocation decides 12-month vs lifetime ECL for the whole book.",
         status="In Production", approval_date="2023-12-18",
@@ -260,7 +262,7 @@ MODELS = [
         assumptions=["Rating downgrade of three notches since origination signals SICR"],
         limitations=["Cure period rule applied but not documented"],
         exposure=9500,
-        change_log=[chg("2024-02-10", "1.3", "Added restructuring flag as a Stage 2 trigger.", "Developer 1", "Material", "New SICR trigger.")],
+        change_log=[chg("2024-02-10", "1.3", "Added restructuring flag as a Stage 2 trigger.", "Model Developer 1", "Material", "New SICR trigger.")],
     ),
     model(
         "QDB-005", "IFRS 9 Macroeconomic Scenario Weights",
@@ -268,8 +270,8 @@ MODELS = [
         business_line="Finance & Risk — IFRS 9", source="In-house",
         methodology="Five scenarios on Qatar non-oil GDP; density-based likelihood weights centred on the current IMF forecast",
         description="Sets the probability weights of the five macroeconomic scenarios used in the PD model and the ECL engine.",
-        owner="Owner 1", developer="Developer 1", validator=HASSAN,
-        sponsor="Chief Risk Officer", area="credit",
+        owner="Model Owner 1", developer="Model Developer 1", validator=HASSAN,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="credit",
         scores={"materiality": "High", "complexity": "Medium", "regulatory_impact": "High"},
         tier_rationale="Weights move ECL for every exposure; expert judgement involved.",
         status="In Production - Approval Pending", approval_date="2024-12-20",
@@ -283,8 +285,8 @@ MODELS = [
         limitations=["Weights are a likelihood weighting of fixed states, not integrated probability mass", "Version 2.0 in use before revalidation"],
         exposure=9500, pending_revalidation=True,
         change_log=[
-            chg("2024-11-15", "1.0", "First documented version: weights from historical mean.", "Developer 1", "Material", "New model."),
-            chg("2026-07-20", "2.0", "Redesigned to density-based weights centred on the current IMF forecast; fixes downside weights moving the wrong way.", "Developer 1", "Material", "Methodology change."),
+            chg("2024-11-15", "1.0", "First documented version: weights from historical mean.", "Model Developer 1", "Material", "New model."),
+            chg("2026-07-20", "2.0", "Redesigned to density-based weights centred on the current IMF forecast; fixes downside weights moving the wrong way.", "Model Developer 1", "Material", "Methodology change."),
         ],
     ),
     model(
@@ -293,8 +295,8 @@ MODELS = [
         business_line="Finance & Risk — IFRS 9", source="Vendor", vendor="LIC",
         methodology="Vendor engine: PD × LGD × EAD, discounted at the effective interest rate and probability-weighted across scenarios",
         description="Web-based vendor engine that computes ECL from the staged data prepared by the ETL tool.",
-        owner="Owner 2", developer="Vendor (LIC), configured by Risk Analytics", validator=PRIYA,
-        sponsor="Chief Financial Officer", area="finance",
+        owner="Model Owner 2", developer="Vendor (LIC), configured by Risk Analytics", validator=PRIYA,
+        sponsor="Model Sponsor 2 (Chief Financial Officer)", area="finance",
         scores={"materiality": "High", "complexity": "Medium", "regulatory_impact": "High"},
         tier_rationale="Produces the reported ECL figure.",
         status="Approved with Conditions", approval_date="2023-12-18",
@@ -307,7 +309,7 @@ MODELS = [
         assumptions=["Vendor SQL procedures implement the approved methodology"],
         limitations=["Engine internals are a black box; no independent recalculation yet"],
         exposure=9500,
-        change_log=[chg("2023-09-01", "4.2", "Upgrade to vendor release 4.2.", "Owner 2", "Material", "Vendor release upgrade.")],
+        change_log=[chg("2023-09-01", "4.2", "Upgrade to vendor release 4.2.", "Model Owner 2", "Material", "Vendor release upgrade.")],
         audit_reviews=[{"date": "2025-09-22", "auditor": label(AUDITOR), "rating": "Needs Improvement", "scope": "Controls over vendor ECL engine configuration and change management."}],
     ),
     # ------------------------------------------------------------ CreditLens ratings
@@ -317,8 +319,8 @@ MODELS = [
         business_line="SME & Corporate Lending", source="Vendor", vendor="Moody's CreditLens",
         methodology="Vendor scorecard (financial and qualitative factors) calibrated to QDB's manufacturing portfolio",
         description="Assigns obligor risk grades to manufacturing borrowers at origination and annual review.",
-        owner="Owner 1", developer="Moody's CreditLens (vendor), calibrated by Credit Modelling", validator=PRIYA,
-        sponsor="Chief Risk Officer", area="credit",
+        owner="Model Owner 1", developer="Moody's CreditLens (vendor), calibrated by Credit Modelling", validator=PRIYA,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="credit",
         scores={"materiality": "High", "complexity": "Medium", "regulatory_impact": "High"},
         tier_rationale="Largest sector in the book; grades feed IFRS 9 PD and approval authority.",
         status="Approved with Conditions", approval_date="2025-12-10",
@@ -331,7 +333,7 @@ MODELS = [
         assumptions=["Vendor factor weights hold for Qatari manufacturing SMEs after calibration"],
         limitations=["Override rate above policy threshold", "Thin history for start-ups"],
         exposure=4200,
-        change_log=[chg("2025-09-01", "3.0", "Calibration of vendor scorecard to QDB manufacturing default history.", "Developer 3", "Material", "Recalibration.")],
+        change_log=[chg("2025-09-01", "3.0", "Calibration of vendor scorecard to QDB manufacturing default history.", "Model Developer 3", "Material", "Recalibration.")],
         audit_reviews=[{"date": "2026-01-15", "auditor": label(AUDITOR), "rating": "Satisfactory", "scope": "Override governance in the rating process."}],
     ),
     model(
@@ -340,8 +342,8 @@ MODELS = [
         business_line="SME & Corporate Lending", source="Vendor", vendor="Moody's CreditLens",
         methodology="Vendor scorecard (financial and qualitative factors) calibrated to QDB's services portfolio",
         description="Assigns obligor risk grades to services-sector borrowers at origination and annual review.",
-        owner="Owner 1", developer="Moody's CreditLens (vendor), calibrated by Credit Modelling", validator=PRIYA,
-        sponsor="Chief Risk Officer", area="credit",
+        owner="Model Owner 1", developer="Moody's CreditLens (vendor), calibrated by Credit Modelling", validator=PRIYA,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="credit",
         scores={"materiality": "High", "complexity": "Medium", "regulatory_impact": "High"},
         tier_rationale="Second-largest sector; grades feed IFRS 9 PD and approval authority.",
         status="In Production", approval_date="2025-12-10",
@@ -353,7 +355,7 @@ MODELS = [
         assumptions=["Vendor factor weights hold for Qatari services SMEs after calibration"],
         limitations=["Discriminatory power drifting down since 2025"],
         exposure=2600,
-        change_log=[chg("2025-09-01", "3.0", "Calibration of vendor scorecard to QDB services default history.", "Developer 3", "Material", "Recalibration.")],
+        change_log=[chg("2025-09-01", "3.0", "Calibration of vendor scorecard to QDB services default history.", "Model Developer 3", "Material", "Recalibration.")],
     ),
     # ------------------------------------------------------------ pricing
     model(
@@ -362,8 +364,8 @@ MODELS = [
         business_line="SME & Corporate Lending", source="In-house",
         methodology="Cost-plus pricing: funding cost, operating cost, expected loss (PD × LGD) and capital charge",
         description="Sets the minimum profit rate for new financing from the obligor's risk grade and facility terms.",
-        owner="Owner 6", developer="Developer 2", validator=HASSAN,
-        sponsor="Chief Executive Officer", area="pricing",
+        owner="Model Owner 6", developer="Model Developer 2", validator=HASSAN,
+        sponsor="Model Sponsor 3 (Chief Executive Officer)", area="pricing",
         scores={"materiality": "Medium", "complexity": "Medium", "regulatory_impact": "Medium"},
         tier_rationale="Influences margins on new business; no direct regulatory output.",
         status="In Production", approval_date="2022-11-30",
@@ -376,7 +378,7 @@ MODELS = [
         assumptions=["Expected loss uses current IFRS 9 PD and expert LGD"],
         limitations=["Will need recalibration when the new LGD model goes live"],
         exposure=1800,
-        change_log=[chg("2024-10-01", "1.4", "Funding curve and cost allocation refresh.", "Developer 2", "Non-material", "Parameter refresh.")],
+        change_log=[chg("2024-10-01", "1.4", "Funding curve and cost allocation refresh.", "Model Developer 2", "Non-material", "Parameter refresh.")],
     ),
     # ------------------------------------------------------------ in development
     model(
@@ -385,8 +387,8 @@ MODELS = [
         business_line="SME Lending", source="In-house",
         methodology="Gradient-boosted model on cash-flow, turnover and repayment-behaviour features from bank statements",
         description="Scores thin-file SMEs where audited financials are unreliable, using transaction behaviour from bank statements.",
-        owner="Owner 1", developer="Developer 4", validator=PRIYA,
-        sponsor="Chief Risk Officer", area="credit",
+        owner="Model Owner 1", developer="Model Developer 4", validator=PRIYA,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="credit",
         scores={"materiality": "Medium", "complexity": "High", "regulatory_impact": "Medium"},
         tier_rationale="Machine-learning model that will influence credit decisions for thin-file SMEs.",
         status="In Validation", approval_date=None,
@@ -399,7 +401,7 @@ MODELS = [
         assumptions=["Statement features are stable across banks and formats"],
         limitations=["Short performance window", "Explainability and bias testing required under the QCB AI Guideline"],
         exposure=600, ai_system=True, qcb_ai_high_risk=True,
-        change_log=[chg("2026-08-15", "0.5", "Prototype with 42 engineered features.", "Developer 4", "Material", "New model under development.")],
+        change_log=[chg("2026-08-15", "0.5", "Prototype with 42 engineered features.", "Model Developer 4", "Material", "New model under development.")],
     ),
     model(
         "QDB-011", "Credit Bureau Score — Individual",
@@ -407,8 +409,8 @@ MODELS = [
         business_line="SME Lending", source="In-house",
         methodology="Logistic regression on Qatar Credit Bureau attributes of owners and guarantors",
         description="Scores the individuals behind an SME (owners, guarantors) from their credit bureau records.",
-        owner="Owner 1", developer="Developer 3", validator=HASSAN,
-        sponsor="Chief Risk Officer", area="credit",
+        owner="Model Owner 1", developer="Model Developer 3", validator=HASSAN,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="credit",
         scores={"materiality": "Medium", "complexity": "Medium", "regulatory_impact": "Medium"},
         tier_rationale="One input to the combination module; moderate influence on decisions.",
         status="Awaiting Approval", approval_date=None,
@@ -420,8 +422,8 @@ MODELS = [
         assumptions=["Bureau coverage of owners is sufficient"],
         limitations=["Bureau history for expatriate owners is limited"],
         exposure=600,
-        change_log=[chg("2026-07-01", "0.3", "Variable selection on bureau attributes.", "Developer 3", "Material", "New model under development."),
-                    chg("2026-08-25", "1.0", "Final model submitted for validation.", "Developer 3", "Material", "First production version.")],
+        change_log=[chg("2026-07-01", "0.3", "Variable selection on bureau attributes.", "Model Developer 3", "Material", "New model under development."),
+                    chg("2026-08-25", "1.0", "Final model submitted for validation.", "Model Developer 3", "Material", "First production version.")],
     ),
     model(
         "QDB-012", "Credit Bureau Score — Corporate",
@@ -429,8 +431,8 @@ MODELS = [
         business_line="SME & Corporate Lending", source="In-house",
         methodology="Logistic regression on Qatar Credit Bureau company attributes",
         description="Scores the borrowing company from its credit bureau record.",
-        owner="Owner 1", developer="Developer 3", validator=HASSAN,
-        sponsor="Chief Risk Officer", area="credit",
+        owner="Model Owner 1", developer="Model Developer 3", validator=HASSAN,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="credit",
         scores={"materiality": "Medium", "complexity": "Medium", "regulatory_impact": "Medium"},
         tier_rationale="One input to the combination module; moderate influence on decisions.",
         status="Approved — Awaiting Implementation", approval_date="2026-09-25",
@@ -442,8 +444,8 @@ MODELS = [
         assumptions=["Bureau coverage of companies is sufficient"],
         limitations=["New companies have no bureau history"],
         exposure=1500,
-        change_log=[chg("2026-07-01", "0.3", "Variable selection on bureau attributes.", "Developer 3", "Material", "New model under development."),
-                    chg("2026-08-15", "1.0", "Final model submitted for validation.", "Developer 3", "Material", "First production version.")],
+        change_log=[chg("2026-07-01", "0.3", "Variable selection on bureau attributes.", "Model Developer 3", "Material", "New model under development."),
+                    chg("2026-08-15", "1.0", "Final model submitted for validation.", "Model Developer 3", "Material", "First production version.")],
     ),
     model(
         "QDB-013", "Combination Module (rating, bureau and transaction scores)",
@@ -451,8 +453,8 @@ MODELS = [
         business_line="SME & Corporate Lending", source="In-house",
         methodology="Weighted combination of rating, bureau and transaction scores into a final grade, with an override matrix",
         description="Combines the CreditLens rating, the two bureau scores and the transaction score into one final risk grade for decisioning.",
-        owner="Owner 1", developer="Developer 4", validator=None,
-        sponsor="Chief Risk Officer", area="credit",
+        owner="Model Owner 1", developer="Model Developer 4", validator=None,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="credit",
         scores={"materiality": "High", "complexity": "Medium", "regulatory_impact": "Medium"},
         tier_rationale="Will set the final grade used for approval authority across SME lending.",
         status="In Development", approval_date=None,
@@ -465,7 +467,7 @@ MODELS = [
         assumptions=["Component scores are complementary"],
         limitations=["Weights are expert-set until outcome data accumulates"],
         exposure=4500,
-        change_log=[chg("2026-08-20", "0.2", "Initial weighting scheme agreed with Credit.", "Developer 4", "Material", "New model under development.")],
+        change_log=[chg("2026-08-20", "0.2", "Initial weighting scheme agreed with Credit.", "Model Developer 4", "Material", "New model under development.")],
     ),
     # ------------------------------------------------------------ placeholders for other risk types
     model(
@@ -474,8 +476,8 @@ MODELS = [
         business_line="Treasury / ALM", source="In-house",
         methodology="Cash-flow projection under idiosyncratic and market-wide stress scenarios",
         description="Placeholder record — projects the survival horizon under liquidity stress.",
-        owner="Owner 3", developer="Treasury analytics", validator=HASSAN,
-        sponsor="Chief Financial Officer", area="treasury",
+        owner="Model Owner 3", developer="Treasury analytics", validator=HASSAN,
+        sponsor="Model Sponsor 2 (Chief Financial Officer)", area="treasury",
         scores={"materiality": "Medium", "complexity": "Medium", "regulatory_impact": "High"},
         tier_rationale="Feeds regulatory liquidity reporting.",
         status="In Production", approval_date="2021-06-30",
@@ -486,7 +488,7 @@ MODELS = [
         users=["Treasury", "ALCO"],
         assumptions=["Behavioural run-off rates per product"], limitations=["Run-off assumptions not evidenced"],
         exposure=3000, placeholder=True,
-        change_log=[chg("2021-05-01", "1.1", "Scenario update.", "Owner 3", "Non-material", "Scenario parameters refresh.")],
+        change_log=[chg("2021-05-01", "1.1", "Scenario update.", "Model Owner 3", "Non-material", "Scenario parameters refresh.")],
     ),
     model(
         "QDB-015", "IRRBB Model (EVE and NII sensitivity)",
@@ -494,8 +496,8 @@ MODELS = [
         business_line="Treasury / ALM", source="In-house",
         methodology="Repricing gap with standard rate shocks for economic value and net profit income",
         description="Placeholder record — measures interest (profit) rate risk in the banking book.",
-        owner="Owner 3", developer="Treasury analytics", validator=HASSAN,
-        sponsor="Chief Financial Officer", area="treasury",
+        owner="Model Owner 3", developer="Treasury analytics", validator=HASSAN,
+        sponsor="Model Sponsor 2 (Chief Financial Officer)", area="treasury",
         scores={"materiality": "Medium", "complexity": "Medium", "regulatory_impact": "Medium"},
         tier_rationale="Internal limits with regulatory visibility.",
         status="In Production", approval_date="2022-03-15",
@@ -506,7 +508,7 @@ MODELS = [
         users=["Treasury", "ALCO"],
         assumptions=["Repricing buckets per product"], limitations=["No behavioural prepayment model"],
         exposure=2000, placeholder=True,
-        change_log=[chg("2022-02-01", "1.0", "First version.", "Owner 3", "Material", "New model.")],
+        change_log=[chg("2022-02-01", "1.0", "First version.", "Model Owner 3", "Material", "New model.")],
     ),
     model(
         "QDB-016", "Operational Risk Scenario Analysis",
@@ -514,8 +516,8 @@ MODELS = [
         business_line="Operational Risk", source="In-house",
         methodology="Expert-elicited frequency and severity per scenario, aggregated to an annual loss estimate",
         description="Placeholder record — estimates severe but plausible operational losses for risk appetite.",
-        owner="Owner 5", developer="Operational Risk team", validator=HASSAN,
-        sponsor="Chief Risk Officer", area="oprisk",
+        owner="Model Owner 5", developer="Operational Risk team", validator=HASSAN,
+        sponsor="Model Sponsor 1 (Head of SME & Corporate Lending)", area="oprisk",
         scores={"materiality": "Low", "complexity": "Low", "regulatory_impact": "Medium"},
         tier_rationale="Management information and risk appetite only.",
         status="In Production", approval_date="2023-02-28",
@@ -526,7 +528,7 @@ MODELS = [
         users=["Operational Risk", "Management Risk Committee"],
         assumptions=["Workshop estimates are unbiased"], limitations=["Few internal loss events"],
         exposure=0, placeholder=True,
-        change_log=[chg("2023-01-15", "1.0", "First version.", "Owner 5", "Material", "New model.")],
+        change_log=[chg("2023-01-15", "1.0", "First version.", "Model Owner 5", "Material", "New model.")],
     ),
     model(
         "QDB-017", "AML Customer Risk Rating",
@@ -534,8 +536,8 @@ MODELS = [
         business_line="Compliance", source="Vendor", vendor="AML platform vendor",
         methodology="Weighted risk factors (customer type, geography, product, channel) with vendor defaults",
         description="Placeholder record — rates customers for AML/CFT due diligence under Law No. 20 of 2019.",
-        owner="Owner 4", developer="Vendor, configured by Compliance", validator=PRIYA,
-        sponsor="Chief Compliance Officer", area="compliance",
+        owner="Model Owner 4", developer="Vendor, configured by Compliance", validator=PRIYA,
+        sponsor="Model Sponsor 4 (Chief Compliance Officer)", area="compliance",
         scores={"materiality": "Medium", "complexity": "Medium", "regulatory_impact": "High"},
         tier_rationale="Statutory AML/CFT compliance.",
         status="Approved with Conditions", approval_date="2024-06-30",
@@ -546,7 +548,7 @@ MODELS = [
         users=["Compliance"],
         assumptions=["Vendor factor weights suit QDB's customer base"], limitations=["Weights not calibrated to QDB"],
         exposure=0, placeholder=True,
-        change_log=[chg("2024-05-01", "2.0", "Vendor upgrade.", "Owner 4", "Material", "Vendor release.")],
+        change_log=[chg("2024-05-01", "2.0", "Vendor upgrade.", "Model Owner 4", "Material", "Vendor release.")],
     ),
 ]
 
@@ -584,7 +586,7 @@ TOOLS = [
         "tool_id": "QDB-EUC-001", "name": "ECL ETL consolidation workbook",
         "classification": "EUC tool",
         "description": "Prepares and stages the consolidated data template consumed by the ECL engine.",
-        "owner": label("Owner 2"), "business_area": "Financial Control",
+        "owner": label("Model Owner 2"), "business_area": "Financial Control",
         "platform": "Excel with macros", "materiality": "High",
         "controls": "Version control, input reconciliation to the general ledger, second-person review",
         "ai_system": False, "related_models": ["QDB-006"],
@@ -593,7 +595,7 @@ TOOLS = [
         "tool_id": "QDB-EUC-002", "name": "Provision journal calculator",
         "classification": "EUC tool",
         "description": "Turns ECL results into general-ledger journal entries by product and branch.",
-        "owner": label("Owner 2"), "business_area": "Financial Control",
+        "owner": label("Model Owner 2"), "business_area": "Financial Control",
         "platform": "Excel", "materiality": "Medium",
         "controls": "Totals reconciled to ECL engine output",
         "ai_system": False, "related_models": ["QDB-006"],
@@ -602,7 +604,7 @@ TOOLS = [
         "tool_id": "QDB-AI-001", "name": "Financial statement spreading (OCR)",
         "classification": "AI tool (non-model)",
         "description": "Reads uploaded financial statements and pre-fills CreditLens spreads for analyst review.",
-        "owner": label("Owner 1"), "business_area": "Credit Underwriting",
+        "owner": label("Model Owner 1"), "business_area": "Credit Underwriting",
         "platform": "Moody's CreditLens add-on", "materiality": "Medium",
         "controls": "Analyst reviews every spread before rating",
         "ai_system": True, "qcb_ai_high_risk": False,
@@ -615,7 +617,7 @@ TOOLS = [
         "tool_id": "QDB-NM-001", "name": "Repayment schedule calculator",
         "classification": "Not a model",
         "description": "Produces instalment schedules from contract terms; no estimation.",
-        "owner": label("Developer 3"), "business_area": "Credit Administration",
+        "owner": label("Model Developer 3"), "business_area": "Credit Administration",
         "platform": "Core banking", "materiality": "Low", "controls": "Core banking controls",
         "ai_system": False, "related_models": [],
     },
@@ -627,7 +629,7 @@ _ANSWERS = {
 }
 for t in TOOLS:
     t["identification_answers"] = _ANSWERS[t["classification"]]
-    t["registered_by"] = "MRM Admin 1"
+    t["registered_by"] = "MRM Administrator 1"
     t["registered_on"] = "2026-09-15"
     t["last_reviewed"] = "2026-09-15"
 
@@ -705,8 +707,8 @@ closed_val("QDB-017", "2025-05-18", "Periodic", "Fit with Conditions", PRIYA, ["
 
 req("VAL", "QDB-010", title="Initial validation request", status="In Progress",
     description="Requesting initial validation of the transaction scoring model before pilot use, including bias and explainability testing under the QCB AI Guideline.",
-    initiated_by="Developer 4", assigned_to=PRIYA, created="2026-09-01", source="LoD1 Request", subtype="Initial",
-    thread=[("2026-09-01", "Developer 4", "Requesting initial validation of the transaction scoring model before pilot use, including bias and explainability testing under the QCB AI Guideline."),
+    initiated_by="Model Developer 4", assigned_to=PRIYA, created="2026-09-01", source="LoD1 Request", subtype="Initial",
+    thread=[("2026-09-01", "Model Developer 4", "Requesting initial validation of the transaction scoring model before pilot use, including bias and explainability testing under the QCB AI Guideline."),
             ("2026-09-08", PRIYA, "Accepted. Please upload the development document, feature list and the out-of-time results. I will send the information request list this week.")])
 req("VAL", "QDB-006", title="Periodic validation (overdue)", status="Open",
     description="Periodic validation overdue since November 2025. Scope to include an independent recalculation of ECL for a sample portfolio.",
@@ -714,63 +716,63 @@ req("VAL", "QDB-006", title="Periodic validation (overdue)", status="Open",
 
 req("MC", "QDB-005", title="Material change v2.0 — density-based weights", status="In Progress",
     description="Weights redesigned around the current IMF forecast. Version 2.0 used for the June 2026 ECL run pending revalidation.",
-    initiated_by="Developer 1", assigned_to=HASSAN, created="2026-07-20", source="Model Change", materiality="Material",
-    thread=[("2026-07-20", "Developer 1", "Weights redesigned around the current IMF forecast. Version 2.0 used for the June 2026 ECL run pending revalidation."),
+    initiated_by="Model Developer 1", assigned_to=HASSAN, created="2026-07-20", source="Model Change", materiality="Material",
+    thread=[("2026-07-20", "Model Developer 1", "Weights redesigned around the current IMF forecast. Version 2.0 used for the June 2026 ECL run pending revalidation."),
             ("2026-07-28", HASSAN, "Received. Please attach the design note and the comparison of v1 and v2 weights across the last four quarters."),
-            ("2026-08-04", "Developer 1", "Design note attached. Comparison to follow with Q3 data.")])
+            ("2026-08-04", "Model Developer 1", "Design note attached. Comparison to follow with Q3 data.")])
 req("MC", "QDB-001", title="Non-material change v2.1 — annual recalibration", status="Closed",
-    description="Annual recalibration within approved ranges.", initiated_by="Developer 1", assigned_to=PRIYA,
+    description="Annual recalibration within approved ranges.", initiated_by="Model Developer 1", assigned_to=PRIYA,
     created="2026-04-02", closed="2026-04-20", outcome="Fit for Purpose", source="Model Change", materiality="Non-material",
-    thread=[("2026-04-02", "Developer 1", "Annual recalibration within approved ranges."),
+    thread=[("2026-04-02", "Model Developer 1", "Annual recalibration within approved ranges."),
             ("2026-04-20", PRIYA, "[Closure] Confirmed non-material; parameters within approved ranges.")])
 
 req("FND", "QDB-001", title="Point-in-time adjustment not back-tested by segment", status="Open", severity="Medium",
     description="The macro-linked PiT adjustment is only back-tested at portfolio level.",
     remediation="Back-test the PiT adjustment for each rating segment and document results.",
-    initiated_by=PRIYA, assigned_to="Developer 1", created="2025-10-15", due="2026-04-15", source="Validation")
+    initiated_by=PRIYA, assigned_to="Model Developer 1", created="2025-10-15", due="2026-04-15", source="Validation")
 fnd_ecl = req("FND", "QDB-006", title="No independent recalculation of vendor ECL engine", status="Open", severity="High",
     description="ECL produced by the vendor engine cannot be reproduced; internals are not documented.",
     remediation="Build an independent recalculation for a sample portfolio and obtain vendor documentation of the SQL procedures.",
-    initiated_by=PRIYA, assigned_to="Owner 2", created="2024-11-05", due="2025-05-05", source="Validation",
+    initiated_by=PRIYA, assigned_to="Model Owner 2", created="2024-11-05", due="2025-05-05", source="Validation",
     thread=[("2024-11-05", PRIYA, "ECL produced by the vendor engine cannot be reproduced; internals are not documented."),
-            ("2025-04-20", "Owner 2", "Vendor documentation requested; recalculation plan attached."),
-            ("2026-03-02", "Developer 2", "Python recalculation covers Stage 1 and 2; Stage 3 pending.")])
+            ("2025-04-20", "Model Owner 2", "Vendor documentation requested; recalculation plan attached."),
+            ("2026-03-02", "Model Developer 2", "Python recalculation covers Stage 1 and 2; Stage 3 pending.")])
 req("FND", "QDB-004", title="Cure period rule not documented", status="Open", severity="Low",
     description="The 3-month cure period for exits from Stage 2 is applied in the ETL but not written in the methodology.",
     remediation="Document the cure period rule and its rationale in the methodology document.",
-    initiated_by=PRIYA, assigned_to="Developer 1", created="2025-10-15", due="2026-10-15", source="Validation")
+    initiated_by=PRIYA, assigned_to="Model Developer 1", created="2025-10-15", due="2026-10-15", source="Validation")
 fnd_cr = req("FND", "QDB-007", title="Override rate above policy threshold", status="Open", severity="Medium",
     description="Rating overrides at 24% against a 15% policy threshold.",
     remediation="Analyse override reasons; tighten override governance; recalibrate qualitative factors if needed.",
-    initiated_by=PRIYA, assigned_to="Owner 1", created="2025-11-20", due="2026-05-20", source="Validation",
+    initiated_by=PRIYA, assigned_to="Model Owner 1", created="2025-11-20", due="2026-05-20", source="Validation",
     thread=[("2025-11-20", PRIYA, "Rating overrides at 24% against a 15% policy threshold."),
-            ("2026-07-15", "Owner 1", "Q2 2026 override extract attached; overrides reasons being coded.")])
+            ("2026-07-15", "Model Owner 1", "Q2 2026 override extract attached; overrides reasons being coded.")])
 req("FND", "QDB-005", title="Downside weights moved in the wrong direction", status="Closed", severity="Medium",
     description="Under v1.0, a weaker GDP forecast lowered the downside scenario weight.",
     remediation="Redesign the weighting so weights respond in the expected direction.",
-    initiated_by=HASSAN, assigned_to="Developer 1", created="2024-12-10", due="2025-12-10", closed="2026-07-25",
+    initiated_by=HASSAN, assigned_to="Model Developer 1", created="2024-12-10", due="2025-12-10", closed="2026-07-25",
     outcome="Closed", source="Validation",
     thread=[("2024-12-10", HASSAN, "Under v1.0, a weaker GDP forecast lowered the downside scenario weight."),
-            ("2026-07-20", "Developer 1", "Fixed by the v2.0 density-based redesign (see MC-001)."),
+            ("2026-07-20", "Model Developer 1", "Fixed by the v2.0 density-based redesign (see MC-001)."),
             ("2026-07-25", HASSAN, "[Closure] Verified on the v2.0 workbook: weights now move in the expected direction.")])
 req("FND", "QDB-017", title="Risk factor weights not calibrated to QDB customers", status="Open", severity="High",
     description="Placeholder — vendor default weights used without calibration.",
     remediation="Calibrate factor weights to QDB's customer base and document the rationale.",
-    initiated_by=PRIYA, assigned_to="Owner 4", created="2025-05-18", due="2025-11-18", source="Validation")
+    initiated_by=PRIYA, assigned_to="Model Owner 4", created="2025-05-18", due="2025-11-18", source="Validation")
 req("FND", "QDB-014", title="Behavioural run-off assumptions not evidenced", status="Open", severity="Medium",
     description="Placeholder — run-off rates are expert-set with no supporting analysis.",
     remediation="Evidence run-off rates from deposit history.",
-    initiated_by=HASSAN, assigned_to="Owner 3", created="2023-12-05", due="2024-06-05", source="Validation")
+    initiated_by=HASSAN, assigned_to="Model Owner 3", created="2023-12-05", due="2024-06-05", source="Validation")
 req("FND", "QDB-002", title="Collateral register not available for LGD development", status="Open", severity="Medium",
     description="LGD development cannot calibrate haircuts without collateral values and allocation to facilities.",
     remediation="Deliver a collateral register extract (type, value, valuation date, allocation) to Risk Analytics.",
-    initiated_by=AUDITOR, assigned_to="Owner 1", created="2026-08-20", due="2027-02-20", source="Internal Audit")
+    initiated_by=AUDITOR, assigned_to="Model Owner 1", created="2026-08-20", due="2027-02-20", source="Internal Audit")
 req("FND", "QDB-008", title="Sector mapping table not version-controlled", status="Closed", severity="Low",
     description="The mapping of economic activity codes to rating templates is kept in an uncontrolled spreadsheet.",
-    remediation="Move the mapping under version control.", initiated_by=PRIYA, assigned_to="Developer 3",
+    remediation="Move the mapping under version control.", initiated_by=PRIYA, assigned_to="Model Developer 3",
     created="2025-11-20", due="2026-05-20", closed="2026-02-10", outcome="Closed", source="Validation",
     thread=[("2025-11-20", PRIYA, "The mapping of economic activity codes to rating templates is kept in an uncontrolled spreadsheet."),
-            ("2026-02-01", "Developer 3", "Mapping now in the controlled repository."),
+            ("2026-02-01", "Model Developer 3", "Mapping now in the controlled repository."),
             ("2026-02-10", PRIYA, "[Closure] Verified.")])
 
 v_cbi = closed_val("QDB-011", "2026-09-20", "Initial", "Fit with Conditions", HASSAN, T_PD,
@@ -780,7 +782,7 @@ v_cbc = closed_val("QDB-012", "2026-09-10", "Initial", "Fit for Purpose", HASSAN
 req("FND", "QDB-011", title="Coverage of expatriate owners not tested", status="Open", severity="Low",
     description="Discrimination was not tested separately for owners with short bureau histories.",
     remediation="Test performance on owners with under 24 months of bureau history.",
-    initiated_by=HASSAN, assigned_to="Developer 3", created="2026-09-20", due="2027-03-20", source="Validation")
+    initiated_by=HASSAN, assigned_to="Model Developer 3", created="2026-09-20", due="2027-03-20", source="Validation")
 
 
 def engagement(stage, scope=None, tests=None, declared=None, irs=None, draft=None,
@@ -803,21 +805,21 @@ val_tx["engagement"] = engagement(
     "Fieldwork", "Initial validation: conceptual soundness, feature engineering, out-of-time "
     "performance, bias and explainability tests required by the QCB AI Guideline.",
     T_PD + ["Bias and explainability testing"], (PRIYA, "2026-09-08"), [
-        ("Model development document", "Developer 4", "2026-09-15", "Accepted",
+        ("Model development document", "Model Developer 4", "2026-09-15", "Answered",
          "Development document v0.5 uploaded.", "2026-09-12"),
-        ("Feature list with definitions and data lineage", "Developer 4", "2026-09-22", "Answered",
+        ("Feature list with definitions and data lineage", "Model Developer 4", "2026-09-22", "Answered",
          "Feature dictionary attached (42 features).", "2026-09-24"),
-        ("Out-of-time results on the 2025 cohort", "Developer 4", "2026-10-06", "Open", None, None),
-        ("Bias test by sector and company age", "Developer 4", "2026-10-13", "Open", None, None),
+        ("Out-of-time results on the 2025 cohort", "Model Developer 4", "2026-10-06", "Open", None, None),
+        ("Bias test by sector and company age", "Model Developer 4", "2026-10-13", "Open", None, None),
     ])
 mc_sw = next(r for r in REQUESTS if r["model_id"] == "QDB-005" and r["type"] == "MC")
 mc_sw["engagement"] = engagement(
     "Fieldwork", "Revalidation of the v2.0 density-based weighting: design, sensitivity to the "
     "IMF forecast and the anchors, comparison with v1.0 over four quarters.",
     ["Scenario testing", "Sensitivity analysis", "Benchmarking"], (HASSAN, "2026-07-28"), [
-        ("Design note for v2.0", "Developer 1", "2026-08-05", "Accepted",
+        ("Design note for v2.0", "Model Developer 1", "2026-08-05", "Answered",
          "Design note attached to the thread.", "2026-08-04"),
-        ("v1.0 vs v2.0 weights over the last four quarters", "Developer 1", "2026-09-30", "Open", None, None),
+        ("v1.0 vs v2.0 weights over the last four quarters", "Model Developer 1", "2026-09-30", "Open", None, None),
     ])
 val_ecl = next(r for r in REQUESTS if r["model_id"] == "QDB-006" and r["type"] == "VAL" and r["status"] == "Open")
 val_ecl["engagement"] = engagement("Scoping")
@@ -825,10 +827,10 @@ for v, rating, on, rev in ((v_cbi, "Fit with Conditions", "2026-09-20", "2026-09
                            (v_cbc, "Fit for Purpose", "2026-09-10", "2026-09-08")):
     v["engagement"] = engagement(
         "Signed off", "Initial validation before first use.", T_PD, (HASSAN, "2026-08-28"),
-        [("Development document and code", "Developer 3", "2026-09-01", "Accepted",
+        [("Development document and code", "Model Developer 3", "2026-09-01", "Answered",
           "Uploaded.", "2026-08-31")],
         draft={"rating": rating, "summary": "Draft issued.", "issued_by": HASSAN, "issued_on": "2026-09-05"},
-        owner_review={"comments": "No factual-accuracy comments.", "by": "Owner 1", "on": rev},
+        owner_review={"comments": "No factual-accuracy comments.", "by": "Model Owner 1", "on": rev},
         signed={"rating": rating, "by": HASSAN, "on": on},
     )
 
@@ -851,7 +853,7 @@ for m in sorted(MODELS, key=lambda x: x["approval_date"] or "9999"):
     conditions = []
     if m["model_id"] == "QDB-012":
         conditions = [{"cond_id": "C-1", "condition": "Monitoring plan with thresholds approved before go-live",
-                       "owner": label("Owner 1"), "due": "2026-10-31", "status": "Open",
+                       "owner": label("Model Owner 1"), "due": "2026-10-31", "status": "Open",
                        "note": None, "met_on": None, "verified_by": None, "verified_on": None}]
     elif with_cond:
         conditions = [{"cond_id": "C-1", "condition": "Remediate the validation findings by their due dates",
@@ -861,7 +863,7 @@ for m in sorted(MODELS, key=lambda x: x["approval_date"] or "9999"):
         "approval_id": f"APR-{_apr:03d}", "date": m["approval_date"], "body": APPROVAL_BODY[tier],
         "decision": "Approved with conditions" if conditions else "Approved",
         "conditions": conditions, "version": "1.0" if m["model_id"] == "QDB-005" else m["version"],
-        "recorded_by": "MRM Admin 1" if tier == 1 else "CRO 1",
+        "recorded_by": "MRM Administrator 1" if tier == 1 else "CRO",
         "minute_ref": f"MgmtRC {m['approval_date'][:7]}" if tier == 1 else None,
         "comment": None,
     })
@@ -896,19 +898,19 @@ def evidence(model_id, linked_type, linked_id, filename, category, description, 
 
 mc = next(r for r in REQUESTS if r["model_id"] == "QDB-005" and r["type"] == "MC")
 eid = evidence("QDB-005", "request_response", mc["thread"][2]["response_id"], "scenario_weights_v2_design_note.txt",
-               "Document", "Design note for density-based scenario weights", "Developer 1", "2026-08-04T10:00:00",
+               "Document", "Design note for density-based scenario weights", "Model Developer 1", "2026-08-04T10:00:00",
                "Scenario weights v2.0 — design note\nWeights = normal density at each fixed scenario anchor, centred on the IMF forecast, normalised to 100%.")
 mc["thread"][2]["evidence_ids"].append(eid)
 eid = evidence("QDB-006", "request_response", fnd_ecl["thread"][1]["response_id"], "ecl_recalculation_plan.txt",
-               "Document", "Plan for independent ECL recalculation", "Owner 2", "2025-04-20T09:30:00",
+               "Document", "Plan for independent ECL recalculation", "Model Owner 2", "2025-04-20T09:30:00",
                "Independent ECL recalculation plan\nScope: sample of 200 facilities across stages.")
 fnd_ecl["thread"][1]["evidence_ids"].append(eid)
 eid = evidence("QDB-007", "request_response", fnd_cr["thread"][1]["response_id"], "override_rate_extract_q2_2026.txt",
-               "Data extract", "Q2 2026 rating override extract", "Owner 1", "2026-07-15T14:00:00",
+               "Data extract", "Q2 2026 rating override extract", "Model Owner 1", "2026-07-15T14:00:00",
                "Override extract Q2 2026\nOverrides: 24% of rated obligors.")
 fnd_cr["thread"][1]["evidence_ids"].append(eid)
 evidence("QDB-002", "model", "QDB-002", "lgd_data_gap_analysis.txt", "Document",
-         "LGD data gap analysis on the 2016–2026 loan tape", "Developer 2", "2026-08-12T11:00:00",
+         "LGD data gap analysis on the 2016–2026 loan tape", "Model Developer 2", "2026-08-12T11:00:00",
          "LGD data gap analysis\nMissing: collateral register, guarantee register, collection split by cash type.",
          doc_type="Data Quality Assessment")
 val_pd = next(r for r in REQUESTS if r["model_id"] == "QDB-001" and r["type"] == "VAL" and r["closed_date"] == "2025-10-15")
@@ -971,10 +973,10 @@ def event(ts, user, action, entity_type, entity_id, model_id, details):
 
 for m in MODELS:
     first = min([c["date"] for c in m["change_log"]] + [m["approval_date"] or "9999"])
-    event(first, "MRM Admin 1", "register_model", "model", m["model_id"], m["model_id"],
+    event(first, "MRM Administrator 1", "register_model", "model", m["model_id"], m["model_id"],
           f"Model registered in the inventory: {m['name']}")
     for c in m["change_log"]:
-        author = c["author"] if c["author"] in ROLE else "MRM Admin 1"
+        author = c["author"] if c["author"] in ROLE else "MRM Administrator 1"
         event(c["date"], author, "record_change", "change", c["change_id"], m["model_id"],
               f"{c['classification']} change to v{c['version']}: {c['description'][:80]}")
     for r in m["audit_reviews"]:

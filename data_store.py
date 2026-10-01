@@ -285,8 +285,10 @@ def close_request(request_id: str, comment: str, outcome: str | None = None,
         if r["status"] == "Closed":
             raise ValueError("Request already closed")
         outcome = governance.normalise_outcome(outcome)
-        if r["type"] in ("VAL", "MC") and outcome not in governance.RATING_SCALE:
+        if _needs_engagement(r) and outcome not in governance.RATING_SCALE:
             raise ValueError("Choose a rating from the validation rating scale.")
+        if r["type"] == "MC" and not _needs_engagement(r):
+            outcome = outcome or "Noted"
         before = copy.deepcopy(r)
         response_id = f"{request_id}-R{len(r.get('thread') or []) + 1}"
         r["status"] = "Closed"
@@ -995,8 +997,6 @@ def answer_info_request(request_id: str, ir_id: str, response: str,
         if user["name"] not in (governance.person_name(ir["owner"]),) and \
                 not governance.is_owner_or_developer(m, user["name"]):
             raise PermissionError("Only the person asked, or the model's owner or developer, can answer.")
-        if ir["status"] == "Accepted":
-            raise ValueError(f"{ir_id} is already accepted.")
         if not response.strip():
             raise ValueError("Write a response.")
         before = copy.deepcopy(r)
@@ -1007,8 +1007,9 @@ def answer_info_request(request_id: str, ir_id: str, response: str,
     _refresh()
 
 
-def review_info_request(request_id: str, ir_id: str, accept: bool, comment: str = "") -> None:
-    """Validator accepts an answer, or sends it back open with a comment."""
+def send_back_info_request(request_id: str, ir_id: str, comment: str) -> None:
+    """Validator sends an inadequate answer back to the first line (open again).
+    Answers that are not sent back count as accepted when the draft is issued."""
     with repository.tx() as conn:
         r, eng, m = _engagement_request(conn, request_id)
         _require_assigned_validator(r, m)
@@ -1016,14 +1017,13 @@ def review_info_request(request_id: str, ir_id: str, accept: bool, comment: str 
         if ir is None:
             raise ValueError(f"Unknown information request {ir_id}")
         if ir["status"] != "Answered":
-            raise ValueError(f"{ir_id} has no answer to review.")
-        if not accept and not comment.strip():
+            raise ValueError(f"{ir_id} has no answer to send back.")
+        if not comment.strip():
             raise ValueError("Say what is still missing.")
         before = copy.deepcopy(r)
-        ir["status"] = "Accepted" if accept else "Open"
-        ir["review_comment"] = comment.strip() or None
-        _save_engagement(conn, r, before, "review_info_request",
-                         f"{ir_id} {'accepted' if accept else 'sent back'}")
+        ir["status"] = "Open"
+        ir["review_comment"] = comment.strip()
+        _save_engagement(conn, r, before, "send_back_info_request", f"{ir_id} sent back")
     _refresh()
 
 
@@ -1058,12 +1058,11 @@ def submit_owner_review(request_id: str, comments: str) -> None:
         r, eng, m = _engagement_request(conn, request_id)
         if not governance.is_owner_or_developer(m, user["name"]):
             raise PermissionError("Only the model's owner or developer gives the factual-accuracy review.")
-        if eng["stage"] != "Owner review":
+        if eng["stage"] != "Owner review" or eng.get("owner_review"):
             raise ValueError("There is no draft awaiting review.")
         before = copy.deepcopy(r)
         eng["owner_review"] = {"comments": comments.strip() or "No factual-accuracy comments.",
                                "by": user["name"], "on": date.today().isoformat()}
-        eng["stage"] = "Final sign-off"
         _save_engagement(conn, r, before, "owner_review", "Owner's factual-accuracy review submitted")
     _refresh()
 

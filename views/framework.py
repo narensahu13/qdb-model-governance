@@ -7,8 +7,8 @@ import tiering
 import utils
 
 utils.header(
-    "Model Governance Framework",
-    "Proposed Model Risk Management framework for Qatar Development Bank — the policy foundation behind this platform.",
+    "How It Works",
+    "Quick guide to the platform, then the model risk management framework behind it.",
 )
 
 st.markdown(
@@ -22,10 +22,45 @@ QCB-licensed bank), **IFRS 9**, and **Qatar AML/CFT Law No. 20 of 2019**.
 """
 )
 
-tab_def, tab_tier, tab_lifecycle, tab_committee, tab_workflow, tab_roadmap = st.tabs(
-    ["Model Definition & Scope", "Risk Tiering", "Model Lifecycle", "Committees & 3LoD",
+tab_guide, tab_def, tab_tier, tab_lifecycle, tab_committee, tab_workflow, tab_roadmap = st.tabs(
+    ["Quick guide", "Model Definition & Scope", "Risk Tiering", "Model Lifecycle", "Committees & 3LoD",
      "Workflows & Roles", "Implementation Roadmap"]
 )
+
+with tab_guide:
+    st.markdown(
+        """
+**Start with *My Tasks*** — it lists everything waiting on you. Each model's page shows its
+**next step** at the top.
+
+**Who is who**
+
+| Role | What they do here |
+|---|---|
+| **Model owner** | Accountable for the model. Registers it, keeps its record up to date, submits it for validation, answers findings |
+| **Model developer** | Builds and changes the model. Uploads documents, answers the validator's information requests, records model changes |
+| **Model sponsor** | Senior business sponsor. Read-only: follows the model's status and factsheet |
+| **Model user** | Uses the model's output. Read-only |
+| **Model validator** | QDB validator or external consultant, independent of the model. Validates, raises findings, verifies conditions and implementation |
+| **Internal auditor** | Third line. Reviews the framework, may raise findings |
+| **MRM administrator** | Keeps the inventory and people up to date, assigns validators, records committee decisions as secretary. Cannot approve or close |
+| **CRO** | Approves Tier 2 and 3 models and tier overrides; records Management Risk Committee decisions for Tier 1 |
+
+**A model's five steps before use**
+
+1. **Tier confirmed** — the owner proposes a tier; the MRM function confirms it.
+2. **Submitted for validation** — once the required documents are uploaded.
+3. **Validation signed off** — the validator scopes the work, asks for information, sends a draft to the
+   owner for a factual check (7 days), then signs off with a rating.
+4. **Approved** — by the Management Risk Committee (Tier 1) or the CRO (Tier 2 and 3), possibly with conditions.
+5. **Implementation verified** — a validator checks the deployed version is the approved one.
+
+Models already in use are revalidated on their cycle (annual, two-yearly or three-yearly by tier);
+a **material change** sends a model back through steps 3–5. Findings are raised during validation or
+audit, answered by the owner and closed by whoever raised them.
+"""
+    )
+
 
 # ---------------------------------------------------------------- definition
 with tab_def:

@@ -136,7 +136,7 @@ def validation_status(model: dict, today: date | None = None) -> str:
 
 # ---------------------------------------------------------------- independence
 def person_name(label: str | None) -> str:
-    """'Validator 1 (Validator)' -> 'Validator 1'."""
+    """'Model Validator 1 (Validator)' -> 'Model Validator 1'."""
     return (label or "").split(" (")[0].strip()
 
 
@@ -307,9 +307,11 @@ G2_REQUIRED_DOCS = {
     3: ["Model Development Document", "Methodology Document"],
 }
 
-ENGAGEMENT_STAGES = ["Scoping", "Fieldwork", "Draft report", "Owner review", "Final sign-off", "Signed off"]
+# Four steps: the validator plans (scope + independence), gathers evidence, sends the draft
+# to the owner for a factual-accuracy check, and signs off.
+ENGAGEMENT_STAGES = ["Scoping", "Fieldwork", "Owner review", "Signed off"]
 OWNER_REVIEW_DAYS = 7          # owner's factual-accuracy review window (calendar days)
-IR_STATUSES = ["Open", "Answered", "Accepted"]
+IR_STATUSES = ["Open", "Answered"]   # the validator can send an answer back (Open again)
 APPROVAL_DECISIONS = ["Approved", "Approved with conditions", "Rejected"]
 CONDITION_OPEN = "Open"
 CONDITION_MET = "Met — awaiting verification"
@@ -356,16 +358,16 @@ def engagement_can_issue_draft(eng: dict) -> str | None:
     """Reason the draft cannot be issued yet, or None."""
     if not eng.get("independence"):
         return "The validator must declare independence first."
-    open_irs = [ir["ir_id"] for ir in eng.get("info_requests", []) if ir["status"] != "Accepted"]
+    open_irs = [ir["ir_id"] for ir in eng.get("info_requests", []) if ir["status"] == "Open"]
     if open_irs:
-        return f"Information requests not yet accepted: {', '.join(open_irs)}."
+        return f"Information requests still open: {', '.join(open_irs)}."
     return None
 
 
 def engagement_can_sign_off(eng: dict, today: date | None = None) -> str | None:
     """Reason the validation cannot be signed off yet, or None."""
     today = today or date.today()
-    if eng.get("stage") == "Final sign-off":
+    if eng.get("stage") == "Owner review" and eng.get("owner_review"):
         return None
     if eng.get("stage") == "Owner review" and eng.get("draft"):
         issued = date.fromisoformat(eng["draft"]["issued_on"])

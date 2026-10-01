@@ -298,7 +298,7 @@ def tasks_for(user: dict) -> list[dict]:
                     if ir["status"] == "Open" and (governance.person_name(ir["owner"]) == name or mine(m)):
                         tasks.append(_task("Information request", m, f"{ir['ir_id']}: {ir['item']}",
                                            ir.get("review_comment") or "", ir.get("due"), r["request_id"]))
-                if stage == "Owner review" and mine(m):
+                if stage == "Owner review" and mine(m) and not eng.get("owner_review"):
                     due = (date.fromisoformat(eng["draft"]["issued_on"])
                            + timedelta(days=governance.OWNER_REVIEW_DAYS)).isoformat()
                     tasks.append(_task("Factual-accuracy review", m, f"Review the draft report ({r['request_id']})",
@@ -312,13 +312,11 @@ def tasks_for(user: dict) -> list[dict]:
                     if stage == "Scoping":
                         tasks.append(_task("Validation", m, f"Scope {r['request_id']} and declare independence",
                                            r["title"], None, r["request_id"]))
-                    elif stage == "Fieldwork" and answered:
-                        tasks.append(_task("Validation", m, f"Review answers in {r['request_id']}",
-                                           ", ".join(answered), None, r["request_id"]))
                     elif stage == "Fieldwork" and not governance.engagement_can_issue_draft(eng):
                         tasks.append(_task("Validation", m, f"Issue the draft report for {r['request_id']}",
-                                           "All information requests accepted", None, r["request_id"]))
-                    elif stage in ("Owner review", "Final sign-off") and not governance.engagement_can_sign_off(eng):
+                                           f"Answers received: {', '.join(answered) or 'none needed'}",
+                                           None, r["request_id"]))
+                    elif stage == "Owner review" and not governance.engagement_can_sign_off(eng):
                         tasks.append(_task("Validation", m, f"Sign off {r['request_id']} (G3)",
                                            "Owner review done or lapsed", None, r["request_id"]))
         elif r["type"] == "FND":

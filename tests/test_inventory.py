@@ -7,13 +7,13 @@ import data_store
 import governance
 import repository
 
-OWNER = "Owner 1"
-DEVELOPER = "Developer 1"
-OTHER_LOD1 = "Owner 4"
-VALIDATOR = "Validator 1"
-CONSULTANT = "Validator 2"
-ADMIN = "MRM Admin 1"
-CRO = "CRO 1"
+OWNER = "Model Owner 1"
+DEVELOPER = "Model Developer 1"
+OTHER_LOD1 = "Model Owner 4"
+VALIDATOR = "Model Validator 1"
+CONSULTANT = "Model Validator 2"
+ADMIN = "MRM Administrator 1"
+CRO = "CRO"
 
 MODEL_ANSWERS = {"quantitative": True, "theory": True}
 EUC_ANSWERS = {"quantitative": True, "deterministic_only": True, "decision_use": True}
@@ -24,7 +24,7 @@ def new_model_record(**over):
     rec = {
         "name": "SME Early Warning Model", "risk_type": "Credit Rating & Scoring",
         "methodology": "Logistic regression on account conduct", "description": "Flags SMEs at risk.",
-        "owner": "Owner 1 (Head of Credit Risk)", "developer": "Developer 3 (Credit Modelling)",
+        "owner": "Model Owner 1 (Head of Credit Risk)", "developer": "Model Developer 3 (Credit Modelling)",
         "upstream": ["QDB-007"], "uses": [{"use": "Watch-list", "business_area": "Credit",
                                              "decision": "Watch-list entry", "status": "Planned"}],
         "tier_scores": {"materiality": "Medium", "complexity": "Medium", "regulatory_impact": "Low"},
@@ -106,14 +106,14 @@ def test_lod1_cannot_edit_someone_elses_model(act_as):
 def test_owner_cannot_change_accountability(act_as):
     act_as(OWNER)
     with pytest.raises(PermissionError):
-        data_store.update_model("QDB-005", {"validator": "Validator 2 (External Validation Consultant)"})
+        data_store.update_model("QDB-005", {"validator": "Model Validator 2 (External validation consultant)"})
 
 
 def test_admin_validator_assignment_respects_independence(act_as):
     act_as(ADMIN)
     with pytest.raises(PermissionError, match="independence"):
-        data_store.update_model("QDB-005", {"validator": "Developer 1 (Risk Analytics)"})
-    assert data_store.update_model("QDB-005", {"validator": "Validator 2 (External Validation Consultant)"}) == ["validator"]
+        data_store.update_model("QDB-005", {"validator": "Model Developer 1 (Risk Analytics)"})
+    assert data_store.update_model("QDB-005", {"validator": "Model Validator 2 (External validation consultant)"}) == ["validator"]
 
 
 def test_upstream_edit_keeps_downstream_in_sync(act_as):

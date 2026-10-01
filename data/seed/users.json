@@ -1,76 +1,86 @@
 [
   {
-    "name": "Owner 1",
+    "name": "Model Owner 1",
     "title": "Head of Credit Risk",
     "role": "LOD1"
   },
   {
-    "name": "Developer 1",
-    "title": "Risk Analytics",
-    "role": "LOD1"
-  },
-  {
-    "name": "Developer 2",
-    "title": "Risk Analytics",
-    "role": "LOD1"
-  },
-  {
-    "name": "Developer 3",
-    "title": "Credit Modelling",
-    "role": "LOD1"
-  },
-  {
-    "name": "Developer 4",
-    "title": "Data Science",
-    "role": "LOD1"
-  },
-  {
-    "name": "Owner 2",
+    "name": "Model Owner 2",
     "title": "Head of Financial Control",
     "role": "LOD1"
   },
   {
-    "name": "Owner 3",
+    "name": "Model Owner 3",
     "title": "Head of Market & Liquidity Risk",
     "role": "LOD1"
   },
   {
-    "name": "Owner 4",
+    "name": "Model Owner 4",
     "title": "MLRO / Head of Compliance",
     "role": "LOD1"
   },
   {
-    "name": "Owner 5",
+    "name": "Model Owner 5",
     "title": "Head of Operational Risk",
     "role": "LOD1"
   },
   {
-    "name": "Owner 6",
+    "name": "Model Owner 6",
     "title": "Head of Pricing & Strategy",
     "role": "LOD1"
   },
   {
-    "name": "Validator 1",
-    "title": "Model Validator (QDB)",
+    "name": "Model Developer 1",
+    "title": "Risk Analytics",
+    "role": "LOD1"
+  },
+  {
+    "name": "Model Developer 2",
+    "title": "Risk Analytics",
+    "role": "LOD1"
+  },
+  {
+    "name": "Model Developer 3",
+    "title": "Credit Modelling",
+    "role": "LOD1"
+  },
+  {
+    "name": "Model Developer 4",
+    "title": "Data Science",
+    "role": "LOD1"
+  },
+  {
+    "name": "Model Sponsor 1",
+    "title": "Head of SME & Corporate Lending",
+    "role": "VIEWER"
+  },
+  {
+    "name": "Model User 1",
+    "title": "Credit Underwriting",
+    "role": "VIEWER"
+  },
+  {
+    "name": "Model Validator 1",
+    "title": "QDB validator",
     "role": "LOD2"
   },
   {
-    "name": "Validator 2",
-    "title": "External Validation Consultant",
+    "name": "Model Validator 2",
+    "title": "External validation consultant",
     "role": "LOD2"
   },
   {
-    "name": "Auditor 1",
+    "name": "Internal Auditor 1",
     "title": "Internal Audit",
     "role": "LOD3"
   },
   {
-    "name": "MRM Admin 1",
+    "name": "MRM Administrator 1",
     "title": "MRM Administrator",
     "role": "ADMIN"
   },
   {
-    "name": "CRO 1",
+    "name": "CRO",
     "title": "Chief Risk Officer",
     "role": "CRO"
   }

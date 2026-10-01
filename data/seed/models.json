@@ -10,10 +10,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Converts obligor ratings into 12-month and lifetime point-in-time PDs for ECL, using the scenario-weighted macroeconomic outlook.",
-    "owner": "Owner 1 (Head of Credit Risk)",
-    "developer": "Developer 1 (Risk Analytics)",
-    "validator": "Validator 2 (External Validation Consultant)",
-    "sponsor": "Chief Risk Officer",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
+    "developer": "Model Developer 1 (Risk Analytics)",
+    "validator": "Model Validator 2 (External validation consultant)",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -57,7 +57,7 @@
         "date": "2023-11-01",
         "version": "2.0",
         "description": "Redevelopment with lifetime term structure and macro-linked PiT adjustment.",
-        "author": "Developer 1",
+        "author": "Model Developer 1",
         "classification": "Material",
         "justification": "New methodology.",
         "change_id": "CHG-001"
@@ -66,7 +66,7 @@
         "date": "2026-04-02",
         "version": "2.1",
         "description": "Annual PD recalibration within approved ranges.",
-        "author": "Developer 1",
+        "author": "Model Developer 1",
         "classification": "Non-material",
         "justification": "Parameter refresh within the approved methodology.",
         "change_id": "CHG-002"
@@ -127,10 +127,10 @@
         "regulatory_impact": "High"
       },
       "rationale": "Drives Stage 1 and Stage 2 ECL across the whole financing book; output feeds the financial statements.",
-      "proposed_by": "Owner 1",
+      "proposed_by": "Model Owner 1",
       "proposed_on": "2023-12-18",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2023-12-18",
       "override_tier": null,
       "override_reason": null
@@ -146,7 +146,7 @@
           {
             "cond_id": "C-1",
             "condition": "Remediate the validation findings by their due dates",
-            "owner": "Owner 1 (Head of Credit Risk)",
+            "owner": "Model Owner 1 (Head of Credit Risk)",
             "due": null,
             "status": "Open",
             "note": null,
@@ -156,7 +156,7 @@
           }
         ],
         "version": "2.1",
-        "recorded_by": "MRM Admin 1",
+        "recorded_by": "MRM Administrator 1",
         "minute_ref": "MgmtRC 2023-12",
         "comment": null
       }
@@ -164,7 +164,7 @@
     "implementation": [
       {
         "version": "2.1",
-        "verified_by": "Validator 2 (External Validation Consultant)",
+        "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2023-12-25",
         "note": "Deployed version matches the validated version (backfilled)."
       }
@@ -181,10 +181,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "New LGD model for the SME and corporate book, built from a 10-year account-level loan tape. Replaces the current expert LGD assumptions once validated.",
-    "owner": "Owner 1 (Head of Credit Risk)",
-    "developer": "Developer 2 (Risk Analytics)",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
+    "developer": "Model Developer 2 (Risk Analytics)",
     "validator": "Not yet assigned",
-    "sponsor": "Chief Risk Officer",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -223,7 +223,7 @@
         "date": "2026-06-15",
         "version": "0.9",
         "description": "Development build: default population and recovery curves.",
-        "author": "Developer 2",
+        "author": "Model Developer 2",
         "classification": "Material",
         "justification": "New model under development.",
         "change_id": "CHG-003"
@@ -276,10 +276,10 @@
         "regulatory_impact": "High"
       },
       "rationale": "Will drive ECL for every exposure; feeds the financial statements.",
-      "proposed_by": "Owner 1",
+      "proposed_by": "Model Owner 1",
       "proposed_on": "2026-06-15",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2026-06-15",
       "override_tier": null,
       "override_reason": null
@@ -299,10 +299,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Projects exposure at default over the lifetime of each facility, including drawdown of undrawn limits on revolving products.",
-    "owner": "Owner 1 (Head of Credit Risk)",
-    "developer": "Developer 3 (Credit Modelling)",
-    "validator": "Validator 2 (External Validation Consultant)",
-    "sponsor": "Chief Risk Officer",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
+    "developer": "Model Developer 3 (Credit Modelling)",
+    "validator": "Model Validator 2 (External validation consultant)",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -340,7 +340,7 @@
         "date": "2023-10-20",
         "version": "1.2",
         "description": "CCF re-estimation on 2016–2023 data.",
-        "author": "Developer 3",
+        "author": "Model Developer 3",
         "classification": "Material",
         "justification": "Parameter re-estimation.",
         "change_id": "CHG-004"
@@ -392,10 +392,10 @@
         "regulatory_impact": "High"
       },
       "rationale": "Feeds ECL directly; regulatory impact drives Tier 1.",
-      "proposed_by": "Owner 1",
+      "proposed_by": "Model Owner 1",
       "proposed_on": "2023-12-18",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2023-12-18",
       "override_tier": null,
       "override_reason": null
@@ -409,7 +409,7 @@
         "decision": "Approved",
         "conditions": [],
         "version": "1.2",
-        "recorded_by": "MRM Admin 1",
+        "recorded_by": "MRM Administrator 1",
         "minute_ref": "MgmtRC 2023-12",
         "comment": null
       }
@@ -417,7 +417,7 @@
     "implementation": [
       {
         "version": "1.2",
-        "verified_by": "Validator 2 (External Validation Consultant)",
+        "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2023-12-25",
         "note": "Deployed version matches the validated version (backfilled)."
       }
@@ -434,10 +434,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Allocates each exposure to Stage 1, 2 or 3 using significant-increase-in-credit-risk criteria and default triggers.",
-    "owner": "Owner 1 (Head of Credit Risk)",
-    "developer": "Developer 1 (Risk Analytics)",
-    "validator": "Validator 2 (External Validation Consultant)",
-    "sponsor": "Chief Risk Officer",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
+    "developer": "Model Developer 1 (Risk Analytics)",
+    "validator": "Model Validator 2 (External validation consultant)",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -477,7 +477,7 @@
         "date": "2024-02-10",
         "version": "1.3",
         "description": "Added restructuring flag as a Stage 2 trigger.",
-        "author": "Developer 1",
+        "author": "Model Developer 1",
         "classification": "Material",
         "justification": "New SICR trigger.",
         "change_id": "CHG-005"
@@ -531,10 +531,10 @@
         "regulatory_impact": "High"
       },
       "rationale": "Stage allocation decides 12-month vs lifetime ECL for the whole book.",
-      "proposed_by": "Owner 1",
+      "proposed_by": "Model Owner 1",
       "proposed_on": "2023-12-18",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2023-12-18",
       "override_tier": null,
       "override_reason": null
@@ -548,7 +548,7 @@
         "decision": "Approved",
         "conditions": [],
         "version": "1.3",
-        "recorded_by": "MRM Admin 1",
+        "recorded_by": "MRM Administrator 1",
         "minute_ref": "MgmtRC 2023-12",
         "comment": null
       }
@@ -556,7 +556,7 @@
     "implementation": [
       {
         "version": "1.3",
-        "verified_by": "Validator 2 (External Validation Consultant)",
+        "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2023-12-25",
         "note": "Deployed version matches the validated version (backfilled)."
       }
@@ -573,10 +573,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Sets the probability weights of the five macroeconomic scenarios used in the PD model and the ECL engine.",
-    "owner": "Owner 1 (Head of Credit Risk)",
-    "developer": "Developer 1 (Risk Analytics)",
-    "validator": "Validator 1 (Model Validator (QDB))",
-    "sponsor": "Chief Risk Officer",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
+    "developer": "Model Developer 1 (Risk Analytics)",
+    "validator": "Model Validator 1 (QDB validator)",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -615,7 +615,7 @@
         "date": "2024-11-15",
         "version": "1.0",
         "description": "First documented version: weights from historical mean.",
-        "author": "Developer 1",
+        "author": "Model Developer 1",
         "classification": "Material",
         "justification": "New model.",
         "change_id": "CHG-006"
@@ -624,7 +624,7 @@
         "date": "2026-07-20",
         "version": "2.0",
         "description": "Redesigned to density-based weights centred on the current IMF forecast; fixes downside weights moving the wrong way.",
-        "author": "Developer 1",
+        "author": "Model Developer 1",
         "classification": "Material",
         "justification": "Methodology change.",
         "change_id": "CHG-007"
@@ -677,10 +677,10 @@
         "regulatory_impact": "High"
       },
       "rationale": "Weights move ECL for every exposure; expert judgement involved.",
-      "proposed_by": "Owner 1",
+      "proposed_by": "Model Owner 1",
       "proposed_on": "2024-12-20",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2024-12-20",
       "override_tier": null,
       "override_reason": null
@@ -696,7 +696,7 @@
           {
             "cond_id": "C-1",
             "condition": "Remediate the validation findings by their due dates",
-            "owner": "Owner 1 (Head of Credit Risk)",
+            "owner": "Model Owner 1 (Head of Credit Risk)",
             "due": null,
             "status": "Open",
             "note": null,
@@ -706,7 +706,7 @@
           }
         ],
         "version": "1.0",
-        "recorded_by": "MRM Admin 1",
+        "recorded_by": "MRM Administrator 1",
         "minute_ref": "MgmtRC 2024-12",
         "comment": null
       }
@@ -714,7 +714,7 @@
     "implementation": [
       {
         "version": "1.0",
-        "verified_by": "Validator 1 (Model Validator (QDB))",
+        "verified_by": "Model Validator 1 (QDB validator)",
         "verified_on": "2024-12-27",
         "note": "Deployed version matches the validated version (backfilled)."
       }
@@ -731,10 +731,10 @@
     "source": "Vendor",
     "vendor": "LIC",
     "description": "Web-based vendor engine that computes ECL from the staged data prepared by the ETL tool.",
-    "owner": "Owner 2 (Head of Financial Control)",
+    "owner": "Model Owner 2 (Head of Financial Control)",
     "developer": "Vendor (LIC), configured by Risk Analytics",
-    "validator": "Validator 2 (External Validation Consultant)",
-    "sponsor": "Chief Financial Officer",
+    "validator": "Model Validator 2 (External validation consultant)",
+    "sponsor": "Model Sponsor 2 (Chief Financial Officer)",
     "lod_mapping": {
       "first_line": "Financial Control (use of ECL results, vendor configuration)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -777,7 +777,7 @@
         "date": "2023-09-01",
         "version": "4.2",
         "description": "Upgrade to vendor release 4.2.",
-        "author": "Owner 2",
+        "author": "Model Owner 2",
         "classification": "Material",
         "justification": "Vendor release upgrade.",
         "change_id": "CHG-008"
@@ -786,7 +786,7 @@
     "audit_reviews": [
       {
         "date": "2025-09-22",
-        "auditor": "Auditor 1 (Internal Audit)",
+        "auditor": "Internal Auditor 1 (Internal Audit)",
         "rating": "Needs Improvement",
         "scope": "Controls over vendor ECL engine configuration and change management.",
         "audit_id": "AUD-001"
@@ -835,10 +835,10 @@
         "regulatory_impact": "High"
       },
       "rationale": "Produces the reported ECL figure.",
-      "proposed_by": "Owner 2",
+      "proposed_by": "Model Owner 2",
       "proposed_on": "2023-12-18",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2023-12-18",
       "override_tier": null,
       "override_reason": null
@@ -854,7 +854,7 @@
           {
             "cond_id": "C-1",
             "condition": "Remediate the validation findings by their due dates",
-            "owner": "Owner 2 (Head of Financial Control)",
+            "owner": "Model Owner 2 (Head of Financial Control)",
             "due": null,
             "status": "Open",
             "note": null,
@@ -864,7 +864,7 @@
           }
         ],
         "version": "4.2",
-        "recorded_by": "MRM Admin 1",
+        "recorded_by": "MRM Administrator 1",
         "minute_ref": "MgmtRC 2023-12",
         "comment": null
       }
@@ -872,7 +872,7 @@
     "implementation": [
       {
         "version": "4.2",
-        "verified_by": "Validator 2 (External Validation Consultant)",
+        "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2023-12-25",
         "note": "Deployed version matches the validated version (backfilled)."
       }
@@ -889,10 +889,10 @@
     "source": "Vendor",
     "vendor": "Moody's CreditLens",
     "description": "Assigns obligor risk grades to manufacturing borrowers at origination and annual review.",
-    "owner": "Owner 1 (Head of Credit Risk)",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Moody's CreditLens (vendor), calibrated by Credit Modelling",
-    "validator": "Validator 2 (External Validation Consultant)",
-    "sponsor": "Chief Risk Officer",
+    "validator": "Model Validator 2 (External validation consultant)",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -931,7 +931,7 @@
         "date": "2025-09-01",
         "version": "3.0",
         "description": "Calibration of vendor scorecard to QDB manufacturing default history.",
-        "author": "Developer 3",
+        "author": "Model Developer 3",
         "classification": "Material",
         "justification": "Recalibration.",
         "change_id": "CHG-009"
@@ -940,7 +940,7 @@
     "audit_reviews": [
       {
         "date": "2026-01-15",
-        "auditor": "Auditor 1 (Internal Audit)",
+        "auditor": "Internal Auditor 1 (Internal Audit)",
         "rating": "Satisfactory",
         "scope": "Override governance in the rating process.",
         "audit_id": "AUD-002"
@@ -1000,10 +1000,10 @@
         "regulatory_impact": "High"
       },
       "rationale": "Largest sector in the book; grades feed IFRS 9 PD and approval authority.",
-      "proposed_by": "Owner 1",
+      "proposed_by": "Model Owner 1",
       "proposed_on": "2025-12-10",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2025-12-10",
       "override_tier": null,
       "override_reason": null
@@ -1019,7 +1019,7 @@
           {
             "cond_id": "C-1",
             "condition": "Remediate the validation findings by their due dates",
-            "owner": "Owner 1 (Head of Credit Risk)",
+            "owner": "Model Owner 1 (Head of Credit Risk)",
             "due": null,
             "status": "Open",
             "note": null,
@@ -1029,7 +1029,7 @@
           }
         ],
         "version": "3.0",
-        "recorded_by": "MRM Admin 1",
+        "recorded_by": "MRM Administrator 1",
         "minute_ref": "MgmtRC 2025-12",
         "comment": null
       }
@@ -1037,7 +1037,7 @@
     "implementation": [
       {
         "version": "3.0",
-        "verified_by": "Validator 2 (External Validation Consultant)",
+        "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2025-12-17",
         "note": "Deployed version matches the validated version (backfilled)."
       }
@@ -1054,10 +1054,10 @@
     "source": "Vendor",
     "vendor": "Moody's CreditLens",
     "description": "Assigns obligor risk grades to services-sector borrowers at origination and annual review.",
-    "owner": "Owner 1 (Head of Credit Risk)",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Moody's CreditLens (vendor), calibrated by Credit Modelling",
-    "validator": "Validator 2 (External Validation Consultant)",
-    "sponsor": "Chief Risk Officer",
+    "validator": "Model Validator 2 (External validation consultant)",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1096,7 +1096,7 @@
         "date": "2025-09-01",
         "version": "3.0",
         "description": "Calibration of vendor scorecard to QDB services default history.",
-        "author": "Developer 3",
+        "author": "Model Developer 3",
         "classification": "Material",
         "justification": "Recalibration.",
         "change_id": "CHG-010"
@@ -1156,10 +1156,10 @@
         "regulatory_impact": "High"
       },
       "rationale": "Second-largest sector; grades feed IFRS 9 PD and approval authority.",
-      "proposed_by": "Owner 1",
+      "proposed_by": "Model Owner 1",
       "proposed_on": "2025-12-10",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2025-12-10",
       "override_tier": null,
       "override_reason": null
@@ -1173,7 +1173,7 @@
         "decision": "Approved",
         "conditions": [],
         "version": "3.0",
-        "recorded_by": "MRM Admin 1",
+        "recorded_by": "MRM Administrator 1",
         "minute_ref": "MgmtRC 2025-12",
         "comment": null
       }
@@ -1181,7 +1181,7 @@
     "implementation": [
       {
         "version": "3.0",
-        "verified_by": "Validator 2 (External Validation Consultant)",
+        "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2025-12-17",
         "note": "Deployed version matches the validated version (backfilled)."
       }
@@ -1198,10 +1198,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Sets the minimum profit rate for new financing from the obligor's risk grade and facility terms.",
-    "owner": "Owner 6 (Head of Pricing & Strategy)",
-    "developer": "Developer 2 (Risk Analytics)",
-    "validator": "Validator 1 (Model Validator (QDB))",
-    "sponsor": "Chief Executive Officer",
+    "owner": "Model Owner 6 (Head of Pricing & Strategy)",
+    "developer": "Model Developer 2 (Risk Analytics)",
+    "validator": "Model Validator 1 (QDB validator)",
+    "sponsor": "Model Sponsor 3 (Chief Executive Officer)",
     "lod_mapping": {
       "first_line": "Pricing & Strategy (use), Risk Analytics (development)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1239,7 +1239,7 @@
         "date": "2024-10-01",
         "version": "1.4",
         "description": "Funding curve and cost allocation refresh.",
-        "author": "Developer 2",
+        "author": "Model Developer 2",
         "classification": "Non-material",
         "justification": "Parameter refresh.",
         "change_id": "CHG-011"
@@ -1291,10 +1291,10 @@
         "regulatory_impact": "Medium"
       },
       "rationale": "Influences margins on new business; no direct regulatory output.",
-      "proposed_by": "Owner 6",
+      "proposed_by": "Model Owner 6",
       "proposed_on": "2022-11-30",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2022-11-30",
       "override_tier": null,
       "override_reason": null
@@ -1308,7 +1308,7 @@
         "decision": "Approved",
         "conditions": [],
         "version": "1.4",
-        "recorded_by": "CRO 1",
+        "recorded_by": "CRO",
         "minute_ref": null,
         "comment": null
       }
@@ -1316,7 +1316,7 @@
     "implementation": [
       {
         "version": "1.4",
-        "verified_by": "Validator 1 (Model Validator (QDB))",
+        "verified_by": "Model Validator 1 (QDB validator)",
         "verified_on": "2022-12-07",
         "note": "Deployed version matches the validated version (backfilled)."
       }
@@ -1333,10 +1333,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Scores thin-file SMEs where audited financials are unreliable, using transaction behaviour from bank statements.",
-    "owner": "Owner 1 (Head of Credit Risk)",
-    "developer": "Developer 4 (Data Science)",
-    "validator": "Validator 2 (External Validation Consultant)",
-    "sponsor": "Chief Risk Officer",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
+    "developer": "Model Developer 4 (Data Science)",
+    "validator": "Model Validator 2 (External validation consultant)",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1374,7 +1374,7 @@
         "date": "2026-08-15",
         "version": "0.5",
         "description": "Prototype with 42 engineered features.",
-        "author": "Developer 4",
+        "author": "Model Developer 4",
         "classification": "Material",
         "justification": "New model under development.",
         "change_id": "CHG-012"
@@ -1423,10 +1423,10 @@
         "regulatory_impact": "Medium"
       },
       "rationale": "Machine-learning model that will influence credit decisions for thin-file SMEs.",
-      "proposed_by": "Owner 1",
+      "proposed_by": "Model Owner 1",
       "proposed_on": "2026-08-15",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2026-08-15",
       "override_tier": null,
       "override_reason": null
@@ -1446,10 +1446,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Scores the individuals behind an SME (owners, guarantors) from their credit bureau records.",
-    "owner": "Owner 1 (Head of Credit Risk)",
-    "developer": "Developer 3 (Credit Modelling)",
-    "validator": "Validator 1 (Model Validator (QDB))",
-    "sponsor": "Chief Risk Officer",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
+    "developer": "Model Developer 3 (Credit Modelling)",
+    "validator": "Model Validator 1 (QDB validator)",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1486,7 +1486,7 @@
         "date": "2026-07-01",
         "version": "0.3",
         "description": "Variable selection on bureau attributes.",
-        "author": "Developer 3",
+        "author": "Model Developer 3",
         "classification": "Material",
         "justification": "New model under development.",
         "change_id": "CHG-013"
@@ -1495,7 +1495,7 @@
         "date": "2026-08-25",
         "version": "1.0",
         "description": "Final model submitted for validation.",
-        "author": "Developer 3",
+        "author": "Model Developer 3",
         "classification": "Material",
         "justification": "First production version.",
         "change_id": "CHG-014"
@@ -1542,10 +1542,10 @@
         "regulatory_impact": "Medium"
       },
       "rationale": "One input to the combination module; moderate influence on decisions.",
-      "proposed_by": "Owner 1",
+      "proposed_by": "Model Owner 1",
       "proposed_on": "2026-07-01",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2026-07-01",
       "override_tier": null,
       "override_reason": null
@@ -1565,10 +1565,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Scores the borrowing company from its credit bureau record.",
-    "owner": "Owner 1 (Head of Credit Risk)",
-    "developer": "Developer 3 (Credit Modelling)",
-    "validator": "Validator 1 (Model Validator (QDB))",
-    "sponsor": "Chief Risk Officer",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
+    "developer": "Model Developer 3 (Credit Modelling)",
+    "validator": "Model Validator 1 (QDB validator)",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1605,7 +1605,7 @@
         "date": "2026-07-01",
         "version": "0.3",
         "description": "Variable selection on bureau attributes.",
-        "author": "Developer 3",
+        "author": "Model Developer 3",
         "classification": "Material",
         "justification": "New model under development.",
         "change_id": "CHG-015"
@@ -1614,7 +1614,7 @@
         "date": "2026-08-15",
         "version": "1.0",
         "description": "Final model submitted for validation.",
-        "author": "Developer 3",
+        "author": "Model Developer 3",
         "classification": "Material",
         "justification": "First production version.",
         "change_id": "CHG-016"
@@ -1661,10 +1661,10 @@
         "regulatory_impact": "Medium"
       },
       "rationale": "One input to the combination module; moderate influence on decisions.",
-      "proposed_by": "Owner 1",
+      "proposed_by": "Model Owner 1",
       "proposed_on": "2026-09-25",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2026-09-25",
       "override_tier": null,
       "override_reason": null
@@ -1680,7 +1680,7 @@
           {
             "cond_id": "C-1",
             "condition": "Monitoring plan with thresholds approved before go-live",
-            "owner": "Owner 1 (Head of Credit Risk)",
+            "owner": "Model Owner 1 (Head of Credit Risk)",
             "due": "2026-10-31",
             "status": "Open",
             "note": null,
@@ -1690,7 +1690,7 @@
           }
         ],
         "version": "1.0",
-        "recorded_by": "CRO 1",
+        "recorded_by": "CRO",
         "minute_ref": null,
         "comment": null
       }
@@ -1708,10 +1708,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Combines the CreditLens rating, the two bureau scores and the transaction score into one final risk grade for decisioning.",
-    "owner": "Owner 1 (Head of Credit Risk)",
-    "developer": "Developer 4 (Data Science)",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
+    "developer": "Model Developer 4 (Data Science)",
     "validator": "Not yet assigned",
-    "sponsor": "Chief Risk Officer",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1752,7 +1752,7 @@
         "date": "2026-08-20",
         "version": "0.2",
         "description": "Initial weighting scheme agreed with Credit.",
-        "author": "Developer 4",
+        "author": "Model Developer 4",
         "classification": "Material",
         "justification": "New model under development.",
         "change_id": "CHG-017"
@@ -1799,10 +1799,10 @@
         "regulatory_impact": "Medium"
       },
       "rationale": "Will set the final grade used for approval authority across SME lending.",
-      "proposed_by": "Owner 1",
+      "proposed_by": "Model Owner 1",
       "proposed_on": "2026-08-20",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2026-08-20",
       "override_tier": null,
       "override_reason": null
@@ -1822,10 +1822,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Placeholder record — projects the survival horizon under liquidity stress.",
-    "owner": "Owner 3 (Head of Market & Liquidity Risk)",
+    "owner": "Model Owner 3 (Head of Market & Liquidity Risk)",
     "developer": "Treasury analytics",
-    "validator": "Validator 1 (Model Validator (QDB))",
-    "sponsor": "Chief Financial Officer",
+    "validator": "Model Validator 1 (QDB validator)",
+    "sponsor": "Model Sponsor 2 (Chief Financial Officer)",
     "lod_mapping": {
       "first_line": "Market & Liquidity Risk / Treasury (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1860,7 +1860,7 @@
         "date": "2021-05-01",
         "version": "1.1",
         "description": "Scenario update.",
-        "author": "Owner 3",
+        "author": "Model Owner 3",
         "classification": "Non-material",
         "justification": "Scenario parameters refresh.",
         "change_id": "CHG-018"
@@ -1911,10 +1911,10 @@
         "regulatory_impact": "High"
       },
       "rationale": "Feeds regulatory liquidity reporting.",
-      "proposed_by": "Owner 3",
+      "proposed_by": "Model Owner 3",
       "proposed_on": "2021-06-30",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2021-06-30",
       "override_tier": null,
       "override_reason": null
@@ -1928,7 +1928,7 @@
         "decision": "Approved",
         "conditions": [],
         "version": "1.1",
-        "recorded_by": "MRM Admin 1",
+        "recorded_by": "MRM Administrator 1",
         "minute_ref": "MgmtRC 2021-06",
         "comment": null
       }
@@ -1936,7 +1936,7 @@
     "implementation": [
       {
         "version": "1.1",
-        "verified_by": "Validator 1 (Model Validator (QDB))",
+        "verified_by": "Model Validator 1 (QDB validator)",
         "verified_on": "2021-07-07",
         "note": "Deployed version matches the validated version (backfilled)."
       }
@@ -1953,10 +1953,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Placeholder record — measures interest (profit) rate risk in the banking book.",
-    "owner": "Owner 3 (Head of Market & Liquidity Risk)",
+    "owner": "Model Owner 3 (Head of Market & Liquidity Risk)",
     "developer": "Treasury analytics",
-    "validator": "Validator 1 (Model Validator (QDB))",
-    "sponsor": "Chief Financial Officer",
+    "validator": "Model Validator 1 (QDB validator)",
+    "sponsor": "Model Sponsor 2 (Chief Financial Officer)",
     "lod_mapping": {
       "first_line": "Market & Liquidity Risk / Treasury (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1991,7 +1991,7 @@
         "date": "2022-02-01",
         "version": "1.0",
         "description": "First version.",
-        "author": "Owner 3",
+        "author": "Model Owner 3",
         "classification": "Material",
         "justification": "New model.",
         "change_id": "CHG-019"
@@ -2041,10 +2041,10 @@
         "regulatory_impact": "Medium"
       },
       "rationale": "Internal limits with regulatory visibility.",
-      "proposed_by": "Owner 3",
+      "proposed_by": "Model Owner 3",
       "proposed_on": "2022-03-15",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2022-03-15",
       "override_tier": null,
       "override_reason": null
@@ -2058,7 +2058,7 @@
         "decision": "Approved",
         "conditions": [],
         "version": "1.0",
-        "recorded_by": "CRO 1",
+        "recorded_by": "CRO",
         "minute_ref": null,
         "comment": null
       }
@@ -2066,7 +2066,7 @@
     "implementation": [
       {
         "version": "1.0",
-        "verified_by": "Validator 1 (Model Validator (QDB))",
+        "verified_by": "Model Validator 1 (QDB validator)",
         "verified_on": "2022-03-22",
         "note": "Deployed version matches the validated version (backfilled)."
       }
@@ -2083,10 +2083,10 @@
     "source": "In-house",
     "vendor": null,
     "description": "Placeholder record — estimates severe but plausible operational losses for risk appetite.",
-    "owner": "Owner 5 (Head of Operational Risk)",
+    "owner": "Model Owner 5 (Head of Operational Risk)",
     "developer": "Operational Risk team",
-    "validator": "Validator 1 (Model Validator (QDB))",
-    "sponsor": "Chief Risk Officer",
+    "validator": "Model Validator 1 (QDB validator)",
+    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Operational Risk (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -2118,7 +2118,7 @@
         "date": "2023-01-15",
         "version": "1.0",
         "description": "First version.",
-        "author": "Owner 5",
+        "author": "Model Owner 5",
         "classification": "Material",
         "justification": "New model.",
         "change_id": "CHG-020"
@@ -2167,10 +2167,10 @@
         "regulatory_impact": "Medium"
       },
       "rationale": "Management information and risk appetite only.",
-      "proposed_by": "Owner 5",
+      "proposed_by": "Model Owner 5",
       "proposed_on": "2023-02-28",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2023-02-28",
       "override_tier": null,
       "override_reason": null
@@ -2184,7 +2184,7 @@
         "decision": "Approved",
         "conditions": [],
         "version": "1.0",
-        "recorded_by": "CRO 1",
+        "recorded_by": "CRO",
         "minute_ref": null,
         "comment": null
       }
@@ -2192,7 +2192,7 @@
     "implementation": [
       {
         "version": "1.0",
-        "verified_by": "Validator 1 (Model Validator (QDB))",
+        "verified_by": "Model Validator 1 (QDB validator)",
         "verified_on": "2023-03-07",
         "note": "Deployed version matches the validated version (backfilled)."
       }
@@ -2209,10 +2209,10 @@
     "source": "Vendor",
     "vendor": "AML platform vendor",
     "description": "Placeholder record — rates customers for AML/CFT due diligence under Law No. 20 of 2019.",
-    "owner": "Owner 4 (MLRO / Head of Compliance)",
+    "owner": "Model Owner 4 (MLRO / Head of Compliance)",
     "developer": "Vendor, configured by Compliance",
-    "validator": "Validator 2 (External Validation Consultant)",
-    "sponsor": "Chief Compliance Officer",
+    "validator": "Model Validator 2 (External validation consultant)",
+    "sponsor": "Model Sponsor 4 (Chief Compliance Officer)",
     "lod_mapping": {
       "first_line": "Compliance / MLRO (configuration, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -2247,7 +2247,7 @@
         "date": "2024-05-01",
         "version": "2.0",
         "description": "Vendor upgrade.",
-        "author": "Owner 4",
+        "author": "Model Owner 4",
         "classification": "Material",
         "justification": "Vendor release.",
         "change_id": "CHG-021"
@@ -2297,10 +2297,10 @@
         "regulatory_impact": "High"
       },
       "rationale": "Statutory AML/CFT compliance.",
-      "proposed_by": "Owner 4",
+      "proposed_by": "Model Owner 4",
       "proposed_on": "2024-06-30",
       "status": "Confirmed",
-      "confirmed_by": "MRM Admin 1",
+      "confirmed_by": "MRM Administrator 1",
       "confirmed_on": "2024-06-30",
       "override_tier": null,
       "override_reason": null
@@ -2316,7 +2316,7 @@
           {
             "cond_id": "C-1",
             "condition": "Remediate the validation findings by their due dates",
-            "owner": "Owner 4 (MLRO / Head of Compliance)",
+            "owner": "Model Owner 4 (MLRO / Head of Compliance)",
             "due": null,
             "status": "Open",
             "note": null,
@@ -2326,7 +2326,7 @@
           }
         ],
         "version": "2.0",
-        "recorded_by": "MRM Admin 1",
+        "recorded_by": "MRM Administrator 1",
         "minute_ref": "MgmtRC 2024-06",
         "comment": null
       }
@@ -2334,7 +2334,7 @@
     "implementation": [
       {
         "version": "2.0",
-        "verified_by": "Validator 2 (External Validation Consultant)",
+        "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2024-07-07",
         "note": "Deployed version matches the validated version (backfilled)."
       }

@@ -9,9 +9,21 @@ import utils
 from data_loader import load_issues, models_dataframe
 
 utils.header(
-    "Executive Dashboard",
+    "Dashboard",
     f"Model risk profile at a glance — as of {date.today().strftime('%d %B %Y')}",
 )
+
+import auth  # noqa: E402
+from data_loader import tasks_for  # noqa: E402
+
+_my_tasks = tasks_for(auth.get_current_user())
+if _my_tasks:
+    _late = sum(t["overdue"] for t in _my_tasks)
+    c_t1, c_t2 = st.columns([5, 1.2])
+    c_t1.info(f"You have **{len(_my_tasks)} task(s)** waiting"
+              + (f", **{_late} overdue**" if _late else "") + ".")
+    if c_t2.button("Open My Tasks", key="dash_tasks", width="stretch"):
+        st.switch_page("views/tasks.py")
 
 df = models_dataframe()
 issues = load_issues()

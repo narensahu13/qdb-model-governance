@@ -4,9 +4,9 @@
     "type": "VAL",
     "model_id": "QDB-001",
     "status": "Closed",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 2 (External Validation Consultant)",
+    "assigned_to": "Model Validator 2 (External validation consultant)",
     "title": "Initial validation",
     "description": "Initial validation of the redeveloped PD model.",
     "created_date": "2023-12-05",
@@ -29,7 +29,7 @@
       {
         "response_id": "VAL-001-R1",
         "date": "2023-12-05",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "Initial validation of the redeveloped PD model.",
         "evidence_ids": []
@@ -37,7 +37,7 @@
       {
         "response_id": "VAL-001-R2",
         "date": "2023-12-05",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit for Purpose.",
         "evidence_ids": []
@@ -49,9 +49,9 @@
     "type": "VAL",
     "model_id": "QDB-001",
     "status": "Closed",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 2 (External Validation Consultant)",
+    "assigned_to": "Model Validator 2 (External validation consultant)",
     "title": "Periodic validation",
     "description": "Annual validation: calibration adequate; PiT adjustment not back-tested by segment.",
     "created_date": "2025-10-15",
@@ -74,7 +74,7 @@
       {
         "response_id": "VAL-002-R1",
         "date": "2025-10-15",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "Annual validation: calibration adequate; PiT adjustment not back-tested by segment.",
         "evidence_ids": []
@@ -82,7 +82,7 @@
       {
         "response_id": "VAL-002-R2",
         "date": "2025-10-15",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit with Conditions.",
         "evidence_ids": []
@@ -94,9 +94,9 @@
     "type": "VAL",
     "model_id": "QDB-003",
     "status": "Closed",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 2 (External Validation Consultant)",
+    "assigned_to": "Model Validator 2 (External validation consultant)",
     "title": "Periodic validation",
     "description": "Annual validation of EAD/CCF.",
     "created_date": "2025-10-15",
@@ -117,7 +117,7 @@
       {
         "response_id": "VAL-003-R1",
         "date": "2025-10-15",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "Annual validation of EAD/CCF.",
         "evidence_ids": []
@@ -125,7 +125,7 @@
       {
         "response_id": "VAL-003-R2",
         "date": "2025-10-15",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit for Purpose.",
         "evidence_ids": []
@@ -137,9 +137,9 @@
     "type": "VAL",
     "model_id": "QDB-004",
     "status": "Closed",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 2 (External Validation Consultant)",
+    "assigned_to": "Model Validator 2 (External validation consultant)",
     "title": "Periodic validation",
     "description": "Annual validation of staging rules.",
     "created_date": "2025-10-15",
@@ -160,7 +160,7 @@
       {
         "response_id": "VAL-004-R1",
         "date": "2025-10-15",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "Annual validation of staging rules.",
         "evidence_ids": []
@@ -168,7 +168,7 @@
       {
         "response_id": "VAL-004-R2",
         "date": "2025-10-15",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit for Purpose.",
         "evidence_ids": []
@@ -180,9 +180,9 @@
     "type": "VAL",
     "model_id": "QDB-005",
     "status": "Closed",
-    "initiated_by": "Validator 1",
+    "initiated_by": "Model Validator 1",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 1 (Model Validator (QDB))",
+    "assigned_to": "Model Validator 1 (QDB validator)",
     "title": "Initial validation",
     "description": "Initial validation of scenario weights v1.0.",
     "created_date": "2024-12-10",
@@ -203,7 +203,7 @@
       {
         "response_id": "VAL-005-R1",
         "date": "2024-12-10",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Initial validation of scenario weights v1.0.",
         "evidence_ids": []
@@ -211,7 +211,7 @@
       {
         "response_id": "VAL-005-R2",
         "date": "2024-12-10",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit with Conditions.",
         "evidence_ids": []
@@ -223,9 +223,9 @@
     "type": "VAL",
     "model_id": "QDB-006",
     "status": "Closed",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 2 (External Validation Consultant)",
+    "assigned_to": "Model Validator 2 (External validation consultant)",
     "title": "Periodic validation",
     "description": "Annual review of the vendor ECL engine; no independent recalculation possible.",
     "created_date": "2024-11-05",
@@ -246,7 +246,7 @@
       {
         "response_id": "VAL-006-R1",
         "date": "2024-11-05",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "Annual review of the vendor ECL engine; no independent recalculation possible.",
         "evidence_ids": []
@@ -254,7 +254,7 @@
       {
         "response_id": "VAL-006-R2",
         "date": "2024-11-05",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit with Conditions.",
         "evidence_ids": []
@@ -266,9 +266,9 @@
     "type": "VAL",
     "model_id": "QDB-007",
     "status": "Closed",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 2 (External Validation Consultant)",
+    "assigned_to": "Model Validator 2 (External validation consultant)",
     "title": "Initial validation",
     "description": "Validation of CreditLens manufacturing calibration.",
     "created_date": "2025-11-20",
@@ -292,7 +292,7 @@
       {
         "response_id": "VAL-007-R1",
         "date": "2025-11-20",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "Validation of CreditLens manufacturing calibration.",
         "evidence_ids": []
@@ -300,7 +300,7 @@
       {
         "response_id": "VAL-007-R2",
         "date": "2025-11-20",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit with Conditions.",
         "evidence_ids": []
@@ -312,9 +312,9 @@
     "type": "VAL",
     "model_id": "QDB-008",
     "status": "Closed",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 2 (External Validation Consultant)",
+    "assigned_to": "Model Validator 2 (External validation consultant)",
     "title": "Initial validation",
     "description": "Validation of CreditLens services calibration.",
     "created_date": "2025-11-20",
@@ -337,7 +337,7 @@
       {
         "response_id": "VAL-008-R1",
         "date": "2025-11-20",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "Validation of CreditLens services calibration.",
         "evidence_ids": []
@@ -345,7 +345,7 @@
       {
         "response_id": "VAL-008-R2",
         "date": "2025-11-20",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit for Purpose.",
         "evidence_ids": []
@@ -357,9 +357,9 @@
     "type": "VAL",
     "model_id": "QDB-009",
     "status": "Closed",
-    "initiated_by": "Validator 1",
+    "initiated_by": "Model Validator 1",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 1 (Model Validator (QDB))",
+    "assigned_to": "Model Validator 1 (QDB validator)",
     "title": "Periodic validation",
     "description": "Biennial review of the pricing model.",
     "created_date": "2024-11-10",
@@ -380,7 +380,7 @@
       {
         "response_id": "VAL-009-R1",
         "date": "2024-11-10",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Biennial review of the pricing model.",
         "evidence_ids": []
@@ -388,7 +388,7 @@
       {
         "response_id": "VAL-009-R2",
         "date": "2024-11-10",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit for Purpose.",
         "evidence_ids": []
@@ -400,9 +400,9 @@
     "type": "VAL",
     "model_id": "QDB-014",
     "status": "Closed",
-    "initiated_by": "Validator 1",
+    "initiated_by": "Model Validator 1",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 1 (Model Validator (QDB))",
+    "assigned_to": "Model Validator 1 (QDB validator)",
     "title": "Periodic validation",
     "description": "Placeholder — periodic review of liquidity stress testing.",
     "created_date": "2023-12-05",
@@ -422,7 +422,7 @@
       {
         "response_id": "VAL-010-R1",
         "date": "2023-12-05",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Placeholder — periodic review of liquidity stress testing.",
         "evidence_ids": []
@@ -430,7 +430,7 @@
       {
         "response_id": "VAL-010-R2",
         "date": "2023-12-05",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit with Conditions.",
         "evidence_ids": []
@@ -442,9 +442,9 @@
     "type": "VAL",
     "model_id": "QDB-015",
     "status": "Closed",
-    "initiated_by": "Validator 1",
+    "initiated_by": "Model Validator 1",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 1 (Model Validator (QDB))",
+    "assigned_to": "Model Validator 1 (QDB validator)",
     "title": "Periodic validation",
     "description": "Placeholder — biennial review of IRRBB.",
     "created_date": "2025-02-20",
@@ -464,7 +464,7 @@
       {
         "response_id": "VAL-011-R1",
         "date": "2025-02-20",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Placeholder — biennial review of IRRBB.",
         "evidence_ids": []
@@ -472,7 +472,7 @@
       {
         "response_id": "VAL-011-R2",
         "date": "2025-02-20",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit for Purpose.",
         "evidence_ids": []
@@ -484,9 +484,9 @@
     "type": "VAL",
     "model_id": "QDB-016",
     "status": "Closed",
-    "initiated_by": "Validator 1",
+    "initiated_by": "Model Validator 1",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 1 (Model Validator (QDB))",
+    "assigned_to": "Model Validator 1 (QDB validator)",
     "title": "Periodic validation",
     "description": "Placeholder — triennial review of scenario analysis.",
     "created_date": "2024-03-15",
@@ -505,7 +505,7 @@
       {
         "response_id": "VAL-012-R1",
         "date": "2024-03-15",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Placeholder — triennial review of scenario analysis.",
         "evidence_ids": []
@@ -513,7 +513,7 @@
       {
         "response_id": "VAL-012-R2",
         "date": "2024-03-15",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit for Purpose.",
         "evidence_ids": []
@@ -525,9 +525,9 @@
     "type": "VAL",
     "model_id": "QDB-017",
     "status": "Closed",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 2 (External Validation Consultant)",
+    "assigned_to": "Model Validator 2 (External validation consultant)",
     "title": "Periodic validation",
     "description": "Placeholder — annual review of AML customer risk rating.",
     "created_date": "2025-05-18",
@@ -547,7 +547,7 @@
       {
         "response_id": "VAL-013-R1",
         "date": "2025-05-18",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "Placeholder — annual review of AML customer risk rating.",
         "evidence_ids": []
@@ -555,7 +555,7 @@
       {
         "response_id": "VAL-013-R2",
         "date": "2025-05-18",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit with Conditions.",
         "evidence_ids": []
@@ -567,9 +567,9 @@
     "type": "VAL",
     "model_id": "QDB-010",
     "status": "In Progress",
-    "initiated_by": "Developer 4",
+    "initiated_by": "Model Developer 4",
     "initiated_by_role": "LOD1",
-    "assigned_to": "Validator 2 (External Validation Consultant)",
+    "assigned_to": "Model Validator 2 (External validation consultant)",
     "title": "Initial validation request",
     "description": "Requesting initial validation of the transaction scoring model before pilot use, including bias and explainability testing under the QCB AI Guideline.",
     "created_date": "2026-09-01",
@@ -586,7 +586,7 @@
       {
         "response_id": "VAL-014-R1",
         "date": "2026-09-01",
-        "author": "Developer 4",
+        "author": "Model Developer 4",
         "role": "LOD1",
         "text": "Requesting initial validation of the transaction scoring model before pilot use, including bias and explainability testing under the QCB AI Guideline.",
         "evidence_ids": []
@@ -594,7 +594,7 @@
       {
         "response_id": "VAL-014-R2",
         "date": "2026-09-08",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "Accepted. Please upload the development document, feature list and the out-of-time results. I will send the information request list this week.",
         "evidence_ids": []
@@ -612,18 +612,18 @@
         "Bias and explainability testing"
       ],
       "independence": {
-        "declared_by": "Validator 2",
+        "declared_by": "Model Validator 2",
         "on": "2026-09-08"
       },
       "info_requests": [
         {
           "ir_id": "IR-1",
           "item": "Model development document",
-          "owner": "Developer 4 (Data Science)",
+          "owner": "Model Developer 4 (Data Science)",
           "due": "2026-09-15",
-          "status": "Accepted",
+          "status": "Answered",
           "response": "Development document v0.5 uploaded.",
-          "answered_by": "Developer 4",
+          "answered_by": "Model Developer 4",
           "answered_on": "2026-09-12",
           "review_comment": null,
           "evidence_ids": []
@@ -631,11 +631,11 @@
         {
           "ir_id": "IR-2",
           "item": "Feature list with definitions and data lineage",
-          "owner": "Developer 4 (Data Science)",
+          "owner": "Model Developer 4 (Data Science)",
           "due": "2026-09-22",
           "status": "Answered",
           "response": "Feature dictionary attached (42 features).",
-          "answered_by": "Developer 4",
+          "answered_by": "Model Developer 4",
           "answered_on": "2026-09-24",
           "review_comment": null,
           "evidence_ids": []
@@ -643,7 +643,7 @@
         {
           "ir_id": "IR-3",
           "item": "Out-of-time results on the 2025 cohort",
-          "owner": "Developer 4 (Data Science)",
+          "owner": "Model Developer 4 (Data Science)",
           "due": "2026-10-06",
           "status": "Open",
           "response": null,
@@ -655,7 +655,7 @@
         {
           "ir_id": "IR-4",
           "item": "Bias test by sector and company age",
-          "owner": "Developer 4 (Data Science)",
+          "owner": "Model Developer 4 (Data Science)",
           "due": "2026-10-13",
           "status": "Open",
           "response": null,
@@ -675,9 +675,9 @@
     "type": "VAL",
     "model_id": "QDB-006",
     "status": "Open",
-    "initiated_by": "Validator 1",
+    "initiated_by": "Model Validator 1",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 2 (External Validation Consultant)",
+    "assigned_to": "Model Validator 2 (External validation consultant)",
     "title": "Periodic validation (overdue)",
     "description": "Periodic validation overdue since November 2025. Scope to include an independent recalculation of ECL for a sample portfolio.",
     "created_date": "2026-09-10",
@@ -694,7 +694,7 @@
       {
         "response_id": "VAL-015-R1",
         "date": "2026-09-10",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Periodic validation overdue since November 2025. Scope to include an independent recalculation of ECL for a sample portfolio.",
         "evidence_ids": []
@@ -716,9 +716,9 @@
     "type": "MC",
     "model_id": "QDB-005",
     "status": "In Progress",
-    "initiated_by": "Developer 1",
+    "initiated_by": "Model Developer 1",
     "initiated_by_role": "LOD1",
-    "assigned_to": "Validator 1 (Model Validator (QDB))",
+    "assigned_to": "Model Validator 1 (QDB validator)",
     "title": "Material change v2.0 — density-based weights",
     "description": "Weights redesigned around the current IMF forecast. Version 2.0 used for the June 2026 ECL run pending revalidation.",
     "created_date": "2026-07-20",
@@ -735,7 +735,7 @@
       {
         "response_id": "MC-001-R1",
         "date": "2026-07-20",
-        "author": "Developer 1",
+        "author": "Model Developer 1",
         "role": "LOD1",
         "text": "Weights redesigned around the current IMF forecast. Version 2.0 used for the June 2026 ECL run pending revalidation.",
         "evidence_ids": []
@@ -743,7 +743,7 @@
       {
         "response_id": "MC-001-R2",
         "date": "2026-07-28",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Received. Please attach the design note and the comparison of v1 and v2 weights across the last four quarters.",
         "evidence_ids": []
@@ -751,7 +751,7 @@
       {
         "response_id": "MC-001-R3",
         "date": "2026-08-04",
-        "author": "Developer 1",
+        "author": "Model Developer 1",
         "role": "LOD1",
         "text": "Design note attached. Comparison to follow with Q3 data.",
         "evidence_ids": [
@@ -768,18 +768,18 @@
         "Benchmarking"
       ],
       "independence": {
-        "declared_by": "Validator 1",
+        "declared_by": "Model Validator 1",
         "on": "2026-07-28"
       },
       "info_requests": [
         {
           "ir_id": "IR-1",
           "item": "Design note for v2.0",
-          "owner": "Developer 1 (Risk Analytics)",
+          "owner": "Model Developer 1 (Risk Analytics)",
           "due": "2026-08-05",
-          "status": "Accepted",
+          "status": "Answered",
           "response": "Design note attached to the thread.",
-          "answered_by": "Developer 1",
+          "answered_by": "Model Developer 1",
           "answered_on": "2026-08-04",
           "review_comment": null,
           "evidence_ids": []
@@ -787,7 +787,7 @@
         {
           "ir_id": "IR-2",
           "item": "v1.0 vs v2.0 weights over the last four quarters",
-          "owner": "Developer 1 (Risk Analytics)",
+          "owner": "Model Developer 1 (Risk Analytics)",
           "due": "2026-09-30",
           "status": "Open",
           "response": null,
@@ -807,9 +807,9 @@
     "type": "MC",
     "model_id": "QDB-001",
     "status": "Closed",
-    "initiated_by": "Developer 1",
+    "initiated_by": "Model Developer 1",
     "initiated_by_role": "LOD1",
-    "assigned_to": "Validator 2 (External Validation Consultant)",
+    "assigned_to": "Model Validator 2 (External validation consultant)",
     "title": "Non-material change v2.1 — annual recalibration",
     "description": "Annual recalibration within approved ranges.",
     "created_date": "2026-04-02",
@@ -826,7 +826,7 @@
       {
         "response_id": "MC-002-R1",
         "date": "2026-04-02",
-        "author": "Developer 1",
+        "author": "Model Developer 1",
         "role": "LOD1",
         "text": "Annual recalibration within approved ranges.",
         "evidence_ids": []
@@ -834,7 +834,7 @@
       {
         "response_id": "MC-002-R2",
         "date": "2026-04-20",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "[Closure] Confirmed non-material; parameters within approved ranges.",
         "evidence_ids": []
@@ -846,9 +846,9 @@
     "type": "FND",
     "model_id": "QDB-001",
     "status": "Open",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Developer 1 (Risk Analytics)",
+    "assigned_to": "Model Developer 1 (Risk Analytics)",
     "title": "Point-in-time adjustment not back-tested by segment",
     "description": "The macro-linked PiT adjustment is only back-tested at portfolio level.",
     "created_date": "2025-10-15",
@@ -865,7 +865,7 @@
       {
         "response_id": "FND-001-R1",
         "date": "2025-10-15",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "The macro-linked PiT adjustment is only back-tested at portfolio level.",
         "evidence_ids": []
@@ -877,9 +877,9 @@
     "type": "FND",
     "model_id": "QDB-006",
     "status": "Open",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Owner 2 (Head of Financial Control)",
+    "assigned_to": "Model Owner 2 (Head of Financial Control)",
     "title": "No independent recalculation of vendor ECL engine",
     "description": "ECL produced by the vendor engine cannot be reproduced; internals are not documented.",
     "created_date": "2024-11-05",
@@ -896,7 +896,7 @@
       {
         "response_id": "FND-002-R1",
         "date": "2024-11-05",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "ECL produced by the vendor engine cannot be reproduced; internals are not documented.",
         "evidence_ids": []
@@ -904,7 +904,7 @@
       {
         "response_id": "FND-002-R2",
         "date": "2025-04-20",
-        "author": "Owner 2",
+        "author": "Model Owner 2",
         "role": "LOD1",
         "text": "Vendor documentation requested; recalculation plan attached.",
         "evidence_ids": [
@@ -914,7 +914,7 @@
       {
         "response_id": "FND-002-R3",
         "date": "2026-03-02",
-        "author": "Developer 2",
+        "author": "Model Developer 2",
         "role": "LOD1",
         "text": "Python recalculation covers Stage 1 and 2; Stage 3 pending.",
         "evidence_ids": []
@@ -926,9 +926,9 @@
     "type": "FND",
     "model_id": "QDB-004",
     "status": "Open",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Developer 1 (Risk Analytics)",
+    "assigned_to": "Model Developer 1 (Risk Analytics)",
     "title": "Cure period rule not documented",
     "description": "The 3-month cure period for exits from Stage 2 is applied in the ETL but not written in the methodology.",
     "created_date": "2025-10-15",
@@ -945,7 +945,7 @@
       {
         "response_id": "FND-003-R1",
         "date": "2025-10-15",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "The 3-month cure period for exits from Stage 2 is applied in the ETL but not written in the methodology.",
         "evidence_ids": []
@@ -957,9 +957,9 @@
     "type": "FND",
     "model_id": "QDB-007",
     "status": "Open",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Owner 1 (Head of Credit Risk)",
+    "assigned_to": "Model Owner 1 (Head of Credit Risk)",
     "title": "Override rate above policy threshold",
     "description": "Rating overrides at 24% against a 15% policy threshold.",
     "created_date": "2025-11-20",
@@ -976,7 +976,7 @@
       {
         "response_id": "FND-004-R1",
         "date": "2025-11-20",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "Rating overrides at 24% against a 15% policy threshold.",
         "evidence_ids": []
@@ -984,7 +984,7 @@
       {
         "response_id": "FND-004-R2",
         "date": "2026-07-15",
-        "author": "Owner 1",
+        "author": "Model Owner 1",
         "role": "LOD1",
         "text": "Q2 2026 override extract attached; overrides reasons being coded.",
         "evidence_ids": [
@@ -998,9 +998,9 @@
     "type": "FND",
     "model_id": "QDB-005",
     "status": "Closed",
-    "initiated_by": "Validator 1",
+    "initiated_by": "Model Validator 1",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Developer 1 (Risk Analytics)",
+    "assigned_to": "Model Developer 1 (Risk Analytics)",
     "title": "Downside weights moved in the wrong direction",
     "description": "Under v1.0, a weaker GDP forecast lowered the downside scenario weight.",
     "created_date": "2024-12-10",
@@ -1017,7 +1017,7 @@
       {
         "response_id": "FND-005-R1",
         "date": "2024-12-10",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Under v1.0, a weaker GDP forecast lowered the downside scenario weight.",
         "evidence_ids": []
@@ -1025,7 +1025,7 @@
       {
         "response_id": "FND-005-R2",
         "date": "2026-07-20",
-        "author": "Developer 1",
+        "author": "Model Developer 1",
         "role": "LOD1",
         "text": "Fixed by the v2.0 density-based redesign (see MC-001).",
         "evidence_ids": []
@@ -1033,7 +1033,7 @@
       {
         "response_id": "FND-005-R3",
         "date": "2026-07-25",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "[Closure] Verified on the v2.0 workbook: weights now move in the expected direction.",
         "evidence_ids": []
@@ -1045,9 +1045,9 @@
     "type": "FND",
     "model_id": "QDB-017",
     "status": "Open",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Owner 4 (MLRO / Head of Compliance)",
+    "assigned_to": "Model Owner 4 (MLRO / Head of Compliance)",
     "title": "Risk factor weights not calibrated to QDB customers",
     "description": "Placeholder — vendor default weights used without calibration.",
     "created_date": "2025-05-18",
@@ -1064,7 +1064,7 @@
       {
         "response_id": "FND-006-R1",
         "date": "2025-05-18",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "Placeholder — vendor default weights used without calibration.",
         "evidence_ids": []
@@ -1076,9 +1076,9 @@
     "type": "FND",
     "model_id": "QDB-014",
     "status": "Open",
-    "initiated_by": "Validator 1",
+    "initiated_by": "Model Validator 1",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Owner 3 (Head of Market & Liquidity Risk)",
+    "assigned_to": "Model Owner 3 (Head of Market & Liquidity Risk)",
     "title": "Behavioural run-off assumptions not evidenced",
     "description": "Placeholder — run-off rates are expert-set with no supporting analysis.",
     "created_date": "2023-12-05",
@@ -1095,7 +1095,7 @@
       {
         "response_id": "FND-007-R1",
         "date": "2023-12-05",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Placeholder — run-off rates are expert-set with no supporting analysis.",
         "evidence_ids": []
@@ -1107,9 +1107,9 @@
     "type": "FND",
     "model_id": "QDB-002",
     "status": "Open",
-    "initiated_by": "Auditor 1",
+    "initiated_by": "Internal Auditor 1",
     "initiated_by_role": "LOD3",
-    "assigned_to": "Owner 1 (Head of Credit Risk)",
+    "assigned_to": "Model Owner 1 (Head of Credit Risk)",
     "title": "Collateral register not available for LGD development",
     "description": "LGD development cannot calibrate haircuts without collateral values and allocation to facilities.",
     "created_date": "2026-08-20",
@@ -1126,7 +1126,7 @@
       {
         "response_id": "FND-008-R1",
         "date": "2026-08-20",
-        "author": "Auditor 1",
+        "author": "Internal Auditor 1",
         "role": "LOD3",
         "text": "LGD development cannot calibrate haircuts without collateral values and allocation to facilities.",
         "evidence_ids": []
@@ -1138,9 +1138,9 @@
     "type": "FND",
     "model_id": "QDB-008",
     "status": "Closed",
-    "initiated_by": "Validator 2",
+    "initiated_by": "Model Validator 2",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Developer 3 (Credit Modelling)",
+    "assigned_to": "Model Developer 3 (Credit Modelling)",
     "title": "Sector mapping table not version-controlled",
     "description": "The mapping of economic activity codes to rating templates is kept in an uncontrolled spreadsheet.",
     "created_date": "2025-11-20",
@@ -1157,7 +1157,7 @@
       {
         "response_id": "FND-009-R1",
         "date": "2025-11-20",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "The mapping of economic activity codes to rating templates is kept in an uncontrolled spreadsheet.",
         "evidence_ids": []
@@ -1165,7 +1165,7 @@
       {
         "response_id": "FND-009-R2",
         "date": "2026-02-01",
-        "author": "Developer 3",
+        "author": "Model Developer 3",
         "role": "LOD1",
         "text": "Mapping now in the controlled repository.",
         "evidence_ids": []
@@ -1173,7 +1173,7 @@
       {
         "response_id": "FND-009-R3",
         "date": "2026-02-10",
-        "author": "Validator 2",
+        "author": "Model Validator 2",
         "role": "LOD2",
         "text": "[Closure] Verified.",
         "evidence_ids": []
@@ -1185,9 +1185,9 @@
     "type": "VAL",
     "model_id": "QDB-011",
     "status": "Closed",
-    "initiated_by": "Validator 1",
+    "initiated_by": "Model Validator 1",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 1 (Model Validator (QDB))",
+    "assigned_to": "Model Validator 1 (QDB validator)",
     "title": "Initial validation",
     "description": "Initial validation of the individual bureau score.",
     "created_date": "2026-09-20",
@@ -1210,7 +1210,7 @@
       {
         "response_id": "VAL-016-R1",
         "date": "2026-09-20",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Initial validation of the individual bureau score.",
         "evidence_ids": []
@@ -1218,7 +1218,7 @@
       {
         "response_id": "VAL-016-R2",
         "date": "2026-09-20",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit with Conditions.",
         "evidence_ids": []
@@ -1235,18 +1235,18 @@
         "Documentation review"
       ],
       "independence": {
-        "declared_by": "Validator 1",
+        "declared_by": "Model Validator 1",
         "on": "2026-08-28"
       },
       "info_requests": [
         {
           "ir_id": "IR-1",
           "item": "Development document and code",
-          "owner": "Developer 3 (Credit Modelling)",
+          "owner": "Model Developer 3 (Credit Modelling)",
           "due": "2026-09-01",
-          "status": "Accepted",
+          "status": "Answered",
           "response": "Uploaded.",
-          "answered_by": "Developer 3",
+          "answered_by": "Model Developer 3",
           "answered_on": "2026-08-31",
           "review_comment": null,
           "evidence_ids": []
@@ -1255,17 +1255,17 @@
       "draft": {
         "rating": "Fit with Conditions",
         "summary": "Draft issued.",
-        "issued_by": "Validator 1",
+        "issued_by": "Model Validator 1",
         "issued_on": "2026-09-05"
       },
       "owner_review": {
         "comments": "No factual-accuracy comments.",
-        "by": "Owner 1",
+        "by": "Model Owner 1",
         "on": "2026-09-17"
       },
       "signed_off": {
         "rating": "Fit with Conditions",
-        "by": "Validator 1",
+        "by": "Model Validator 1",
         "on": "2026-09-20"
       }
     }
@@ -1275,9 +1275,9 @@
     "type": "VAL",
     "model_id": "QDB-012",
     "status": "Closed",
-    "initiated_by": "Validator 1",
+    "initiated_by": "Model Validator 1",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Validator 1 (Model Validator (QDB))",
+    "assigned_to": "Model Validator 1 (QDB validator)",
     "title": "Initial validation",
     "description": "Initial validation of the corporate bureau score.",
     "created_date": "2026-09-10",
@@ -1300,7 +1300,7 @@
       {
         "response_id": "VAL-017-R1",
         "date": "2026-09-10",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Initial validation of the corporate bureau score.",
         "evidence_ids": []
@@ -1308,7 +1308,7 @@
       {
         "response_id": "VAL-017-R2",
         "date": "2026-09-10",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "[Closure] Validation complete — rating: Fit for Purpose.",
         "evidence_ids": []
@@ -1325,18 +1325,18 @@
         "Documentation review"
       ],
       "independence": {
-        "declared_by": "Validator 1",
+        "declared_by": "Model Validator 1",
         "on": "2026-08-28"
       },
       "info_requests": [
         {
           "ir_id": "IR-1",
           "item": "Development document and code",
-          "owner": "Developer 3 (Credit Modelling)",
+          "owner": "Model Developer 3 (Credit Modelling)",
           "due": "2026-09-01",
-          "status": "Accepted",
+          "status": "Answered",
           "response": "Uploaded.",
-          "answered_by": "Developer 3",
+          "answered_by": "Model Developer 3",
           "answered_on": "2026-08-31",
           "review_comment": null,
           "evidence_ids": []
@@ -1345,17 +1345,17 @@
       "draft": {
         "rating": "Fit for Purpose",
         "summary": "Draft issued.",
-        "issued_by": "Validator 1",
+        "issued_by": "Model Validator 1",
         "issued_on": "2026-09-05"
       },
       "owner_review": {
         "comments": "No factual-accuracy comments.",
-        "by": "Owner 1",
+        "by": "Model Owner 1",
         "on": "2026-09-08"
       },
       "signed_off": {
         "rating": "Fit for Purpose",
-        "by": "Validator 1",
+        "by": "Model Validator 1",
         "on": "2026-09-10"
       }
     }
@@ -1365,9 +1365,9 @@
     "type": "FND",
     "model_id": "QDB-011",
     "status": "Open",
-    "initiated_by": "Validator 1",
+    "initiated_by": "Model Validator 1",
     "initiated_by_role": "LOD2",
-    "assigned_to": "Developer 3 (Credit Modelling)",
+    "assigned_to": "Model Developer 3 (Credit Modelling)",
     "title": "Coverage of expatriate owners not tested",
     "description": "Discrimination was not tested separately for owners with short bureau histories.",
     "created_date": "2026-09-20",
@@ -1384,7 +1384,7 @@
       {
         "response_id": "FND-010-R1",
         "date": "2026-09-20",
-        "author": "Validator 1",
+        "author": "Model Validator 1",
         "role": "LOD2",
         "text": "Discrimination was not tested separately for owners with short bureau histories.",
         "evidence_ids": []

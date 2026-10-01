@@ -13,11 +13,12 @@ import streamlit as st
 import repository
 
 ROLE_LABELS = {
-    "LOD1": "1st Line — Model Owner / Developer",
-    "LOD2": "2nd Line — Validator (QDB or consultant)",
-    "LOD3": "3rd Line — Internal Audit",
-    "ADMIN": "MRM Administrator",
+    "LOD1": "Model owner / developer",
+    "LOD2": "Model validator",
+    "LOD3": "Internal audit",
+    "ADMIN": "MRM administrator",
     "CRO": "CRO — approver",
+    "VIEWER": "Read-only (sponsor, model user)",
 }
 
 ROLE_COLORS = {
@@ -26,6 +27,7 @@ ROLE_COLORS = {
     "LOD3": "#b8933d",
     "ADMIN": "#607d8b",
     "CRO": "#6a1b9a",
+    "VIEWER": "#90a4ae",
 }
 
 # Three request types: Model Change, Validation, Finding.
@@ -129,7 +131,7 @@ INITIATE_ACTION = {
 _INITIATE_ACTION = INITIATE_ACTION
 
 _SESSION_KEY = "current_user_name"
-_DEFAULT_USER = "MRM Admin 1"  # MRM Administrator
+_DEFAULT_USER = "MRM Administrator 1"  # MRM Administrator
 
 
 @st.cache_data

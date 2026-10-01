@@ -9,7 +9,7 @@ weights, ECL engine), the CreditLens obligor rating models, the pricing model, t
 in development (transaction, credit bureau individual and corporate, combination module) and
 placeholder models for liquidity, market, operational and non-financial risk. **Model names and
 relationships are real; dates, exposures, metrics and findings are mock data** to be edited.
-People are placeholders (Owner 1, Developer 1, Validator 1, Auditor 1, MRM Admin 1, CRO 1) —
+People are placeholders (Model Owner 1, Model Developer 1, Model Validator 1, Internal Auditor 1, MRM Administrator 1, CRO) —
 rename them to real people on the Administration page. Models are numbered QDB-001, QDB-002 …
 and can be renumbered there too.
 
@@ -52,14 +52,14 @@ fingerprint recorded at upload and re-checked on every download. Point the platf
 
 | Page | Purpose |
 |---|---|
-| My Tasks | Everything waiting on the acting user: information requests, reviews, sign-offs, approvals, conditions |
-| Executive Dashboard | Model risk at a glance: KPIs, tier and validation status, models needing escalation, validation calendar |
+| My Tasks | Start here: everything waiting on you — information requests, reviews, sign-offs, approvals, conditions |
+| Dashboard | Model risk at a glance: KPIs, tier and validation status, models needing escalation, validation calendar |
 | Model Inventory | Filterable register of all models, including the AI-system flag; click a row to open the model |
 | Model Detail | Overview (uses, tier sign-off), Governance & Lifecycle (version history), Validation & Findings (MC / VAL / FND threads), Performance Monitoring, Documentation & Audit (document uploads, checklist, file integrity, audit trail), Edit Record; one-click PDF factsheet |
 | Findings Tracker | Bank-wide findings plus other open change and validation requests |
 | Registers | Tier sign-off queue, EUC / identification register, AI register for the QCB filing (CSV export) |
 | Register Model / Tool | Identification questionnaire that routes a candidate to the model inventory, the EUC register or the AI register, then captures the record and proposed tier |
-| Governance Framework | Model definition, tiering, lifecycle, QDB governance structure, permissions, roadmap |
+| How It Works | Quick guide (who does what, the five steps), then the framework: model definition, tiering, lifecycle, governance structure, permissions, roadmap |
 | Administration | MRM Administrator: rename people and roles, set accountability for all models, renumber model IDs, audit check, database backup |
 
 ## Controls built into the platform
@@ -102,7 +102,7 @@ you want to discard edits to the seed.
 
 ```bash
 pip install -r requirements-dev.txt
-python -m pytest tests          # rules, repository, workflows, inventory, validation workflow (57 tests)
+python -m pytest tests          # rules, repository, workflows, inventory, validation workflow (58 tests)
 python scripts/smoke_test.py    # every page and form through Streamlit AppTest
 ```
 

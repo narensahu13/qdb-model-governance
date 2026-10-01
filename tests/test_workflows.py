@@ -8,12 +8,12 @@ import data_store
 import repository
 from conftest import Upload
 
-VALIDATOR = "Validator 1"
-CONSULTANT = "Validator 2"
-OWNER = "Owner 1"
-DEVELOPER = "Developer 1"
-AUDITOR = "Auditor 1"
-ADMIN = "MRM Admin 1"
+VALIDATOR = "Model Validator 1"
+CONSULTANT = "Model Validator 2"
+OWNER = "Model Owner 1"
+DEVELOPER = "Model Developer 1"
+AUDITOR = "Internal Auditor 1"
+ADMIN = "MRM Administrator 1"
 
 
 def last_event():
@@ -33,13 +33,13 @@ def test_owner_cannot_reassign_validation(act_as):
     """Defect 2: owners could route their own model's validation."""
     act_as(OWNER)
     with pytest.raises(PermissionError):
-        data_store.assign_request("VAL-015", "Validator 1 (Model Validator (QDB))")
+        data_store.assign_request("VAL-015", "Model Validator 1 (QDB validator)")
 
 
 def test_developer_cannot_be_assigned_as_validator(act_as):
     act_as(ADMIN)
     with pytest.raises(PermissionError, match="independence"):
-        data_store.assign_request("MC-001", "Developer 1 (Risk Analytics)")  # developer of QDB-005
+        data_store.assign_request("MC-001", "Model Developer 1 (Risk Analytics)")  # developer of QDB-005
 
 
 def test_admin_cannot_close_or_raise_findings(act_as):
@@ -62,7 +62,7 @@ def test_only_raiser_line_closes_finding(act_as):
 
 def test_closing_validation_derives_dates_rating_and_status(act_as):
     from test_validation_workflow import run_engagement
-    run_engagement(act_as, "VAL-015", validator=CONSULTANT, owner="Owner 2", rating="Fit for Purpose")
+    run_engagement(act_as, "VAL-015", validator=CONSULTANT, owner="Model Owner 2", rating="Fit for Purpose")
     m = data_loader.get_model("QDB-006")
     assert m["last_rating"] == "Fit for Purpose"
     assert m["last_validation"] == repository.get_request("VAL-015")["closed_date"]

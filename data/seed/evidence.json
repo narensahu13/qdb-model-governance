@@ -8,7 +8,7 @@
     "stored_path": "QDB-005/20260804100000_scenario_weights_v2_design_note.txt",
     "category": "Document",
     "description": "Design note for density-based scenario weights",
-    "uploaded_by": "Developer 1",
+    "uploaded_by": "Model Developer 1",
     "role": "LOD1",
     "uploaded_at": "2026-08-04T10:00:00"
   },
@@ -21,7 +21,7 @@
     "stored_path": "QDB-006/20250420093000_ecl_recalculation_plan.txt",
     "category": "Document",
     "description": "Plan for independent ECL recalculation",
-    "uploaded_by": "Owner 2",
+    "uploaded_by": "Model Owner 2",
     "role": "LOD1",
     "uploaded_at": "2025-04-20T09:30:00"
   },
@@ -34,7 +34,7 @@
     "stored_path": "QDB-007/20260715140000_override_rate_extract_q2_2026.txt",
     "category": "Data extract",
     "description": "Q2 2026 rating override extract",
-    "uploaded_by": "Owner 1",
+    "uploaded_by": "Model Owner 1",
     "role": "LOD1",
     "uploaded_at": "2026-07-15T14:00:00"
   },
@@ -47,7 +47,7 @@
     "stored_path": "QDB-002/20260812110000_lgd_data_gap_analysis.txt",
     "category": "Document",
     "description": "LGD data gap analysis on the 2016–2026 loan tape",
-    "uploaded_by": "Developer 2",
+    "uploaded_by": "Model Developer 2",
     "role": "LOD1",
     "uploaded_at": "2026-08-12T11:00:00",
     "doc_type": "Data Quality Assessment"
@@ -61,7 +61,7 @@
     "stored_path": "QDB-001/20251015160000_pd_validation_report_2025.txt",
     "category": "Document",
     "description": "Annual validation report 2025",
-    "uploaded_by": "Validator 2",
+    "uploaded_by": "Model Validator 2",
     "role": "LOD2",
     "uploaded_at": "2025-10-15T16:00:00"
   }

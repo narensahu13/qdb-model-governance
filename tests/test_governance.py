@@ -42,8 +42,8 @@ def test_validation_status():
 
 
 def test_independence_rule():
-    m = {"model_id": "X", "owner": "Owner 1 (Head of Credit Risk)", "developer": "Developer 1 (Risk Analytics)"}
-    assert governance.independence_conflict(m, "Developer 1 (Risk Analytics)", "VAL")
-    assert governance.independence_conflict(m, "Owner 1", "MC")
-    assert governance.independence_conflict(m, "Validator 2 (External Validation Consultant)", "VAL") is None
-    assert governance.independence_conflict(m, "Owner 1", "FND") is None  # findings go to owners
+    m = {"model_id": "X", "owner": "Model Owner 1 (Head of Credit Risk)", "developer": "Model Developer 1 (Risk Analytics)"}
+    assert governance.independence_conflict(m, "Model Developer 1 (Risk Analytics)", "VAL")
+    assert governance.independence_conflict(m, "Model Owner 1", "MC")
+    assert governance.independence_conflict(m, "Model Validator 2 (External validation consultant)", "VAL") is None
+    assert governance.independence_conflict(m, "Model Owner 1", "FND") is None  # findings go to owners

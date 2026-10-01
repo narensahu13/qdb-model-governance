@@ -4,7 +4,7 @@
     "name": "ECL ETL consolidation workbook",
     "classification": "EUC tool",
     "description": "Prepares and stages the consolidated data template consumed by the ECL engine.",
-    "owner": "Owner 2 (Head of Financial Control)",
+    "owner": "Model Owner 2 (Head of Financial Control)",
     "business_area": "Financial Control",
     "platform": "Excel with macros",
     "materiality": "High",
@@ -20,7 +20,7 @@
       "learns_from_data": false,
       "decision_use": true
     },
-    "registered_by": "MRM Admin 1",
+    "registered_by": "MRM Administrator 1",
     "registered_on": "2026-09-15",
     "last_reviewed": "2026-09-15"
   },
@@ -29,7 +29,7 @@
     "name": "Provision journal calculator",
     "classification": "EUC tool",
     "description": "Turns ECL results into general-ledger journal entries by product and branch.",
-    "owner": "Owner 2 (Head of Financial Control)",
+    "owner": "Model Owner 2 (Head of Financial Control)",
     "business_area": "Financial Control",
     "platform": "Excel",
     "materiality": "Medium",
@@ -45,7 +45,7 @@
       "learns_from_data": false,
       "decision_use": true
     },
-    "registered_by": "MRM Admin 1",
+    "registered_by": "MRM Administrator 1",
     "registered_on": "2026-09-15",
     "last_reviewed": "2026-09-15"
   },
@@ -54,7 +54,7 @@
     "name": "Financial statement spreading (OCR)",
     "classification": "AI tool (non-model)",
     "description": "Reads uploaded financial statements and pre-fills CreditLens spreads for analyst review.",
-    "owner": "Owner 1 (Head of Credit Risk)",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
     "business_area": "Credit Underwriting",
     "platform": "Moody's CreditLens add-on",
     "materiality": "Medium",
@@ -76,7 +76,7 @@
       "learns_from_data": true,
       "decision_use": true
     },
-    "registered_by": "MRM Admin 1",
+    "registered_by": "MRM Administrator 1",
     "registered_on": "2026-09-15",
     "last_reviewed": "2026-09-15"
   },
@@ -85,7 +85,7 @@
     "name": "Repayment schedule calculator",
     "classification": "Not a model",
     "description": "Produces instalment schedules from contract terms; no estimation.",
-    "owner": "Developer 3 (Credit Modelling)",
+    "owner": "Model Developer 3 (Credit Modelling)",
     "business_area": "Credit Administration",
     "platform": "Core banking",
     "materiality": "Low",
@@ -99,7 +99,7 @@
       "learns_from_data": false,
       "decision_use": false
     },
-    "registered_by": "MRM Admin 1",
+    "registered_by": "MRM Administrator 1",
     "registered_on": "2026-09-15",
     "last_reviewed": "2026-09-15"
   }

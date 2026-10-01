@@ -27,7 +27,7 @@ from pathlib import Path
 
 import config
 
-SCHEMA_VERSION = "3"
+SCHEMA_VERSION = "4"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (

@@ -39,7 +39,7 @@ tab_people, tab_acc, tab_ids, tab_db = st.tabs(
 with tab_people:
     users = auth.load_users()
     st.caption(
-        "Rename the placeholder people (Developer 1, Validator 1 ...) to real names when ready. "
+        "Rename the placeholder people (Model Developer 1, Model Validator 1 ...) to real names when ready. "
         "A rename is carried into every model, request and file record; the audit log keeps the "
         "names as they were at the time."
     )

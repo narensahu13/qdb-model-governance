@@ -47,13 +47,13 @@ PAGES = [
 ]
 
 ROLE_USERS = {
-    "LOD1": "Owner 1",
-    "LOD2": "Validator 2",
-    "LOD3": "Auditor 1",
-    "ADMIN": "MRM Admin 1",
-    "CRO": "CRO 1",
+    "LOD1": "Model Owner 1",
+    "LOD2": "Model Validator 2",
+    "LOD3": "Internal Auditor 1",
+    "ADMIN": "MRM Administrator 1",
+    "CRO": "CRO",
 }
-DEVELOPER = "Developer 1"
+DEVELOPER = "Model Developer 1"
 
 failed = False
 
@@ -144,24 +144,25 @@ for page in PAGES:
 
 # ---------------------------------------------------------------- form submits
 # 1. Validator replies in a thread (was impossible before Phase 0)
-at = model_page("Validator 1", "QDB-005", md_selected_request="MC-001")
+at = model_page("Model Validator 1", "QDB-005", md_selected_request="MC-001")
 if at.exception:
     fail("Open MC-001 as validator", at)
 else:
     at.text_area(key="resp_txt_MC-001").input("SMOKE: please attach the comparison.")
-    [b for b in at.button if b.label == "Add response"][0].click().run()
+    [b for b in at.button if b.label == "Send"][0].click().run()
     thread = repository.get_request("MC-001")["thread"]
     if at.exception or not thread[-1]["text"].startswith("SMOKE"):
         fail("Validator reply in thread", at)
     else:
         ok("Validator reply in thread (LOD2)")
 
-# 2. Validator records a completed, rated validation
-at = model_page(ROLE_USERS["LOD2"], "QDB-008")
+# 2. Validator records a completed (historic), rated validation
+at = model_page(ROLE_USERS["LOD2"], "QDB-008", ir_toggle=True)
 at.selectbox(key="ir_type").select("VAL — Validation")
 at.run()
 at.text_input(key="ir_title").input("SMOKE VAL form")
 at.text_area(key="ir_desc").input("Smoke-test validation via AppTest.")
+at.checkbox(key="ir_close_now").check()
 at.selectbox(key="ir_outcome").select("Fit with Conditions")
 at.multiselect(key="val_tests").select("Documentation review")
 at.button("ir_submit").click().run()
@@ -172,7 +173,7 @@ else:
     ok("VAL recorded with a rating (LOD2)")
 
 # 3. Validator raises a finding
-at = model_page(ROLE_USERS["LOD2"], "QDB-008")
+at = model_page(ROLE_USERS["LOD2"], "QDB-008", ir_toggle=True)
 at.selectbox(key="ir_type").select("FND — Finding")
 at.run()
 at.text_input(key="ir_title").input("SMOKE finding")
@@ -185,7 +186,7 @@ else:
     ok("FND raised (LOD2)")
 
 # 4. Developer records a non-material change
-at = model_page(DEVELOPER, "QDB-004")
+at = model_page(DEVELOPER, "QDB-004", chg_toggle=True)
 at.text_input(key="chg_version").input("1.4-smoke")
 at.selectbox(key="chg_class").select("Non-material")
 at.text_area(key="chg_desc").input("Smoke-test non-material change.")
@@ -201,7 +202,7 @@ else:
     ok(f"Model change recorded; MC assigned to {mc[0]['assigned_to']}")
 
 # 5. Internal Audit records a review
-at = model_page(ROLE_USERS["LOD3"], "QDB-006")
+at = model_page(ROLE_USERS["LOD3"], "QDB-006", aud_toggle=True)
 at.text_area(key="aud_scope").input("Smoke-test audit scope.")
 at.button("aud_submit").click().run()
 if at.exception or not any(a["scope"] == "Smoke-test audit scope."
@@ -279,7 +280,7 @@ else:
     ok("EUC tool recorded in the register")
 
 # 10. Developer edits their model's record
-at = page("views/model_detail.py", DEVELOPER, selected_model_id="QDB-005")
+at = page("views/model_detail.py", DEVELOPER, selected_model_id="QDB-005", edit_toggle=True)
 vendor = by_label(at.text_input, "Vendor")
 if at.exception or vendor is None:
     fail("Open Edit Record tab", at)
@@ -293,7 +294,7 @@ else:
 
 # 11. Tier sign-off: validator confirms with override -> CRO approves
 if new_id:
-    at = page("views/model_detail.py", "Validator 1", selected_model_id=new_id)
+    at = page("views/model_detail.py", "Model Validator 1", selected_model_id=new_id)
     sel = at.selectbox(key=f"ct_tier_{new_id}")
     proposed = sel.value
     target = 1 if proposed != 1 else 2
@@ -304,7 +305,7 @@ if new_id:
         fail("Validator confirms tier with override", at)
     else:
         ok("Tier override sent to the CRO")
-        at = page("views/model_detail.py", "CRO 1", selected_model_id=new_id)
+        at = page("views/model_detail.py", "CRO", selected_model_id=new_id)
         by_label(at.button, "Approve override").click().run()
         mm = repository.get_model(new_id)
         if at.exception or mm["tier_override"] != target or mm["tier_assessment"]["status"] != "Confirmed":
@@ -321,7 +322,7 @@ else:
 
 # ---------------------------------------------------------------- Phase 2: validation workflow
 # 13. Validator scopes VAL-015 and declares independence
-at = page("views/model_detail.py", "Validator 2", selected_model_id="QDB-006",
+at = page("views/model_detail.py", "Model Validator 2", selected_model_id="QDB-006",
           md_selected_request="VAL-015", _md_req_model="QDB-006")
 if at.exception:
     fail("Open VAL-015 engagement", at)
@@ -337,39 +338,39 @@ else:
         ok("Validator started fieldwork with independence declared")
 
 # 14. CRO approves a Tier 2 model (G4)
-at = page("views/model_detail.py", "CRO 1", selected_model_id="QDB-011")
+at = page("views/model_detail.py", "CRO", selected_model_id="QDB-011")
 if at.exception:
     fail("Open QDB-011 as CRO", at)
 else:
-    by_label(at.button, "Record decision (G4)").click().run()
+    by_label(at.button, "Record decision").click().run()
     if at.exception or repository.get_model("QDB-011")["status"] != "Approved — Awaiting Implementation":
         fail("CRO approval (G4)", at)
     else:
         ok("CRO approved QDB-011 (G4)")
 
 # 15. Validator verifies implementation (G5)
-at = page("views/model_detail.py", "Validator 1", selected_model_id="QDB-011")
-note = [w for w in at.text_area if w.label == "What was checked *"]
+at = page("views/model_detail.py", "Model Validator 1", selected_model_id="QDB-011")
+note = [w for w in at.text_input if w.label == "What was checked *"]
 if at.exception or not note:
     fail("Open G5 form", at)
 else:
     note[0].input("SMOKE version check")
-    by_label(at.button, "Verify implementation (G5)").click().run()
+    by_label(at.button, "Verify implementation").click().run()
     if at.exception or repository.get_model("QDB-011")["status"] != "In Production":
         fail("Implementation verification (G5)", at)
     else:
         ok("Implementation verified — QDB-011 in production")
 
 # 16. My Tasks lists work for a developer
-at = page("views/tasks.py", "Developer 4")
+at = page("views/tasks.py", "Model Developer 4")
 if at.exception or not any(b.label == "Open" for b in at.button):
-    fail("My Tasks for Developer 4", at)
+    fail("My Tasks for Model Developer 4", at)
 else:
     ok("My Tasks shows the developer's information requests")
 
 # 17. Admin renames a person through the Administration page
 at = page("views/admin.py", ROLE_USERS["ADMIN"])
-at.selectbox(key="adm_pick").set_value("Auditor 1")
+at.selectbox(key="adm_pick").set_value("Internal Auditor 1")
 at.run()
 name_box = [w for w in at.text_input if w.label == "Name"][0]
 name_box.input("Internal Auditor A")
@@ -377,7 +378,7 @@ name_box.input("Internal Auditor A")
 if at.exception or not any(u["name"] == "Internal Auditor A" for u in repository.list_users()):
     fail("Admin rename person", at)
 else:
-    ok("Admin renamed Auditor 1 (propagated to records)")
+    ok("Admin renamed Internal Auditor 1 (propagated to records)")
 
 # ---------------------------------------------------------------- audit integrity
 chain_ok, broken = repository.verify_audit_chain()
