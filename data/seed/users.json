@@ -1,76 +1,76 @@
 [
   {
-    "name": "Ahmed Al-Kuwari",
+    "name": "Owner 1",
     "title": "Head of Credit Risk",
     "role": "LOD1"
   },
   {
-    "name": "Lina Haddad",
+    "name": "Developer 1",
     "title": "Risk Analytics",
     "role": "LOD1"
   },
   {
-    "name": "Rajesh Nair",
+    "name": "Developer 2",
     "title": "Risk Analytics",
     "role": "LOD1"
   },
   {
-    "name": "Omar Farouk",
+    "name": "Developer 3",
     "title": "Credit Modelling",
     "role": "LOD1"
   },
   {
-    "name": "David Chen",
+    "name": "Developer 4",
     "title": "Data Science",
     "role": "LOD1"
   },
   {
-    "name": "Fatima Al-Sulaiti",
+    "name": "Owner 2",
     "title": "Head of Financial Control",
     "role": "LOD1"
   },
   {
-    "name": "Mohammed Al-Marri",
+    "name": "Owner 3",
     "title": "Head of Market & Liquidity Risk",
     "role": "LOD1"
   },
   {
-    "name": "Noora Al-Thani",
+    "name": "Owner 4",
     "title": "MLRO / Head of Compliance",
     "role": "LOD1"
   },
   {
-    "name": "Sara Al-Naimi",
+    "name": "Owner 5",
     "title": "Head of Operational Risk",
     "role": "LOD1"
   },
   {
-    "name": "Yousef Al-Emadi",
+    "name": "Owner 6",
     "title": "Head of Pricing & Strategy",
     "role": "LOD1"
   },
   {
-    "name": "Hassan Al-Mohannadi",
+    "name": "Validator 1",
     "title": "Model Validator (QDB)",
     "role": "LOD2"
   },
   {
-    "name": "Priya Menon",
+    "name": "Validator 2",
     "title": "External Validation Consultant",
     "role": "LOD2"
   },
   {
-    "name": "Abdulla Al-Sayed",
+    "name": "Auditor 1",
     "title": "Internal Audit",
     "role": "LOD3"
   },
   {
-    "name": "Maryam Al-Kaabi",
+    "name": "MRM Admin 1",
     "title": "MRM Administrator",
     "role": "ADMIN"
   },
   {
-    "name": "Khalid Al-Mannai",
+    "name": "CRO 1",
     "title": "Chief Risk Officer",
     "role": "CRO"
   }

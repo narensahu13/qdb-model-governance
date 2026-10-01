@@ -83,6 +83,15 @@ PERMISSIONS = {
     "propose_tier": ["LOD1", "ADMIN"],
     "confirm_tier": ["LOD2", "ADMIN"],        # never the person who proposed it
     "approve_tier_override": ["CRO"],
+    # Phase 2 — validation workflow
+    "submit_for_validation": ["LOD1", "ADMIN"],   # G2; LOD1 only for own models
+    "run_engagement": ["LOD2"],                    # scope, info requests, draft, sign-off (G3)
+    "answer_info_request": ["LOD1"],
+    "owner_review": ["LOD1"],
+    "record_approval": ["CRO", "ADMIN"],           # G4; ADMIN only as secretary for committee decisions
+    "update_condition": ["LOD1", "LOD2", "CRO"],
+    "verify_implementation": ["LOD2"],             # G5
+    "administer": ["ADMIN"],                        # Administration page
 }
 
 ACTION_LABELS = {
@@ -102,6 +111,14 @@ ACTION_LABELS = {
     "propose_tier": "Propose a tier assessment",
     "confirm_tier": "Confirm a tier assessment (gate G1)",
     "approve_tier_override": "Approve a tier override",
+    "submit_for_validation": "Submit a model for validation (gate G2)",
+    "run_engagement": "Run a validation engagement and sign it off (gate G3)",
+    "answer_info_request": "Answer a validator's information request",
+    "owner_review": "Give the owner's factual-accuracy review of a draft report",
+    "record_approval": "Record an approval decision (gate G4; committee decisions by the secretary)",
+    "update_condition": "Update a condition of approval (owner: met; validator/CRO: verify)",
+    "verify_implementation": "Verify implementation (gate G5)",
+    "administer": "Administration: people, accountability, model IDs, database",
 }
 
 INITIATE_ACTION = {
@@ -112,7 +129,7 @@ INITIATE_ACTION = {
 _INITIATE_ACTION = INITIATE_ACTION
 
 _SESSION_KEY = "current_user_name"
-_DEFAULT_USER = "Maryam Al-Kaabi"  # MRM Administrator
+_DEFAULT_USER = "MRM Admin 1"  # MRM Administrator
 
 
 @st.cache_data

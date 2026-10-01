@@ -127,9 +127,21 @@ def _apply_validation_result(conn, model_id: str, outcome: str) -> None:
     """A rated validation updates the model's status (the dates are derived)."""
     m = _model_or_fail(conn, model_id)
     before = copy.deepcopy(m)
+    if m["status"] in governance.APPROVAL_ROUTE_STATUSES:
+        # Initial validation or revalidation of a change: approval (G4) comes next.
+        if outcome == "Not Fit for Purpose":
+            m["status"] = "Under Remediation" if m.get("approvals") else "In Development"
+        else:
+            m["status"] = governance.STATUS_AWAITING_APPROVAL
+        m["pending_revalidation"] = False
+        repository.put_model(conn, m)
+        log_event(conn, "update_model_status", "model", model_id, model_id,
+                  f"Validation signed off ({outcome}) — status {m['status']}",
+                  before=before, after=m)
+        return
     new_status = governance.OUTCOME_TO_STATUS.get(outcome)
     changed = False
-    if new_status and m["status"] not in ("In Development", "Retired"):
+    if new_status and m["status"] not in governance.PRE_IMPLEMENTATION_STATUSES | {"Retired"}:
         if m["status"] != new_status:
             m["status"] = new_status
             changed = True
@@ -154,6 +166,9 @@ def create_request(model_id: str, record: dict) -> str:
 
     with repository.tx() as conn:
         model = _model_or_fail(conn, model_id)
+        if rtype == "VAL" and model["status"] == "In Development" and record.get("status") != "Closed":
+            raise ValueError("A model in development goes to validation through gate G2 — "
+                             "submit it from the Governance & Lifecycle tab.")
         assigned = record.get("assigned_to") or ""
         _check_independence(model, assigned, rtype)
 
@@ -192,6 +207,8 @@ def create_request(model_id: str, record: dict) -> str:
             "tests": record.get("tests") or [],
             "thread": thread,
         }
+        if status != "Closed" and _needs_engagement(req):
+            req["engagement"] = new_engagement()
         repository.put_request(conn, req)
         log_event(conn, f"initiate_{rtype.lower()}", "validation_request", request_id,
                   model_id, f"{rtype} opened: {record['title'][:80]}", after=req)
@@ -250,11 +267,16 @@ def add_request_response(request_id: str, text: str,
 
 def close_request(request_id: str, comment: str, outcome: str | None = None,
                   evidence_ids: list[str] | None = None,
-                  tests: list[str] | None = None) -> str:
-    """Close a request with a closure comment (stored on the thread)."""
+                  tests: list[str] | None = None, _signed_off: bool = False) -> str:
+    """Close a request with a closure comment (stored on the thread).
+
+    Validations and material model changes are closed only by signing off their
+    engagement (gate G3) — see sign_off()."""
     user = auth.get_current_user()
     with repository.tx() as conn:
         r = _request_or_fail(conn, request_id)
+        if _needs_engagement(r) and not _signed_off:
+            raise ValueError("Validations are closed by signing off the engagement (gate G3).")
         if not auth.can_close_request(r):
             raise PermissionError(
                 "You cannot close this request: findings are closed by the line that "
@@ -287,6 +309,16 @@ def close_request(request_id: str, comment: str, outcome: str | None = None,
             _apply_validation_result(conn, r["model_id"], r["outcome"])
     _refresh()
     return response_id
+
+
+def _needs_engagement(req: dict) -> bool:
+    return req.get("type") == "VAL" or (
+        req.get("type") == "MC" and req.get("materiality") == "Material")
+
+
+def new_engagement() -> dict:
+    return {"stage": "Scoping", "scope": None, "planned_tests": [], "independence": None,
+            "info_requests": [], "draft": None, "owner_review": None, "signed_off": None}
 
 
 # ---------------------------------------------------------------- model changes
@@ -346,6 +378,7 @@ def add_change_entry(model_id: str, entry: dict) -> str:
             "outcome": None, "severity": None, "remediation": None, "source": "Model Change",
             "materiality": "Material" if material else "Non-material",
             "validation_subtype": None, "tests": [], "change_id": change_id, "thread": [],
+            "engagement": new_engagement() if material else None,
         }
         repository.put_request(conn, req)
         log_event(conn, "initiate_mc", "validation_request", request_id, model_id,
@@ -509,11 +542,20 @@ def _clean_list(values) -> list[str]:
     return [str(v).strip() for v in (values or []) if str(v).strip()]
 
 
+MODEL_ID_PATTERN = re.compile(r"^QDB-\d{3,}$")
+
+
+def next_model_id(conn) -> str:
+    """Next numeric model id: QDB-001, QDB-002, ..."""
+    nums = [int(i.split("-")[1]) for i in repository.model_ids(conn) if MODEL_ID_PATTERN.match(i)]
+    return f"QDB-{max(nums or [0]) + 1:03d}"
+
+
 def register_model(record: dict, answers: dict) -> str:
     """Register a new model after the identification questionnaire.
 
     The proposed tier is recorded as *Proposed* until the MRM function confirms
-    it (gate G1). Returns the new model id, e.g. QDB-CR-014."""
+    it (gate G1). Returns the new model id, e.g. QDB-018."""
     from tiering import compute_tier
 
     auth.require("register_model")
@@ -532,9 +574,7 @@ def register_model(record: dict, answers: dict) -> str:
     upstream = _clean_list(record.get("upstream"))
 
     with repository.tx() as conn:
-        prefix = f"QDB-{governance.MODEL_ID_PREFIX[record['risk_type']]}"
-        existing = [i for i in repository.model_ids(conn) if i.startswith(prefix + "-")]
-        model_id = _next_id(existing, prefix)
+        model_id = next_model_id(conn)
         if upstream and model_id in upstream:
             raise ValueError("A model cannot depend on itself.")
         ai = bool(result["ai_system"] or record.get("ai_system"))
@@ -813,4 +853,512 @@ def decide_tier_override(model_id: str, approve: bool, comment: str = "") -> Non
                   f"Tier override {'approved' if approve else 'rejected'} by CRO"
                   + (f": {comment.strip()[:60]}" if comment.strip() else ""),
                   before=before, after=m)
+    _refresh()
+
+
+
+# ================================================================ Phase 2 — validation workflow
+def _required_docs_missing(conn, m: dict) -> list[str]:
+    tier = governance.effective_tier(m)
+    uploaded = {e.get("doc_type") for e in repository.list_evidence_conn(conn)
+                if e["model_id"] == m["model_id"]}
+    return [d for d in governance.G2_REQUIRED_DOCS[tier]
+            if not m["documentation"].get(d) and d not in uploaded]
+
+
+def submit_for_validation(model_id: str, note: str = "") -> str:
+    """Gate G2: the owner submits a model in development for validation.
+
+    Needs a confirmed tier (G1) and the tier's required documents. Opens an
+    initial validation (VAL) assigned to the model's validator. Returns its id."""
+    auth.require("submit_for_validation")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        if user["role"] == "LOD1" and not governance.is_owner_or_developer(m, user["name"]):
+            raise PermissionError(f"Only the owner or developer of {model_id} can submit it.")
+        if m["status"] != "In Development":
+            raise ValueError(f"{model_id} is {m['status']}; only models in development can be submitted.")
+        if not governance.tier_confirmed(m):
+            raise ValueError("The tier must be confirmed first (gate G1).")
+        missing = _required_docs_missing(conn, m)
+        if missing:
+            raise ValueError("Upload the required documents first: " + ", ".join(missing) + ".")
+        before = copy.deepcopy(m)
+        m["status"] = "In Validation"
+        repository.put_model(conn, m)
+        log_event(conn, "submit_for_validation", "model", model_id, model_id,
+                  "Submitted for validation (G2)", before=before, after=m)
+
+        validator = m["validator"] if m.get("validator") not in (None, "", "Not yet assigned") else ""
+        if validator and governance.independence_conflict(m, validator, "VAL"):
+            validator = ""
+        rid = _next_id(repository.request_ids(conn, "VAL"), "VAL")
+        req = {
+            "request_id": rid, "type": "VAL", "model_id": model_id,
+            "status": "In Progress" if validator else "Open",
+            "initiated_by": user["name"], "initiated_by_role": user["role"],
+            "assigned_to": validator, "title": "Initial validation",
+            "description": note or "Submitted for initial validation (gate G2).",
+            "created_date": date.today().isoformat(), "closed_date": None, "due_date": None,
+            "outcome": None, "severity": None, "remediation": None, "source": "LoD1 Request",
+            "materiality": None, "validation_subtype": "Initial", "tests": [],
+            "thread": [], "engagement": new_engagement(),
+        }
+        repository.put_request(conn, req)
+        log_event(conn, "initiate_val", "validation_request", rid, model_id,
+                  "VAL opened: Initial validation (from G2 submission)", after=req)
+    _refresh()
+    return rid
+
+
+def _engagement_request(conn, request_id: str) -> tuple[dict, dict, dict]:
+    r = _request_or_fail(conn, request_id)
+    if not _needs_engagement(r):
+        raise ValueError(f"{request_id} is not a validation.")
+    if r["status"] == "Closed":
+        raise ValueError(f"{request_id} is closed.")
+    eng = r.get("engagement") or new_engagement()
+    r["engagement"] = eng
+    return r, eng, _model_or_fail(conn, r["model_id"])
+
+
+def _require_assigned_validator(r: dict, m: dict) -> None:
+    auth.require("run_engagement")
+    me = auth.get_current_user()["name"]
+    if governance.person_name(r.get("assigned_to")) != me:
+        raise PermissionError(f"Only the assigned validator can do this ({r.get('assigned_to') or 'unassigned'}).")
+    _check_independence(m, me, "VAL")
+
+
+def _save_engagement(conn, r, before, action, details) -> None:
+    repository.put_request(conn, r)
+    log_event(conn, action, "validation_request", r["request_id"], r["model_id"], details,
+              before=before, after=r)
+
+
+def start_engagement(request_id: str, scope: str, planned_tests: list[str]) -> None:
+    """Validator records the scope and declares independence; fieldwork starts.
+    An unassigned validation is taken by the validator starting it."""
+    auth.require("run_engagement")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        r, eng, m = _engagement_request(conn, request_id)
+        before = copy.deepcopy(r)
+        if not r.get("assigned_to"):
+            _check_independence(m, user["name"], r["type"])
+            r["assigned_to"] = auth.user_option_label(user)
+        _require_assigned_validator(r, m)
+        if eng["stage"] not in ("Scoping", "Fieldwork"):
+            raise ValueError("The scope can only be set before the draft report.")
+        if not scope.strip():
+            raise ValueError("Describe the scope of the validation.")
+        eng.update({"stage": "Fieldwork", "scope": scope.strip(), "planned_tests": planned_tests,
+                    "independence": {"declared_by": user["name"], "on": date.today().isoformat()}})
+        r["status"] = "In Progress"
+        _save_engagement(conn, r, before, "start_engagement",
+                         "Scope set and independence declared — fieldwork started")
+    _refresh()
+
+
+def add_info_request(request_id: str, item: str, owner: str, due: str) -> str:
+    """Validator asks the first line for an item (document, data, explanation)."""
+    with repository.tx() as conn:
+        r, eng, m = _engagement_request(conn, request_id)
+        _require_assigned_validator(r, m)
+        if eng["stage"] != "Fieldwork":
+            raise ValueError("Information requests are raised during fieldwork.")
+        if not item.strip():
+            raise ValueError("Describe the item requested.")
+        before = copy.deepcopy(r)
+        ir_id = f"IR-{len(eng['info_requests']) + 1}"
+        eng["info_requests"].append({
+            "ir_id": ir_id, "item": item.strip(), "owner": owner, "due": due, "status": "Open",
+            "response": None, "answered_by": None, "answered_on": None, "review_comment": None,
+            "evidence_ids": [],
+        })
+        _save_engagement(conn, r, before, "add_info_request", f"{ir_id} requested: {item.strip()[:70]}")
+    _refresh()
+    return ir_id
+
+
+def answer_info_request(request_id: str, ir_id: str, response: str,
+                        evidence_ids: list[str] | None = None) -> None:
+    """First line answers an information request (the IR owner, or the model's owner/developer)."""
+    auth.require("answer_info_request")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        r, eng, m = _engagement_request(conn, request_id)
+        ir = next((i for i in eng["info_requests"] if i["ir_id"] == ir_id), None)
+        if ir is None:
+            raise ValueError(f"Unknown information request {ir_id}")
+        if user["name"] not in (governance.person_name(ir["owner"]),) and \
+                not governance.is_owner_or_developer(m, user["name"]):
+            raise PermissionError("Only the person asked, or the model's owner or developer, can answer.")
+        if ir["status"] == "Accepted":
+            raise ValueError(f"{ir_id} is already accepted.")
+        if not response.strip():
+            raise ValueError("Write a response.")
+        before = copy.deepcopy(r)
+        ir.update({"status": "Answered", "response": response.strip(), "answered_by": user["name"],
+                   "answered_on": date.today().isoformat()})
+        ir["evidence_ids"] = list(ir.get("evidence_ids") or []) + list(evidence_ids or [])
+        _save_engagement(conn, r, before, "answer_info_request", f"{ir_id} answered")
+    _refresh()
+
+
+def review_info_request(request_id: str, ir_id: str, accept: bool, comment: str = "") -> None:
+    """Validator accepts an answer, or sends it back open with a comment."""
+    with repository.tx() as conn:
+        r, eng, m = _engagement_request(conn, request_id)
+        _require_assigned_validator(r, m)
+        ir = next((i for i in eng["info_requests"] if i["ir_id"] == ir_id), None)
+        if ir is None:
+            raise ValueError(f"Unknown information request {ir_id}")
+        if ir["status"] != "Answered":
+            raise ValueError(f"{ir_id} has no answer to review.")
+        if not accept and not comment.strip():
+            raise ValueError("Say what is still missing.")
+        before = copy.deepcopy(r)
+        ir["status"] = "Accepted" if accept else "Open"
+        ir["review_comment"] = comment.strip() or None
+        _save_engagement(conn, r, before, "review_info_request",
+                         f"{ir_id} {'accepted' if accept else 'sent back'}")
+    _refresh()
+
+
+def issue_draft(request_id: str, rating: str, summary: str) -> None:
+    """Validator issues the draft report and proposed rating for the owner's review."""
+    with repository.tx() as conn:
+        r, eng, m = _engagement_request(conn, request_id)
+        _require_assigned_validator(r, m)
+        if eng["stage"] != "Fieldwork":
+            raise ValueError("The draft is issued at the end of fieldwork.")
+        reason = governance.engagement_can_issue_draft(eng)
+        if reason:
+            raise ValueError(reason)
+        if rating not in governance.RATING_SCALE:
+            raise ValueError("Choose a rating from the rating scale.")
+        if not summary.strip():
+            raise ValueError("Summarise the conclusions.")
+        before = copy.deepcopy(r)
+        eng["draft"] = {"rating": rating, "summary": summary.strip(),
+                        "issued_by": auth.get_current_user()["name"],
+                        "issued_on": date.today().isoformat()}
+        eng["stage"] = "Owner review"
+        _save_engagement(conn, r, before, "issue_draft", f"Draft report issued — proposed rating {rating}")
+    _refresh()
+
+
+def submit_owner_review(request_id: str, comments: str) -> None:
+    """Model owner/developer gives the factual-accuracy review of the draft."""
+    auth.require("owner_review")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        r, eng, m = _engagement_request(conn, request_id)
+        if not governance.is_owner_or_developer(m, user["name"]):
+            raise PermissionError("Only the model's owner or developer gives the factual-accuracy review.")
+        if eng["stage"] != "Owner review":
+            raise ValueError("There is no draft awaiting review.")
+        before = copy.deepcopy(r)
+        eng["owner_review"] = {"comments": comments.strip() or "No factual-accuracy comments.",
+                               "by": user["name"], "on": date.today().isoformat()}
+        eng["stage"] = "Final sign-off"
+        _save_engagement(conn, r, before, "owner_review", "Owner's factual-accuracy review submitted")
+    _refresh()
+
+
+def sign_off(request_id: str, rating: str, comment: str, tests: list[str] | None = None) -> None:
+    """Gate G3: the validator signs off the validation with the final rating.
+
+    Allowed after the owner's review, or once the review window has lapsed."""
+    with repository.tx() as conn:
+        r, eng, m = _engagement_request(conn, request_id)
+        _require_assigned_validator(r, m)
+        reason = governance.engagement_can_sign_off(eng)
+        if reason:
+            raise ValueError(reason)
+        if rating not in governance.RATING_SCALE:
+            raise ValueError("Choose a rating from the rating scale.")
+        before = copy.deepcopy(r)
+        eng["signed_off"] = {"rating": rating, "by": auth.get_current_user()["name"],
+                             "on": date.today().isoformat()}
+        eng["stage"] = "Signed off"
+        repository.put_request(conn, r)
+        log_event(conn, "sign_off", "validation_request", request_id, r["model_id"],
+                  f"Validation signed off — rating {rating} (G3)", before=before, after=r)
+    close_request(request_id, comment or f"Signed off — rating {rating}.", outcome=rating,
+                  tests=tests or eng.get("planned_tests") or None, _signed_off=True)
+
+
+def record_approval(model_id: str, decision: str, conditions: list[dict] | None = None,
+                    minute_ref: str = "", comment: str = "") -> str:
+    """Gate G4: record the approval body's decision.
+
+    Tier 1 — Management Risk Committee decision, recorded by the CRO or the MRM
+    Administrator as committee secretary, with the minute reference.
+    Tier 2/3 — the CRO's own decision."""
+    auth.require("record_approval")
+    user = auth.get_current_user()
+    if decision not in governance.APPROVAL_DECISIONS:
+        raise ValueError(f"Decision must be one of {governance.APPROVAL_DECISIONS}")
+    conditions = [c for c in (conditions or []) if str(c.get("condition") or "").strip()]
+    if decision == "Approved with conditions" and not conditions:
+        raise ValueError("List at least one condition.")
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        if m["status"] != governance.STATUS_AWAITING_APPROVAL:
+            raise ValueError(f"{model_id} is not awaiting approval.")
+        tier = governance.effective_tier(m)
+        body = governance.approval_body(tier)
+        if tier == 1:
+            if not minute_ref.strip():
+                raise ValueError("Give the Management Risk Committee minute reference.")
+        elif user["role"] != "CRO":
+            raise PermissionError(f"Tier {tier} models are approved by the CRO.")
+        if governance.is_owner_or_developer(m, user["name"]):
+            raise PermissionError("An owner or developer cannot record the approval of their own model.")
+        before = copy.deepcopy(m)
+        existing = [a["approval_id"] for mm in repository.list_models_conn(conn)
+                    for a in mm.get("approvals") or []]
+        approval_id = _next_id(existing, "APR")
+        today = date.today().isoformat()
+        conds = [{
+            "cond_id": f"C-{i}", "condition": str(c["condition"]).strip(),
+            "owner": c.get("owner") or m["owner"], "due": c.get("due") or None,
+            "status": governance.CONDITION_OPEN, "note": None, "met_on": None,
+            "verified_by": None, "verified_on": None,
+        } for i, c in enumerate(conditions, start=1)] if decision != "Rejected" else []
+        m.setdefault("approvals", []).append({
+            "approval_id": approval_id, "date": today, "body": body, "decision": decision,
+            "conditions": conds, "version": m["version"], "recorded_by": user["name"],
+            "minute_ref": minute_ref.strip() or None, "comment": comment.strip() or None,
+        })
+        if decision == "Rejected":
+            prior = [a for a in m["approvals"][:-1] if a["decision"] != "Rejected"]
+            m["status"] = "Under Remediation" if prior else "In Development"
+        else:
+            m["status"] = governance.STATUS_AWAITING_IMPLEMENTATION
+            m["approval_date"] = today
+        repository.put_model(conn, m)
+        log_event(conn, "record_approval", "approval", approval_id, model_id,
+                  f"{decision} by {body} (G4)" + (f" — {minute_ref.strip()}" if minute_ref.strip() else ""),
+                  before=before, after=m)
+    _refresh()
+    return approval_id
+
+
+def update_condition(model_id: str, approval_id: str, cond_id: str, action: str, note: str = "") -> None:
+    """Conditions of approval: the owner marks one met; a validator or the CRO
+    verifies it, or reopens it with a reason."""
+    auth.require("update_condition")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        ap = next((a for a in m.get("approvals") or [] if a["approval_id"] == approval_id), None)
+        cond = next((c for c in (ap or {}).get("conditions", []) if c["cond_id"] == cond_id), None)
+        if cond is None:
+            raise ValueError("Unknown condition.")
+        before = copy.deepcopy(m)
+        today = date.today().isoformat()
+        if action == "met":
+            if user["role"] != "LOD1" or not (
+                governance.is_owner_or_developer(m, user["name"])
+                or governance.person_name(cond.get("owner")) == user["name"]
+            ):
+                raise PermissionError("The model owner or developer marks a condition as met.")
+            if cond["status"] != governance.CONDITION_OPEN:
+                raise ValueError("Only an open condition can be marked as met.")
+            if not note.strip():
+                raise ValueError("Say how the condition was met.")
+            cond.update({"status": governance.CONDITION_MET, "note": note.strip(), "met_on": today})
+        elif action in ("verify", "reopen"):
+            if user["role"] not in ("LOD2", "CRO"):
+                raise PermissionError("A validator or the CRO verifies conditions.")
+            if governance.is_owner_or_developer(m, user["name"]):
+                raise PermissionError("Owners and developers cannot verify their own conditions.")
+            if cond["status"] != governance.CONDITION_MET:
+                raise ValueError("Only a condition marked as met can be verified or reopened.")
+            if action == "verify":
+                cond.update({"status": governance.CONDITION_VERIFIED, "verified_by": user["name"],
+                             "verified_on": today})
+            else:
+                if not note.strip():
+                    raise ValueError("Say why the condition is reopened.")
+                cond.update({"status": governance.CONDITION_OPEN, "note": f"Reopened: {note.strip()}"})
+        else:
+            raise ValueError(f"Unknown action {action}")
+        repository.put_model(conn, m)
+        log_event(conn, f"condition_{action}", "approval", f"{approval_id}/{cond_id}", model_id,
+                  f"Condition {cond_id} of {approval_id}: {cond['status']}", before=before, after=m)
+    _refresh()
+
+
+def verify_implementation(model_id: str, note: str) -> str:
+    """Gate G5: a validator confirms the deployed version is the validated and
+    approved one; the model goes into use. Returns the new status."""
+    auth.require("verify_implementation")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        if m["status"] != governance.STATUS_AWAITING_IMPLEMENTATION:
+            raise ValueError(f"{model_id} is not awaiting implementation.")
+        _check_independence(m, user["name"], "VAL")
+        if not note.strip():
+            raise ValueError("Describe what was checked (version, configuration, reconciliation).")
+        before = copy.deepcopy(m)
+        m.setdefault("implementation", []).append({
+            "version": m["version"], "verified_by": auth.user_option_label(user),
+            "verified_on": date.today().isoformat(), "note": note.strip(),
+        })
+        latest = (m.get("approvals") or [{}])[-1]
+        open_conditions = [c for c in latest.get("conditions", [])
+                           if c["status"] != governance.CONDITION_VERIFIED]
+        m["status"] = "Approved with Conditions" if open_conditions else "In Production"
+        repository.put_model(conn, m)
+        log_event(conn, "verify_implementation", "implementation", model_id, model_id,
+                  f"Implementation of v{m['version']} verified (G5) — status {m['status']}",
+                  before=before, after=m)
+    _refresh()
+    return m["status"]
+
+
+
+# ================================================================ Administration
+PERSON_FIELDS = {
+    "owner", "developer", "validator", "assigned_to", "initiated_by", "author", "uploaded_by",
+    "proposed_by", "confirmed_by", "by", "declared_by", "issued_by", "answered_by",
+    "recorded_by", "verified_by", "registered_by", "raised_by", "auditor",
+}
+
+
+def _rename_in(obj, old: str, new_label_for):
+    """Replace a person's name in name/label fields of a document, recursively.
+    'Old' -> 'New' and 'Old (Title)' -> 'New (Title)'. Free text is left alone."""
+    changed = False
+    if isinstance(obj, dict):
+        for k, v in list(obj.items()):
+            if isinstance(v, str) and k in PERSON_FIELDS:
+                if v == old:
+                    obj[k] = new_label_for(None)
+                    changed = True
+                elif v.startswith(old + " ("):
+                    obj[k] = new_label_for(v[len(old):])
+                    changed = True
+            elif isinstance(v, (dict, list)):
+                changed |= _rename_in(v, old, new_label_for)
+    elif isinstance(obj, list):
+        for v in obj:
+            changed |= _rename_in(v, old, new_label_for)
+    return changed
+
+
+def save_user(old_name: str | None, name: str, title: str, role: str) -> int:
+    """Add a user (old_name None) or rename / re-title / re-role one.
+
+    A rename is carried into every record that names the person (owner,
+    validator, thread authors, evidence uploads ...). The audit log keeps the
+    names as they were at the time — it is never rewritten. Returns the number
+    of records updated."""
+    auth.require("administer")
+    name, title = name.strip(), title.strip()
+    if not name or not title:
+        raise ValueError("Name and title are required.")
+    if role not in auth.ROLE_LABELS:
+        raise ValueError(f"Unknown role {role}")
+    if "(" in name or ")" in name:
+        raise ValueError("Names cannot contain brackets.")
+    touched = 0
+    with repository.tx() as conn:
+        users = {u["name"]: u for u in repository.list_users_conn(conn)}
+        if old_name is None:
+            if name in users:
+                raise ValueError(f"{name} already exists.")
+            new = {"name": name, "title": title, "role": role}
+            repository.put_user(conn, new)
+            log_event(conn, "add_user", "user", name, "", f"User added: {name} ({title}, {role})", after=new)
+        else:
+            if old_name not in users:
+                raise ValueError(f"Unknown user {old_name}")
+            if name != old_name and name in users:
+                raise ValueError(f"{name} already exists.")
+            before = users[old_name]
+            new = {**before, "name": name, "title": title, "role": role}
+            if name != old_name:
+                repository.delete_user(conn, old_name)
+            repository.put_user(conn, new)
+            if name != old_name or title != before.get("title"):
+                old_suffix = f" ({before.get('title')})"
+
+                def label_for(rest):
+                    if rest is None:
+                        return name
+                    return f"{name} ({title})" if rest == old_suffix else f"{name}{rest}"
+
+                for m in repository.list_models_conn(conn):
+                    if _rename_in(m, old_name, label_for):
+                        repository.put_model(conn, m)
+                        touched += 1
+                for r in repository.list_requests_conn(conn):
+                    if _rename_in(r, old_name, label_for):
+                        repository.put_request(conn, r)
+                        touched += 1
+                for e in repository.list_evidence_conn(conn):
+                    if _rename_in(e, old_name, label_for):
+                        repository.update_evidence(conn, e)
+                        touched += 1
+                for t in repository.list_tools_conn(conn):
+                    if _rename_in(t, old_name, label_for):
+                        repository.put_tool(conn, t)
+                        touched += 1
+            log_event(conn, "update_user", "user", name, "",
+                      f"User {old_name} -> {name} ({title}, {role}); {touched} record(s) updated",
+                      before=before, after=new)
+    if old_name and st.session_state.get(auth._SESSION_KEY) == old_name:
+        st.session_state[auth._SESSION_KEY] = name
+    _refresh()
+    return touched
+
+
+def rename_model_id(old_id: str, new_id: str) -> None:
+    """Renumber a model (e.g. QDB-007 -> QDB-101) everywhere it is referenced.
+    Evidence files stay where they are; the audit log keeps the old id."""
+    auth.require("administer")
+    new_id = new_id.strip().upper()
+    if not MODEL_ID_PATTERN.match(new_id):
+        raise ValueError("Model IDs look like QDB-001.")
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, old_id)
+        if repository.get_model(new_id, conn):
+            raise ValueError(f"{new_id} is already used.")
+        before = copy.deepcopy(m)
+        m["model_id"] = new_id
+        repository.delete_model(conn, old_id)
+        repository.put_model(conn, m)
+        for other in repository.list_models_conn(conn):
+            deps = other["dependencies"]
+            if old_id in deps["upstream"] or old_id in deps["downstream"]:
+                deps["upstream"] = [new_id if d == old_id else d for d in deps["upstream"]]
+                deps["downstream"] = [new_id if d == old_id else d for d in deps["downstream"]]
+                repository.put_model(conn, other)
+        for r in repository.list_requests_conn(conn):
+            if r["model_id"] == old_id:
+                r["model_id"] = new_id
+                repository.put_request(conn, r)
+        for e in repository.list_evidence_conn(conn):
+            changed = False
+            if e["model_id"] == old_id:
+                e["model_id"] = new_id
+                changed = True
+            if e.get("linked_type") == "model" and e.get("linked_id") == old_id:
+                e["linked_id"] = new_id
+                changed = True
+            if changed:
+                repository.update_evidence(conn, e)
+        for t in repository.list_tools_conn(conn):
+            if old_id in (t.get("related_models") or []):
+                t["related_models"] = [new_id if x == old_id else x for x in t["related_models"]]
+                repository.put_tool(conn, t)
+        log_event(conn, "rename_model_id", "model", new_id, new_id,
+                  f"Model ID changed from {old_id} to {new_id}", before=before, after=m)
     _refresh()

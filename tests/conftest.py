@@ -24,7 +24,7 @@ def fresh_db(tmp_path, monkeypatch):
 
 @pytest.fixture
 def act_as():
-    """act_as('Hassan Al-Mohannadi') sets the acting user for data_store calls."""
+    """act_as('Validator 1') sets the acting user for data_store calls."""
     def _set(name: str):
         st.session_state["current_user_name"] = name
     return _set

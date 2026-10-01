@@ -230,6 +230,14 @@ recorded in the model's **audit trail**:
   closed **only by the line that raised it** — never by the MRM Administrator.
 - **Independence.** Validations and model changes cannot be assigned to the model's owner
   or developer.
+- **Lifecycle gates G1–G5.** Tier confirmed → submitted for validation with the required
+  documents → validation signed off → approved by the Management Risk Committee (Tier 1) or
+  the CRO (Tier 2/3), with tracked conditions → implementation verified by a validator. A
+  model cannot be put into use without passing all five.
+- **Validation engagement.** The validator sets the scope and declares independence, raises
+  information requests that owners answer with evidence, issues a draft with a proposed
+  rating, the owner gives a factual-accuracy review (7 days), and the validator signs off.
+- **My Tasks.** Every person sees what is waiting on them, with due dates.
 - **Evidence in context (all lines).** Artefacts are attached where the work happens —
   request, thread response, model change, or audit review — with a file, category, and
   short description. Closed requests reject new uploads.
@@ -279,7 +287,7 @@ with tab_roadmap:
             "Phase": [
                 "0 Foundations (weeks 1–4) — built",
                 "1 Inventory (weeks 5–8) — built",
-                "2 Validation workflow (weeks 9–16)",
+                "2 Validation workflow (weeks 9–16) — built",
                 "3 Issues and monitoring (weeks 17–22)",
                 "4 Reporting (weeks 23–26)",
                 "5 Pilot (weeks 27–30)",
@@ -304,9 +312,9 @@ with tab_roadmap:
         """
 **Priorities visible in the pilot inventory**
 
-1. Revalidate the **macroeconomic scenario weights (QDB-IF-005)** — version 2.0 is in use before revalidation
-2. Commission the overdue validation of the **ECL engine (QDB-IF-006)** and close its high finding on independent recalculation
-3. Complete initial validation of the **transaction scoring model (QDB-CR-010)**, including QCB AI Guideline bias and explainability tests, before pilot use
-4. Unblock the **LGD model (QDB-IF-002)** by delivering the collateral register
+1. Revalidate the **macroeconomic scenario weights (QDB-005)** — version 2.0 is in use before revalidation
+2. Commission the overdue validation of the **ECL engine (QDB-006)** and close its high finding on independent recalculation
+3. Complete initial validation of the **transaction scoring model (QDB-010)**, including QCB AI Guideline bias and explainability tests, before pilot use
+4. Unblock the **LGD model (QDB-002)** by delivering the collateral register
 """
     )

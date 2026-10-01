@@ -26,6 +26,8 @@ STATUS_COLORS = {
     "Under Remediation": RED,
     "In Production - Approval Pending": RED,
     "In Validation": "#0288d1",
+    "Awaiting Approval": "#6a1b9a",
+    "Approved — Awaiting Implementation": "#6a1b9a",
     "In Development": GREY,
     "Retired": "#9e9e9e",
 }

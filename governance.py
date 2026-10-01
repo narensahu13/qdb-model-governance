@@ -45,6 +45,8 @@ OUTCOME_TO_STATUS = {
 MODEL_STATUSES = [
     "In Development",
     "In Validation",
+    "Awaiting Approval",
+    "Approved — Awaiting Implementation",
     "In Production",
     "Approved with Conditions",
     "Restricted Use",
@@ -53,7 +55,9 @@ MODEL_STATUSES = [
     "Retired",
 ]
 
-PRE_IMPLEMENTATION_STATUSES = {"In Development", "In Validation"}
+PRE_IMPLEMENTATION_STATUSES = {
+    "In Development", "In Validation", "Awaiting Approval", "Approved — Awaiting Implementation",
+}
 
 # ---------------------------------------------------------------- tier-driven rules
 FREQUENCY_BY_TIER = {
@@ -132,7 +136,7 @@ def validation_status(model: dict, today: date | None = None) -> str:
 
 # ---------------------------------------------------------------- independence
 def person_name(label: str | None) -> str:
-    """'Hassan Al-Mohannadi (Validator)' -> 'Hassan Al-Mohannadi'."""
+    """'Validator 1 (Validator)' -> 'Validator 1'."""
     return (label or "").split(" (")[0].strip()
 
 
@@ -274,3 +278,99 @@ ASSIGNMENT_FIELDS = ["owner", "developer", "validator", "sponsor", "risk_type"]
 
 def is_owner_or_developer(model: dict, user_name: str) -> bool:
     return user_name in (person_name(model.get("owner")), person_name(model.get("developer")))
+
+
+
+# ================================================================ Phase 2 — validation workflow
+STATUS_AWAITING_APPROVAL = "Awaiting Approval"
+STATUS_AWAITING_IMPLEMENTATION = "Approved — Awaiting Implementation"
+# A validation closed while the model is in one of these statuses must go to
+# approval (G4) and implementation verification (G5) before the version is used.
+APPROVAL_ROUTE_STATUSES = {"In Validation", "In Production - Approval Pending"}
+IN_USE_STATUSES = {
+    "In Production", "Approved with Conditions", "Restricted Use", "Under Remediation",
+    "In Production - Approval Pending",
+}
+
+GATES = [
+    ("G1", "Tier confirmed"),
+    ("G2", "Ready for validation"),
+    ("G3", "Validation signed off"),
+    ("G4", "Approved"),
+    ("G5", "Implementation verified"),
+]
+
+# Documents that must be uploaded or on record before a model can be submitted (G2).
+G2_REQUIRED_DOCS = {
+    1: ["Model Development Document", "Methodology Document", "Data Quality Assessment"],
+    2: ["Model Development Document", "Methodology Document", "Data Quality Assessment"],
+    3: ["Model Development Document", "Methodology Document"],
+}
+
+ENGAGEMENT_STAGES = ["Scoping", "Fieldwork", "Draft report", "Owner review", "Final sign-off", "Signed off"]
+OWNER_REVIEW_DAYS = 7          # owner's factual-accuracy review window (calendar days)
+IR_STATUSES = ["Open", "Answered", "Accepted"]
+APPROVAL_DECISIONS = ["Approved", "Approved with conditions", "Rejected"]
+CONDITION_OPEN = "Open"
+CONDITION_MET = "Met — awaiting verification"
+CONDITION_VERIFIED = "Verified"
+
+
+def current_gate(model: dict) -> str | None:
+    """The gate the model is waiting at, or None when it is in use (all passed)."""
+    status = model.get("status")
+    if status == "In Development":
+        return "G1" if not tier_confirmed(model) else "G2"
+    if status in APPROVAL_ROUTE_STATUSES:
+        return "G3"
+    if status == STATUS_AWAITING_APPROVAL:
+        return "G4"
+    if status == STATUS_AWAITING_IMPLEMENTATION:
+        return "G5"
+    return None
+
+
+def gate_states(model: dict) -> list[dict]:
+    """[{gate, name, state}] with state 'done', 'current' or 'pending'."""
+    cur = current_gate(model)
+    order = [g for g, _ in GATES]
+    out = []
+    for g, name in GATES:
+        if model.get("status") == "Retired":
+            state = "done"
+        elif cur is None:
+            state = "done"
+        elif order.index(g) < order.index(cur):
+            state = "done"
+        elif g == cur:
+            state = "current"
+        else:
+            state = "pending"
+        if g == "G1" and not tier_confirmed(model):
+            state = "current"  # first sign-off, or a reassessment awaiting confirmation
+        out.append({"gate": g, "name": name, "state": state})
+    return out
+
+
+def engagement_can_issue_draft(eng: dict) -> str | None:
+    """Reason the draft cannot be issued yet, or None."""
+    if not eng.get("independence"):
+        return "The validator must declare independence first."
+    open_irs = [ir["ir_id"] for ir in eng.get("info_requests", []) if ir["status"] != "Accepted"]
+    if open_irs:
+        return f"Information requests not yet accepted: {', '.join(open_irs)}."
+    return None
+
+
+def engagement_can_sign_off(eng: dict, today: date | None = None) -> str | None:
+    """Reason the validation cannot be signed off yet, or None."""
+    today = today or date.today()
+    if eng.get("stage") == "Final sign-off":
+        return None
+    if eng.get("stage") == "Owner review" and eng.get("draft"):
+        issued = date.fromisoformat(eng["draft"]["issued_on"])
+        if today >= issued + timedelta(days=OWNER_REVIEW_DAYS):
+            return None
+        return (f"Waiting for the owner's factual-accuracy review (until "
+                f"{(issued + timedelta(days=OWNER_REVIEW_DAYS)).isoformat()}).")
+    return "Issue the draft report first."

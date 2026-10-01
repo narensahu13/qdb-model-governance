@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.express as px
 
 import streamlit as st
+import governance
 import utils
 from data_loader import load_issues, models_dataframe
 
@@ -17,8 +18,7 @@ issues = load_issues()
 open_issues = issues[issues["status"] != "Closed"]
 
 # ---------------------------------------------------------------- KPI row
-IN_USE = ["In Production", "Approved with Conditions", "Restricted Use",
-          "Under Remediation", "In Production - Approval Pending"]
+IN_USE = sorted(governance.IN_USE_STATUSES)
 total = len(df)
 in_use = df["Status"].isin(IN_USE).sum()
 in_scope = df[df["Validation Status"] != "Pre-implementation"]
@@ -34,7 +34,7 @@ def _alert(n: int, text: str) -> str | None:
 utils.kpi_cards([
     ("Models in inventory", str(total),
      f"{int((df['AI System']).sum())} AI system(s) · {int((~df['Tier Confirmed']).sum())} tier sign-off(s) pending"),
-    ("In use", str(int(in_use)), f"{total - int(in_use)} in development"),
+    ("In use", str(int(in_use)), f"{total - int(in_use)} not yet in use"),
     ("Validations on schedule", f"{on_track_share:.0%}", "of models in use"),
     ("Overdue validations", str(int(overdue_val)), _alert(overdue_val, "requires action")),
     ("Open high findings", str(high_open), _alert(high_open, "requires action")),
@@ -92,6 +92,7 @@ attention = df[
     | (df["High Open Issues"] > 0)
     | df["Status"].isin(["Under Remediation", "Restricted Use", "In Production - Approval Pending"])
     | ~df["Tier Confirmed"]
+    | df["Status"].isin([governance.STATUS_AWAITING_APPROVAL, governance.STATUS_AWAITING_IMPLEMENTATION])
 ].copy()
 attention = attention.sort_values(["High Open Issues", "Overdue Issues"], ascending=False)
 
@@ -110,6 +111,10 @@ else:
             reasons.append(row["Status"].lower())
         if not row["Tier Confirmed"]:
             reasons.append("tier awaiting sign-off")
+        if row["Status"] == governance.STATUS_AWAITING_APPROVAL:
+            reasons.append("awaiting approval (G4)")
+        if row["Status"] == governance.STATUS_AWAITING_IMPLEMENTATION:
+            reasons.append("awaiting implementation check (G5)")
 
         left, mid, right = st.columns([3.2, 4.5, 1.1])
         with left:

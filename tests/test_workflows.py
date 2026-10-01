@@ -8,12 +8,12 @@ import data_store
 import repository
 from conftest import Upload
 
-VALIDATOR = "Hassan Al-Mohannadi"
-CONSULTANT = "Priya Menon"
-OWNER = "Ahmed Al-Kuwari"
-DEVELOPER = "Lina Haddad"
-AUDITOR = "Abdulla Al-Sayed"
-ADMIN = "Maryam Al-Kaabi"
+VALIDATOR = "Validator 1"
+CONSULTANT = "Validator 2"
+OWNER = "Owner 1"
+DEVELOPER = "Developer 1"
+AUDITOR = "Auditor 1"
+ADMIN = "MRM Admin 1"
 
 
 def last_event():
@@ -33,13 +33,13 @@ def test_owner_cannot_reassign_validation(act_as):
     """Defect 2: owners could route their own model's validation."""
     act_as(OWNER)
     with pytest.raises(PermissionError):
-        data_store.assign_request("VAL-015", "Hassan Al-Mohannadi (Model Validator (QDB))")
+        data_store.assign_request("VAL-015", "Validator 1 (Model Validator (QDB))")
 
 
 def test_developer_cannot_be_assigned_as_validator(act_as):
     act_as(ADMIN)
     with pytest.raises(PermissionError, match="independence"):
-        data_store.assign_request("MC-001", "Lina Haddad (Risk Analytics)")  # developer of QDB-IF-005
+        data_store.assign_request("MC-001", "Developer 1 (Risk Analytics)")  # developer of QDB-005
 
 
 def test_admin_cannot_close_or_raise_findings(act_as):
@@ -48,7 +48,7 @@ def test_admin_cannot_close_or_raise_findings(act_as):
     with pytest.raises(PermissionError):
         data_store.close_request("FND-001", "closing")
     with pytest.raises(PermissionError):
-        data_store.create_request("QDB-IF-001", {"type": "FND", "title": "x", "severity": "Low"})
+        data_store.create_request("QDB-001", {"type": "FND", "title": "x", "severity": "Low"})
 
 
 def test_only_raiser_line_closes_finding(act_as):
@@ -61,9 +61,9 @@ def test_only_raiser_line_closes_finding(act_as):
 
 
 def test_closing_validation_derives_dates_rating_and_status(act_as):
-    act_as(CONSULTANT)
-    data_store.close_request("VAL-015", "Recalculation reconciles within 1%.", outcome="Fit for Purpose")
-    m = data_loader.get_model("QDB-IF-006")
+    from test_validation_workflow import run_engagement
+    run_engagement(act_as, "VAL-015", validator=CONSULTANT, owner="Owner 2", rating="Fit for Purpose")
+    m = data_loader.get_model("QDB-006")
     assert m["last_rating"] == "Fit for Purpose"
     assert m["last_validation"] == repository.get_request("VAL-015")["closed_date"]
     assert m["next_validation_due"] > m["last_validation"]
@@ -71,21 +71,21 @@ def test_closing_validation_derives_dates_rating_and_status(act_as):
     assert data_loader.validation_status(m) == "On Track"
 
 
-def test_closed_validation_needs_rating_from_scale(act_as):
+def test_validation_cannot_be_closed_directly(act_as):
     act_as(CONSULTANT)
-    with pytest.raises(ValueError):
-        data_store.close_request("VAL-015", "done", outcome="Approved")
+    with pytest.raises(ValueError, match="signing off"):
+        data_store.close_request("VAL-015", "done", outcome="Fit for Purpose")
 
 
 def test_material_change_puts_model_in_validation(act_as):
     act_as(DEVELOPER)
-    cid = data_store.add_change_entry("QDB-IF-003", {
+    cid = data_store.add_change_entry("QDB-003", {
         "date": "2026-09-30", "version": "2.0", "description": "New CCF segmentation",
         "author": DEVELOPER, "classification": "Material", "justification": "Methodology change",
     })
-    m = repository.get_model("QDB-IF-003")
+    m = repository.get_model("QDB-003")
     assert m["status"] == "In Validation" and m["pending_revalidation"]
-    mc = [r for r in repository.list_requests("QDB-IF-003") if r.get("change_id") == cid][0]
+    mc = [r for r in repository.list_requests("QDB-003") if r.get("change_id") == cid][0]
     assert mc["materiality"] == "Material"
     assert mc["assigned_to"].startswith(CONSULTANT)  # the model's validator
 
@@ -101,9 +101,9 @@ def test_writes_record_before_and_after(act_as):
 
 def test_model_document_upload_ticks_checklist(act_as):
     act_as(DEVELOPER)
-    m = data_loader.get_model("QDB-IF-005")
+    m = data_loader.get_model("QDB-005")
     assert data_loader.documentation_status(m)["Model Development Document"] is False
-    data_store.attach_evidence("QDB-IF-005", "model", "QDB-IF-005",
+    data_store.attach_evidence("QDB-005", "model", "QDB-005",
                                Upload("mdd_v2.docx", b"development document"),
                                "Document", "MDD v2", doc_type="Model Development Document")
     assert data_loader.documentation_status(m)["Model Development Document"] is True
@@ -111,11 +111,11 @@ def test_model_document_upload_ticks_checklist(act_as):
 
 def test_evidence_hash_detects_altered_file(act_as):
     act_as(OWNER)
-    eid = data_store.attach_evidence("QDB-CR-001", "model", "QDB-CR-001",
+    eid = data_store.attach_evidence("QDB-007", "model", "QDB-007",
                                      Upload("../../etc/passwd", b"original"),
                                      "Document", "path traversal attempt")
     ev = next(e for e in repository.list_evidence() if e["evidence_id"] == eid)
-    assert ev["stored_path"].startswith("QDB-CR-001/") and "/.." not in ev["stored_path"]
+    assert ev["stored_path"].startswith("QDB-007/") and "/.." not in ev["stored_path"]
     assert data_store.read_evidence(ev) == (b"original", "ok")
     (config.evidence_dir() / ev["stored_path"]).write_bytes(b"swapped")
     assert data_store.read_evidence(ev)[1] == "altered"
@@ -124,5 +124,5 @@ def test_evidence_hash_detects_altered_file(act_as):
 def test_closed_request_rejects_evidence(act_as):
     act_as(CONSULTANT)
     with pytest.raises(ValueError, match="closed"):
-        data_store.attach_evidence("QDB-IF-001", "validation_request", "VAL-002",
+        data_store.attach_evidence("QDB-001", "validation_request", "VAL-002",
                                    Upload("late.pdf", b"x"), "Document", "late upload")

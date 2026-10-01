@@ -27,7 +27,7 @@ from pathlib import Path
 
 import config
 
-SCHEMA_VERSION = "2"
+SCHEMA_VERSION = "3"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -153,9 +153,13 @@ def ensure_db() -> None:
     conn = _connect()
     try:
         if _is_seeded(conn):
-            _migrate(conn, config.SEED_DIR)
-            _ready.add(key)
-            return
+            version = _stored_version(conn)
+            if version == SCHEMA_VERSION:
+                _ready.add(key)
+                return
+            conn.close()
+            _backup_and_reset(version)
+            conn = _connect()
         conn.executescript(SCHEMA)
         _seed(conn, config.SEED_DIR)
         conn.execute(
@@ -258,51 +262,23 @@ def _seed(conn: sqlite3.Connection, seed_dir: Path) -> None:
         _append_audit(conn, ev)
 
 
-# ---------------------------------------------------------------- migrations
-MODEL_DEFAULTS_V2 = {
-    "uses": [], "tier_override": None, "tier_history": [], "ai_functional_category": None,
-    "ai_provider_role": None, "ai_autonomy": None, "qcb_approval_status": None,
-}
-
-
-def _migrate(conn: sqlite3.Connection, seed_dir: Path) -> None:
-    """Bring a database created by an earlier version up to SCHEMA_VERSION
-    without losing data entered in the app."""
+# ---------------------------------------------------------------- upgrades
+def _stored_version(conn) -> str:
     row = conn.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()
-    version = row["value"] if row else "1"
-    if version == SCHEMA_VERSION:
-        return
-    if version == "1":
-        conn.executescript(SCHEMA)  # adds the tools table
-        with open(seed_dir / "tools.json", encoding="utf-8") as f:
-            for t in json.load(f):
-                conn.execute("INSERT OR IGNORE INTO tools(tool_id, doc) VALUES (?, ?)",
-                             (t["tool_id"], _dump(t)))
-        with open(seed_dir / "users.json", encoding="utf-8") as f:
-            for u in json.load(f):
-                conn.execute("INSERT OR IGNORE INTO users(name, role, doc) VALUES (?, ?, ?)",
-                             (u["name"], u["role"], _dump(u)))
-        with open(seed_dir / "models.json", encoding="utf-8") as f:
-            seed_models = {m["model_id"]: m for m in json.load(f)}
-        for m in _docs(conn, "SELECT doc FROM models"):
-            seed = seed_models.get(m["model_id"], {})
-            for k, default in MODEL_DEFAULTS_V2.items():
-                m.setdefault(k, seed.get(k, default))
-            m.setdefault("tier_assessment", {
-                "scores": dict(m["tier_scores"]), "rationale": m.get("tier_rationale", ""),
-                "proposed_by": "", "proposed_on": None, "status": "Confirmed",
-                "confirmed_by": "Migration", "confirmed_on": None,
-                "override_tier": None, "override_reason": None,
-            })
-            put_model(conn, m)
-        _append_audit(conn, {
-            "timestamp": datetime.now().isoformat(timespec="seconds"), "user": "System",
-            "role": "SYSTEM", "action": "migrate_schema", "entity_type": "database",
-            "entity_id": "schema", "model_id": "", "details": "Schema migrated from v1 to v2",
-        })
-    conn.execute("INSERT OR REPLACE INTO meta(key, value) VALUES ('schema_version', ?)",
-                 (SCHEMA_VERSION,))
-    conn.commit()
+    return row["value"] if row else "1"
+
+
+def _backup_and_reset(old_version: str) -> Path:
+    """Schema v3 renumbered the pilot models (QDB-001 ...) and replaced names with
+    placeholders, so older databases are kept as a backup and rebuilt from seed."""
+    path = config.db_path()
+    stamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    backup = path.with_name(f"{path.stem}.v{old_version}-backup-{stamp}{path.suffix}")
+    shutil.move(str(path), backup)
+    ev = config.evidence_dir()
+    if ev.exists():
+        shutil.move(str(ev), ev.with_name(f"{ev.name}.v{old_version}-backup-{stamp}"))
+    return backup
 
 
 # ---------------------------------------------------------------- documents
@@ -318,6 +294,51 @@ def list_users() -> list[dict]:
 def list_models() -> list[dict]:
     with tx() as conn:
         return _docs(conn, "SELECT doc FROM models ORDER BY model_id")
+
+
+def put_user(conn, user: dict) -> None:
+    conn.execute(
+        "INSERT INTO users(name, role, doc) VALUES (?, ?, ?) "
+        "ON CONFLICT(name) DO UPDATE SET role = excluded.role, doc = excluded.doc",
+        (user["name"], user["role"], _dump(user)),
+    )
+
+
+def delete_user(conn, name: str) -> None:
+    conn.execute("DELETE FROM users WHERE name = ?", (name,))
+
+
+def list_users_conn(conn) -> list[dict]:
+    return _docs(conn, "SELECT doc FROM users ORDER BY rowid")
+
+
+def delete_model(conn, model_id: str) -> None:
+    conn.execute("DELETE FROM models WHERE model_id = ?", (model_id,))
+
+
+def list_requests_conn(conn) -> list[dict]:
+    return _docs(conn, "SELECT doc FROM requests ORDER BY request_id")
+
+
+def list_tools_conn(conn) -> list[dict]:
+    return _docs(conn, "SELECT doc FROM tools ORDER BY tool_id")
+
+
+def update_evidence(conn, ev: dict) -> None:
+    conn.execute("UPDATE evidence SET model_id = ?, doc = ? WHERE evidence_id = ?",
+                 (ev["model_id"], _dump(ev), ev["evidence_id"]))
+
+
+def db_bytes() -> bytes:
+    """A consistent copy of the database file (for backup download)."""
+    ensure_db()
+    src = sqlite3.connect(config.db_path())
+    dst = sqlite3.connect(":memory:")
+    src.backup(dst)
+    src.close()
+    data = dst.serialize()
+    dst.close()
+    return bytes(data)
 
 
 def list_models_conn(conn) -> list[dict]:
@@ -376,6 +397,10 @@ def request_ids(conn, rtype: str) -> list[str]:
 def list_evidence() -> list[dict]:
     with tx() as conn:
         return _docs(conn, "SELECT doc FROM evidence ORDER BY evidence_id")
+
+
+def list_evidence_conn(conn) -> list[dict]:
+    return _docs(conn, "SELECT doc FROM evidence ORDER BY evidence_id")
 
 
 def evidence_ids(conn) -> list[str]:

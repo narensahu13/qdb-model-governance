@@ -15,12 +15,14 @@ elif deep_link:
 
 pages = [
     st.Page("views/dashboard.py", title="Executive Dashboard", default=True),
+    st.Page("views/tasks.py", title="My Tasks", url_path="tasks"),
     st.Page("views/inventory.py", title="Model Inventory", url_path="inventory"),
     st.Page("views/model_detail.py", title="Model Detail", url_path="model_detail"),
     st.Page("views/findings.py", title="Findings Tracker", url_path="findings"),
     st.Page("views/registers.py", title="Registers", url_path="registers"),
     st.Page("views/register.py", title="Register Model / Tool", url_path="register"),
     st.Page("views/framework.py", title="Governance Framework", url_path="framework"),
+    st.Page("views/admin.py", title="Administration", url_path="admin"),
 ]
 
 pg = st.navigation(pages)

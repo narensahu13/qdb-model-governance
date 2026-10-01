@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 
 import streamlit as st
 import auth
+import data_loader
 import data_store
 import governance
 import repository
@@ -225,6 +226,305 @@ def _tier_signoff(m: dict) -> None:
         } for h in reversed(m["tier_history"])]), hide_index=True, width="stretch")
 
 
+GATE_ICON = {"done": "✅", "current": "🟡", "pending": "⚪"}
+
+
+def _act(fn, msg, *args, **kwargs):
+    try:
+        fn(*args, **kwargs)
+    except (PermissionError, ValueError) as exc:
+        st.error(str(exc))
+    else:
+        flash_and_rerun(msg)
+
+
+def _lifecycle_panel(m: dict, model_requests: list[dict]) -> None:
+    """Gates G1–G5, the action due at the current gate, approvals and conditions."""
+    user = auth.get_current_user()
+    st.subheader("Lifecycle gates")
+    states = governance.gate_states(m)
+    cols = st.columns(5)
+    for col, g in zip(cols, states):
+        col.markdown(
+            f"<div style='border:1px solid #e0e0e0; border-radius:8px; padding:8px 10px; "
+            f"background:{'#fff8e1' if g['state'] == 'current' else '#fff'};'>"
+            f"<div style='font-size:0.78rem; color:#666;'>{g['gate']}</div>"
+            f"<div style='font-weight:600;'>{GATE_ICON[g['state']]} {g['name']}</div></div>",
+            unsafe_allow_html=True,
+        )
+    cur = governance.current_gate(m)
+    st.markdown("")
+    if cur is None:
+        st.caption(f"All gates passed — status **{m['status']}**.")
+    elif cur == "G1":
+        st.info("G1: the tier must be confirmed — see *Tier and sign-off* on the Overview tab.")
+    elif cur == "G2":
+        missing = data_loader.g2_missing_docs(m)
+        st.info(
+            "G2: the owner submits the model for validation once the required documents are "
+            f"in place ({', '.join(governance.G2_REQUIRED_DOCS[m['tier']])})."
+            + (f" **Missing:** {', '.join(missing)} — upload them on the Documentation & Audit tab."
+               if missing else "")
+        )
+        if auth.has_permission("submit_for_validation") and (
+                user["role"] == "ADMIN" or governance.is_owner_or_developer(m, user["name"])):
+            with st.form(f"g2_{m['model_id']}"):
+                note = st.text_area("Note to the validator (optional)")
+                go = st.form_submit_button("Submit for validation (G2)", type="primary",
+                                           disabled=bool(missing))
+            if go:
+                _act(data_store.submit_for_validation, "Submitted for validation — a VAL request is open.",
+                     m["model_id"], note)
+    elif cur == "G3":
+        open_v = [r for r in model_requests if r.get("engagement") and r["status"] != "Closed"]
+        st.info(
+            "G3: validation in progress — "
+            + (", ".join(f"{r['request_id']} ({r['engagement']['stage']})" for r in open_v)
+               if open_v else "no open validation; ask the validator to open one")
+            + ". Work happens on the Validation & Findings tab."
+        )
+    elif cur == "G4":
+        tier = m["tier"]
+        st.warning(
+            f"G4: awaiting approval by the **{m['approval_body']}** — validation rated "
+            f"**{m.get('last_rating')}** on {utils.fmt_date(m.get('last_validation'))}."
+        )
+        can = auth.has_permission("record_approval") and (
+            user["role"] == "CRO" or (user["role"] == "ADMIN" and tier == 1))
+        if can:
+            with st.form(f"g4_{m['model_id']}"):
+                st.markdown("**Record the approval decision**" + (
+                    " — Management Risk Committee (record as secretary)" if tier == 1 else " — CRO"))
+                decision = st.selectbox("Decision", governance.APPROVAL_DECISIONS)
+                minute = st.text_input("Committee minute reference" + (" *" if tier == 1 else ""),
+                                       placeholder="e.g. MgmtRC 2026-10 item 4")
+                cond_df = st.data_editor(
+                    pd.DataFrame([{"condition": "", "due": None}]), num_rows="dynamic",
+                    width="stretch", key=f"g4_conds_{m['model_id']}",
+                    column_config={"condition": "Condition (for 'Approved with conditions')",
+                                   "due": st.column_config.DateColumn("Due")},
+                )
+                comment = st.text_area("Comment")
+                go = st.form_submit_button("Record decision (G4)", type="primary")
+            if go:
+                conds = [{"condition": r["condition"], "due": r["due"].isoformat() if pd.notna(r["due"]) and r["due"] else None}
+                         for r in cond_df.to_dict("records") if str(r.get("condition") or "").strip()]
+                _act(data_store.record_approval, f"Decision recorded: {decision}.",
+                     m["model_id"], decision, conds, minute, comment)
+        elif user["role"] == "ADMIN":
+            st.caption("Tier 2 and 3 models are approved by the CRO.")
+    elif cur == "G5":
+        st.warning(
+            "G5: approved — a validator must verify that the deployed version is the validated "
+            "and approved one before the model is used."
+        )
+        if auth.has_permission("verify_implementation") and not governance.independence_conflict(
+                m, user["name"], "VAL"):
+            with st.form(f"g5_{m['model_id']}"):
+                note = st.text_area("What was checked *",
+                                    placeholder="Version, configuration, parallel run or reconciliation")
+                go = st.form_submit_button("Verify implementation (G5)", type="primary")
+            if go:
+                _act(data_store.verify_implementation, "Implementation verified — model in use.",
+                     m["model_id"], note)
+
+    # ---- approvals and conditions
+    approvals = m.get("approvals") or []
+    st.subheader("Approvals and conditions")
+    if not approvals:
+        st.caption("No approval decisions recorded yet.")
+    for ap in reversed(approvals):
+        color = {"Approved": utils.GREEN, "Approved with conditions": utils.AMBER}.get(ap["decision"], utils.RED)
+        st.markdown(
+            f"{utils.badge(ap['approval_id'], utils.GREY)}{utils.badge(ap['decision'], color)} "
+            f"**{ap['body']}** · {utils.fmt_date(ap['date'])} · v{ap.get('version')} · recorded by "
+            f"{ap['recorded_by']}" + (f" · {ap['minute_ref']}" if ap.get("minute_ref") else ""),
+            unsafe_allow_html=True,
+        )
+        if ap.get("comment"):
+            st.caption(ap["comment"])
+        for c in ap.get("conditions", []):
+            cc1, cc2 = st.columns([4, 2])
+            cc1.markdown(
+                f"- **{c['cond_id']}** {c['condition']} — owner {c['owner']}"
+                + (f", due {utils.fmt_date(c['due'])}" if c.get("due") else "")
+                + f" · *{c['status']}*" + (f" — {c['note']}" if c.get("note") else "")
+            )
+            key = f"{ap['approval_id']}_{c['cond_id']}"
+            with cc2:
+                if c["status"] == governance.CONDITION_OPEN and user["role"] == "LOD1" and (
+                        governance.is_owner_or_developer(m, user["name"])
+                        or governance.person_name(c.get("owner")) == user["name"]):
+                    with st.popover("Mark as met"):
+                        note = st.text_input("How was it met?", key=f"cm_{key}")
+                        if st.button("Confirm", key=f"cmb_{key}"):
+                            _act(data_store.update_condition, "Condition marked as met.",
+                                 m["model_id"], ap["approval_id"], c["cond_id"], "met", note)
+                if c["status"] == governance.CONDITION_MET and user["role"] in ("LOD2", "CRO") \
+                        and not governance.is_owner_or_developer(m, user["name"]):
+                    b1, b2 = st.columns(2)
+                    if b1.button("Verify", key=f"cv_{key}"):
+                        _act(data_store.update_condition, "Condition verified.",
+                             m["model_id"], ap["approval_id"], c["cond_id"], "verify")
+                    with b2.popover("Reopen"):
+                        why = st.text_input("Why?", key=f"cr_{key}")
+                        if st.button("Reopen", key=f"crb_{key}"):
+                            _act(data_store.update_condition, "Condition reopened.",
+                                 m["model_id"], ap["approval_id"], c["cond_id"], "reopen", why)
+    if m.get("implementation"):
+        st.caption("Implementation verified: " + "; ".join(
+            f"v{i['version']} by {i['verified_by']} on {utils.fmt_date(i['verified_on'])}"
+            for i in m["implementation"]))
+
+
+STAGE_ORDER = governance.ENGAGEMENT_STAGES
+
+
+def _engagement_panel(req: dict, m: dict) -> None:
+    """Validation engagement: scope and independence, information requests,
+    draft report, owner's factual-accuracy review, sign-off (G3)."""
+    eng = req.get("engagement") or {}
+    user = auth.get_current_user()
+    rid = req["request_id"]
+    stage = eng.get("stage", "Scoping")
+    is_closed = req["status"] == "Closed"
+    is_validator = user["role"] == "LOD2" and governance.person_name(req.get("assigned_to")) == user["name"]
+    is_owner = governance.is_owner_or_developer(m, user["name"])
+
+    st.markdown("**Validation engagement**")
+    idx = STAGE_ORDER.index(stage) if stage in STAGE_ORDER else 0
+    st.markdown(" → ".join(
+        f"**{s}**" if i == idx else (f"<span style='color:{utils.GREEN};'>{s}</span>" if i < idx
+                                     else f"<span style='color:#999;'>{s}</span>")
+        for i, s in enumerate(STAGE_ORDER)), unsafe_allow_html=True)
+
+    if eng.get("scope"):
+        st.markdown(f"**Scope.** {eng['scope']}")
+    if eng.get("planned_tests"):
+        st.caption("Planned tests: " + ", ".join(eng["planned_tests"]))
+    if eng.get("independence"):
+        st.caption(f"Independence declared by {eng['independence']['declared_by']} on "
+                   f"{utils.fmt_date(eng['independence']['on'])}.")
+
+    # ---- scoping
+    if not is_closed and stage in ("Scoping",) and user["role"] == "LOD2" and (
+            is_validator or not req.get("assigned_to")):
+        with st.form(f"eng_scope_{rid}"):
+            scope = st.text_area("Scope of the validation *")
+            tests = st.multiselect("Planned tests", data_store.COMMON_TESTS)
+            st.checkbox("I declare I did not develop, own or use this model and have no conflict of "
+                        "interest in validating it.", key=f"eng_ind_{rid}")
+            go = st.form_submit_button("Start fieldwork", type="primary")
+        if go:
+            if not st.session_state.get(f"eng_ind_{rid}"):
+                st.error("Tick the independence declaration.")
+            else:
+                _act(data_store.start_engagement, "Fieldwork started.", rid, scope, tests)
+    elif not is_closed and stage == "Scoping":
+        st.caption("Waiting for the validator to set the scope and declare independence.")
+
+    # ---- information requests
+    irs = eng.get("info_requests") or []
+    if irs or stage == "Fieldwork":
+        st.markdown("**Information requests**")
+    for ir in irs:
+        color = {"Open": utils.AMBER, "Answered": utils.NAVY, "Accepted": utils.GREEN}[ir["status"]]
+        overdue = ir["status"] == "Open" and ir.get("due") and ir["due"] < date.today().isoformat()
+        st.markdown(
+            f"{utils.badge(ir['ir_id'], utils.GREY)}{utils.badge(ir['status'], color)}"
+            + (utils.badge('Overdue', utils.RED) if overdue else "")
+            + f" **{ir['item']}** — {ir['owner']}, due {utils.fmt_date(ir.get('due'))}",
+            unsafe_allow_html=True,
+        )
+        if ir.get("response"):
+            st.caption(f"Answer ({ir.get('answered_by')}, {utils.fmt_date(ir.get('answered_on'))}): {ir['response']}")
+        if ir.get("review_comment"):
+            st.caption(f"Validator: {ir['review_comment']}")
+        key = f"{rid}_{ir['ir_id']}"
+        if not is_closed and ir["status"] == "Open" and user["role"] == "LOD1" and (
+                is_owner or governance.person_name(ir["owner"]) == user["name"]):
+            with st.popover(f"Answer {ir['ir_id']}"):
+                resp = st.text_area("Answer", key=f"ira_{key}")
+                f = st.file_uploader("Attach a file (optional)", type=data_store.ALLOWED_UPLOAD_TYPES,
+                                     key=f"iraf_{key}")
+                if st.button("Send answer", key=f"irab_{key}"):
+                    try:
+                        ev = []
+                        if f is not None:
+                            ev.append(data_store.attach_evidence(
+                                m["model_id"], "validation_request", rid, f, "Document",
+                                f"{ir['ir_id']}: {ir['item'][:60]}"))
+                        data_store.answer_info_request(rid, ir["ir_id"], resp, ev)
+                    except (PermissionError, ValueError) as exc:
+                        st.error(str(exc))
+                    else:
+                        flash_and_rerun(f"{ir['ir_id']} answered.")
+        if not is_closed and ir["status"] == "Answered" and is_validator:
+            b1, b2 = st.columns([1, 3])
+            if b1.button(f"Accept {ir['ir_id']}", key=f"irok_{key}"):
+                _act(data_store.review_info_request, f"{ir['ir_id']} accepted.", rid, ir["ir_id"], True)
+            with b2.popover(f"Send {ir['ir_id']} back"):
+                why = st.text_input("What is still missing?", key=f"irno_{key}")
+                if st.button("Send back", key=f"irnob_{key}"):
+                    _act(data_store.review_info_request, f"{ir['ir_id']} sent back.", rid, ir["ir_id"], False, why)
+
+    if not is_closed and stage == "Fieldwork" and is_validator:
+        with st.popover("Add an information request"):
+            item = st.text_input("Item requested", key=f"irnew_{rid}")
+            owners = [auth.user_option_label(u) for u in auth.users_for_roles("LOD1")]
+            who = st.selectbox("Asked of", owners,
+                               index=auth.default_option_index(owners, m.get("developer")), key=f"irwho_{rid}")
+            due = st.date_input("Due", value=date.today() + timedelta(days=10), key=f"irdue_{rid}")
+            if st.button("Send request", key=f"irnewb_{rid}"):
+                _act(data_store.add_info_request, "Information request sent.", rid, item, who, due.isoformat())
+        reason = governance.engagement_can_issue_draft(eng)
+        with st.form(f"eng_draft_{rid}"):
+            st.markdown("**Draft report**")
+            if reason:
+                st.caption(reason)
+            rating = st.selectbox("Proposed rating", governance.RATING_SCALE)
+            summary = st.text_area("Summary of conclusions and findings")
+            go = st.form_submit_button("Issue draft for owner review", disabled=bool(reason))
+        if go:
+            _act(data_store.issue_draft, "Draft issued for the owner's review.", rid, rating, summary)
+
+    # ---- draft and owner review
+    if eng.get("draft"):
+        d = eng["draft"]
+        st.markdown(f"**Draft report** — proposed rating {utils.rating_badge(d['rating'])} "
+                    f"issued by {d['issued_by']} on {utils.fmt_date(d['issued_on'])}",
+                    unsafe_allow_html=True)
+        st.caption(d["summary"])
+    if eng.get("owner_review"):
+        o = eng["owner_review"]
+        st.caption(f"Owner's factual-accuracy review ({o['by']}, {utils.fmt_date(o['on'])}): {o['comments']}")
+    if not is_closed and stage == "Owner review" and is_owner and user["role"] == "LOD1":
+        with st.form(f"eng_review_{rid}"):
+            comments = st.text_area("Factual-accuracy comments (leave blank if none)")
+            go = st.form_submit_button("Submit review", type="primary")
+        if go:
+            _act(data_store.submit_owner_review, "Review submitted.", rid, comments)
+
+    # ---- sign-off
+    if not is_closed and stage in ("Owner review", "Final sign-off") and is_validator:
+        reason = governance.engagement_can_sign_off(eng)
+        with st.form(f"eng_sign_{rid}"):
+            st.markdown("**Final sign-off (G3)**")
+            if reason:
+                st.caption(reason)
+            rating = st.selectbox("Final rating", governance.RATING_SCALE,
+                                  index=governance.RATING_SCALE.index(eng["draft"]["rating"])
+                                  if eng.get("draft") else 0,
+                                  help=" · ".join(f"{k}: {v}" for k, v in governance.RATING_DESCRIPTIONS.items()))
+            comment = st.text_input("Sign-off comment")
+            go = st.form_submit_button("Sign off validation", type="primary", disabled=bool(reason))
+        if go:
+            _act(data_store.sign_off, "Validation signed off.", rid, rating, comment)
+    if eng.get("signed_off"):
+        so = eng["signed_off"]
+        st.success(f"Signed off by {so['by']} on {utils.fmt_date(so['on'])} — rating {so['rating']}.")
+
+
 # Fresh-session identity: a new tab has no sidebar selector until page_setup
 # runs (or never, if this view is executed standalone).
 auth.get_current_user()
@@ -305,6 +605,7 @@ hb1.markdown(
     utils.tier_badge(m["tier"])
     + ("" if m["tier_confirmed"] else utils.badge(
         "Tier reassessment pending" if m.get("tier_history") else "Tier not yet confirmed", utils.AMBER))
+    + utils.status_badge(m["status"])
     + utils.validation_badge(f"Validation: {vstatus}")
     + (utils.rating_badge(m["last_rating"]) if m.get("last_rating") else "")
     + utils.badge(m["risk_type"], utils.RISK_TYPE_COLORS.get(m["risk_type"], utils.GREY))
@@ -475,6 +776,8 @@ with tab_overview:
 
 # ================================================================ Governance
 with tab_gov:
+    _lifecycle_panel(m, model_requests)
+    st.divider()
     c1, c2 = st.columns(2)
     with c1:
         st.subheader("Ownership & Accountability")
@@ -1041,6 +1344,9 @@ with tab_val:
                 "(no upload, edit, or new comments)."
             )
 
+        if req.get("engagement"):
+            _engagement_panel(req, m)
+
         # ---- Evidence
         st.markdown("**Evidence**")
         req_ev = _evidence_for("validation_request", req["request_id"], evidence_all)
@@ -1157,7 +1463,9 @@ with tab_val:
                                 f"Response {rid} added to {req['request_id']}."
                             )
 
-            if auth.can_close_request(req):
+            if req.get("engagement"):
+                pass  # closed by signing off the engagement above
+            elif auth.can_close_request(req):
                 with st.form(f"close_form_{req['request_id']}", clear_on_submit=True):
                     close_comment = st.text_input(
                         "Closure comment *", key=f"close_txt_{req['request_id']}",

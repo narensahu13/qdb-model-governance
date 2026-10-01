@@ -8,8 +8,10 @@ The inventory holds QDB's **pilot models** — the IFRS 9 suite (PD, LGD, EAD, s
 weights, ECL engine), the CreditLens obligor rating models, the pricing model, the scoring models
 in development (transaction, credit bureau individual and corporate, combination module) and
 placeholder models for liquidity, market, operational and non-financial risk. **Model names and
-relationships are real; people, dates, exposures, metrics and findings are mock data** to be
-edited.
+relationships are real; dates, exposures, metrics and findings are mock data** to be edited.
+People are placeholders (Owner 1, Developer 1, Validator 1, Auditor 1, MRM Admin 1, CRO 1) —
+rename them to real people on the Administration page. Models are numbered QDB-001, QDB-002 …
+and can be renumbered there too.
 
 Governance set-up (decided 30 September 2026):
 
@@ -50,6 +52,7 @@ fingerprint recorded at upload and re-checked on every download. Point the platf
 
 | Page | Purpose |
 |---|---|
+| My Tasks | Everything waiting on the acting user: information requests, reviews, sign-offs, approvals, conditions |
 | Executive Dashboard | Model risk at a glance: KPIs, tier and validation status, models needing escalation, validation calendar |
 | Model Inventory | Filterable register of all models, including the AI-system flag; click a row to open the model |
 | Model Detail | Overview (uses, tier sign-off), Governance & Lifecycle (version history), Validation & Findings (MC / VAL / FND threads), Performance Monitoring, Documentation & Audit (document uploads, checklist, file integrity, audit trail), Edit Record; one-click PDF factsheet |
@@ -57,6 +60,7 @@ fingerprint recorded at upload and re-checked on every download. Point the platf
 | Registers | Tier sign-off queue, EUC / identification register, AI register for the QCB filing (CSV export) |
 | Register Model / Tool | Identification questionnaire that routes a candidate to the model inventory, the EUC register or the AI register, then captures the record and proposed tier |
 | Governance Framework | Model definition, tiering, lifecycle, QDB governance structure, permissions, roadmap |
+| Administration | MRM Administrator: rename people and roles, set accountability for all models, renumber model IDs, audit check, database backup |
 
 ## Controls built into the platform
 
@@ -71,6 +75,9 @@ fingerprint recorded at upload and re-checked on every download. Point the platf
 | Model identification | Five-question test based on SR 26-2 and the QCB AI Guideline; every decision is kept, including "not a model" |
 | Tier sign-off (gate G1) | Owner proposes, MRM confirms (never the proposer), an override needs a reason and CRO approval; history kept |
 | Record editing | Owners and developers edit their own models; owner, developer, validator and sponsor are assigned by the MRM Administrator only |
+| Lifecycle gates G1–G5 | Tier confirmed → submitted with required documents → validation signed off → approved (Management Risk Committee for Tier 1, CRO for Tier 2/3) → implementation verified; a model cannot reach use without all five |
+| Validation engagement | Scope and independence declaration, information requests answered with evidence, draft with proposed rating, owner's factual-accuracy review (7 days), sign-off; validations close only through sign-off |
+| Approvals and conditions | Decisions recorded with the committee minute reference; conditions are marked met by the owner and verified by a validator or the CRO |
 
 ## Editing the model data
 
@@ -95,12 +102,13 @@ you want to discard edits to the seed.
 
 ```bash
 pip install -r requirements-dev.txt
-python -m pytest tests          # governance rules, repository, workflows, inventory (41 tests)
+python -m pytest tests          # rules, repository, workflows, inventory, validation workflow (57 tests)
 python scripts/smoke_test.py    # every page and form through Streamlit AppTest
 ```
 
-Both run against a throwaway copy of the seed, never your working database. A database created
-by an earlier version is upgraded in place on first start, without losing data entered in the app.
+Both run against a throwaway copy of the seed, never your working database. A database from an
+earlier version (before model numbering changed to QDB-001) is kept as a backup file next to
+the new one and rebuilt from the seed on first start.
 
 ## Structure
 
