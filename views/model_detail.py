@@ -13,6 +13,7 @@ import tiering
 import utils
 from data_loader import (
     documentation_status,
+    factsheet_pdf,
     get_model,
     load_audit_log,
     load_evidence,
@@ -120,6 +121,110 @@ def _render_attach_form(
                 flash_and_rerun(f"Evidence {eid} attached to {linked_type} {linked_id}.")
 
 
+def _tier_signoff(m: dict) -> None:
+    """Gate G1: propose -> confirm (MRM) -> CRO approval for overrides."""
+    ta = m.get("tier_assessment") or {}
+    user = auth.get_current_user()
+    status = ta.get("status", governance.TIER_CONFIRMED)
+    proposed_tier = tiering.compute_tier(**ta["scores"])["tier"] if ta.get("scores") else m["tier"]
+
+    if status == governance.TIER_CONFIRMED:
+        note = f"Tier {m['tier']} confirmed"
+        if ta.get("confirmed_by"):
+            note += f" by {ta['confirmed_by']} on {utils.fmt_date(ta.get('confirmed_on'))}"
+        if m.get("tier_override"):
+            note += f" — override of the rule-based Tier {m['computed_tier']}, approved by the CRO"
+        st.success(note + ".")
+    elif status == governance.TIER_PROPOSED:
+        st.warning(
+            f"**Tier {proposed_tier} proposed** by {ta['proposed_by']} on "
+            f"{utils.fmt_date(ta['proposed_on'])} — awaiting confirmation by the MRM function. "
+            f"Scores: materiality {ta['scores']['materiality']}, complexity "
+            f"{ta['scores']['complexity']}, regulatory impact {ta['scores']['regulatory_impact']}. "
+            f"Rationale: {ta.get('rationale') or '—'}"
+        )
+    else:
+        st.warning(
+            f"**Override to Tier {ta['override_tier']} awaiting CRO approval** (rule-based Tier "
+            f"{proposed_tier}). Requested by {ta['confirmed_by']}: {ta['override_reason']}"
+        )
+
+    # ---- actions
+    if status == governance.TIER_PROPOSED and auth.has_permission("confirm_tier"):
+        if ta.get("proposed_by") == user["name"]:
+            st.caption("You proposed this tier, so someone else must confirm it.")
+        else:
+            with st.form(f"confirm_tier_{m['model_id']}"):
+                st.markdown("**Confirm the tier**")
+                ov = st.selectbox(
+                    "Final tier", [proposed_tier] + [t for t in (1, 2, 3) if t != proposed_tier],
+                    format_func=lambda t: f"Tier {t}" + (" (rule-based)" if t == proposed_tier else " — override"),
+                    key=f"ct_tier_{m['model_id']}",
+                )
+                reason = st.text_input("Override reason (required for an override)",
+                                       key=f"ct_reason_{m['model_id']}")
+                go_confirm = st.form_submit_button("Confirm tier", type="primary")
+            if go_confirm:
+                try:
+                    res = data_store.confirm_tier(
+                        m["model_id"], override_tier=ov if ov != proposed_tier else None,
+                        override_reason=reason,
+                    )
+                except (PermissionError, ValueError) as exc:
+                    st.error(str(exc))
+                else:
+                    flash_and_rerun("Tier confirmed." if res == governance.TIER_CONFIRMED
+                                    else "Override sent to the CRO for approval.")
+    elif status == governance.TIER_OVERRIDE_PENDING and auth.has_permission("approve_tier_override"):
+        with st.form(f"cro_tier_{m['model_id']}"):
+            st.markdown("**CRO decision on the tier override**")
+            comment = st.text_input("Comment", key=f"cro_c_{m['model_id']}")
+            c_a, c_b = st.columns(2)
+            approve = c_a.form_submit_button("Approve override", type="primary")
+            reject = c_b.form_submit_button("Reject — keep rule-based tier")
+        if approve or reject:
+            try:
+                data_store.decide_tier_override(m["model_id"], bool(approve), comment)
+            except (PermissionError, ValueError) as exc:
+                st.error(str(exc))
+            else:
+                flash_and_rerun("Tier override approved." if approve else "Tier override rejected.")
+    elif status == governance.TIER_CONFIRMED and auth.has_permission("propose_tier") and (
+        user["role"] == "ADMIN" or governance.is_owner_or_developer(m, user["name"])
+    ):
+        with st.popover("Propose a tier reassessment"):
+            with st.form(f"propose_tier_{m['model_id']}"):
+                cur = m["tier_scores"]
+                p1, p2, p3 = st.columns(3)
+                pm = p1.selectbox("Materiality", tiering.LEVELS,
+                                  index=tiering.LEVELS.index(cur["materiality"]), key=f"pt_m_{m['model_id']}")
+                pc = p2.selectbox("Complexity", tiering.LEVELS,
+                                  index=tiering.LEVELS.index(cur["complexity"]), key=f"pt_c_{m['model_id']}")
+                pr = p3.selectbox("Regulatory impact", tiering.LEVELS,
+                                  index=tiering.LEVELS.index(cur["regulatory_impact"]), key=f"pt_r_{m['model_id']}")
+                prat = st.text_area("Rationale *", key=f"pt_rat_{m['model_id']}")
+                go_prop = st.form_submit_button("Submit for sign-off")
+            if go_prop:
+                try:
+                    data_store.propose_tier(m["model_id"], {
+                        "materiality": pm, "complexity": pc, "regulatory_impact": pr,
+                    }, prat)
+                except (PermissionError, ValueError) as exc:
+                    st.error(str(exc))
+                else:
+                    flash_and_rerun("Tier reassessment submitted for sign-off.")
+
+    if m.get("tier_history"):
+        st.markdown("**Tier history**")
+        st.dataframe(pd.DataFrame([{
+            "Tier": h.get("tier"),
+            "Materiality": h["scores"]["materiality"], "Complexity": h["scores"]["complexity"],
+            "Regulatory impact": h["scores"]["regulatory_impact"],
+            "Override": h.get("override") or "—", "Rationale": h.get("rationale"),
+            "Confirmed by": h.get("confirmed_by"), "Confirmed on": utils.fmt_date(h.get("confirmed_on")),
+        } for h in reversed(m["tier_history"])]), hide_index=True, width="stretch")
+
+
 # Fresh-session identity: a new tab has no sidebar selector until page_setup
 # runs (or never, if this view is executed standalone).
 auth.get_current_user()
@@ -190,9 +295,16 @@ if "_flash" in st.session_state:
     st.success(st.session_state.pop("_flash"))
 
 utils.header(f"{m['model_id']} — {m['name']}", m["business_line"])
-st.markdown(
-    utils.tier_badge(tier_info["tier"])
-    + utils.status_badge(m["status"])
+hb1, hb2 = st.columns([5, 1.2])
+hb2.download_button(
+    "Factsheet (PDF)", data=factsheet_pdf(selected),
+    file_name=f"{selected}_factsheet_{date.today().isoformat()}.pdf",
+    mime="application/pdf", key="dl_factsheet", width="stretch",
+)
+hb1.markdown(
+    utils.tier_badge(m["tier"])
+    + ("" if m["tier_confirmed"] else utils.badge(
+        "Tier reassessment pending" if m.get("tier_history") else "Tier not yet confirmed", utils.AMBER))
     + utils.validation_badge(f"Validation: {vstatus}")
     + (utils.rating_badge(m["last_rating"]) if m.get("last_rating") else "")
     + utils.badge(m["risk_type"], utils.RISK_TYPE_COLORS.get(m["risk_type"], utils.GREY))
@@ -214,12 +326,13 @@ evidence_all = load_evidence()
 model_evidence = [e for e in evidence_all if e["model_id"] == selected]
 evidence_by_id = {e["evidence_id"]: e for e in evidence_all}
 
-tab_overview, tab_gov, tab_val, tab_perf, tab_docs = st.tabs([
+tab_overview, tab_gov, tab_val, tab_perf, tab_docs, tab_edit = st.tabs([
     "Overview",
     "Governance & Lifecycle",
     "Validation & Findings",
     "Performance Monitoring",
     "Documentation & Audit",
+    "Edit Record",
 ])
 
 # ================================================================ Overview
@@ -228,7 +341,11 @@ with tab_overview:
 
     scores = m["tier_scores"]
     utils.kpi_cards([
-        ("Tier", f"Tier {tier_info['tier']}", f"score {tier_info['composite']} / 9"),
+        ("Tier", f"Tier {m['tier']}",
+         f"override of rule-based Tier {m['computed_tier']}" if m.get("tier_override")
+         else f"score {tier_info['composite']} / 9"
+         + ("" if m["tier_confirmed"] else
+            " · reassessment pending" if m.get("tier_history") else " · not yet confirmed")),
         ("Materiality", scores["materiality"], None),
         ("Complexity", scores["complexity"], None),
         ("Regulatory impact", scores["regulatory_impact"], None),
@@ -243,6 +360,18 @@ with tab_overview:
     )
     d2.caption(f"Exposure **QAR {m['exposure_covered_qar_mn']:,} mn**")
     d3.caption(f"Platform **{m['implementation_platform']}** · {m['usage_frequency']}")
+
+    st.markdown("**Uses**")
+    if m.get("uses"):
+        st.dataframe(
+            pd.DataFrame(m["uses"]).rename(columns={
+                "use": "Use", "business_area": "Business area",
+                "decision": "Decision supported", "status": "Status",
+            }),
+            hide_index=True, width="stretch",
+        )
+    else:
+        st.caption("No uses recorded yet — add them on the Edit Record tab.")
 
     with st.expander("Identification & use"):
         ident = pd.DataFrame(
@@ -273,7 +402,9 @@ with tab_overview:
             unsafe_allow_html=True,
         )
 
-    with st.expander("Tiering detail"):
+    with st.expander("Tier and sign-off (gate G1)", expanded=not m["tier_confirmed"]):
+        _tier_signoff(m)
+        st.divider()
         st.markdown(
             f"{utils.tier_badge(tier_info['tier'])} <span style='color:#444;'>{tier_info['explanation']}</span>",
             unsafe_allow_html=True,
@@ -371,7 +502,7 @@ with tab_gov:
         ("Approval date", utils.fmt_date(m["approval_date"], "Not approved"), m["approval_body"]),
         ("Last validation", utils.fmt_date(m["last_validation"], "Never"), m.get("last_rating")),
         ("Next validation due", utils.fmt_date(m["next_validation_due"]), None),
-        ("Frequency", m["validation_frequency"], f"Tier {tier_info['tier']}"),
+        ("Frequency", m["validation_frequency"], f"Tier {m['tier']}"),
     ])
     st.caption(
         "Validation dates and the rating are derived from closed validation requests; "
@@ -381,7 +512,7 @@ with tab_gov:
     if vstatus == "Pre-implementation":
         st.info("Model not yet in use: an initial validation is required before approval and use.")
     elif vstatus in ("Overdue", "Never Validated"):
-        st.error(f"Validation status: **{vstatus}**. This Tier {tier_info['tier']} model requires immediate scheduling of independent validation.")
+        st.error(f"Validation status: **{vstatus}**. This Tier {m['tier']} model requires immediate scheduling of independent validation.")
     elif vstatus == "Due Soon":
         st.warning("Validation due within 90 days — validation should be commissioned now.")
     else:
@@ -435,6 +566,37 @@ with tab_gov:
         fig.update_layout(height=320, margin=dict(l=10, r=10, t=30, b=10), showlegend=False,
                           yaxis_title=None, xaxis_title=None)
         st.plotly_chart(fig, width="stretch")
+
+    # ------------------------------------------------ Version history
+    st.subheader("Version history")
+    if m["change_log"]:
+        done_vals = sorted(
+            [r for r in model_requests if governance.counts_as_validation(r)],
+            key=lambda r: r.get("closed_date") or "",
+        )
+        entries = sorted(m["change_log"], key=lambda e: e["date"])
+        vrows = []
+        for i, e in enumerate(entries):
+            nxt = entries[i + 1]["date"] if i + 1 < len(entries) else "9999-12-31"
+            vals = [r for r in done_vals if e["date"] <= (r.get("closed_date") or "") < nxt]
+            if e.get("classification") == "Non-material":
+                vstate = "Not required (non-material)"
+            elif vals:
+                vstate = f"{vals[-1]['outcome']} ({vals[-1]['request_id']}, {utils.fmt_date(vals[-1]['closed_date'])})"
+            else:
+                vstate = "Not validated"
+            vrows.append({
+                "Version": e["version"], "Date": utils.fmt_date(e["date"]),
+                "Change": e.get("change_id", ""), "Classification": e.get("classification", "—"),
+                "Validation of this version": vstate,
+                "In use": "Current" if e["version"] == m["version"] else "",
+            })
+        st.dataframe(pd.DataFrame(list(reversed(vrows))), hide_index=True, width="stretch")
+        if vrows and vrows[-1]["Validation of this version"] == "Not validated" and \
+                m["status"] not in governance.PRE_IMPLEMENTATION_STATUSES:
+            st.warning("The version in use has not been validated since its last material change.")
+    else:
+        st.caption("No versions recorded yet.")
 
     # ------------------------------------------------ Record Model Change (LoD 1)
     if auth.has_permission("record_change"):
@@ -1311,3 +1473,153 @@ with tab_docs:
         st.dataframe(tr, hide_index=True, width="stretch")
     else:
         st.caption("No audit trail events recorded for this model yet.")
+
+# ================================================================ Edit Record
+with tab_edit:
+    user = auth.get_current_user()
+    is_admin = auth.has_permission("assign_accountability")
+    can_edit = auth.has_permission("edit_model") and (
+        is_admin or governance.is_owner_or_developer(m, user["name"])
+    )
+    if not can_edit:
+        st.info(
+            "Only the model's owner or developer, or the MRM Administrator, can edit this record. "
+            "Tier changes go through the sign-off on the Overview tab; status and validation dates "
+            "move through the workflows."
+        )
+    else:
+        st.caption(
+            "Every saved change is logged with its before and after values. Tier, status and "
+            "validation dates are not edited here."
+        )
+        models_all = load_models()
+        other_ids = {x["model_id"]: f"{x['model_id']} — {x['name']}" for x in models_all
+                     if x["model_id"] != selected}
+        with st.form("edit_record_form"):
+            st.markdown("**Description**")
+            e1, e2 = st.columns(2)
+            with e1:
+                f_name = st.text_input("Model name", m["name"])
+                f_cat = st.text_input("Category", m["category"])
+                f_bl = st.text_input("Business line", m["business_line"])
+                f_meth = st.text_input("Methodology", m["methodology"])
+                f_src = st.selectbox(
+                    "Source", governance.SOURCES + ([m["source"]] if m["source"] not in governance.SOURCES else []),
+                    index=(governance.SOURCES + [m["source"]]).index(m["source"]),
+                )
+                f_vendor = st.text_input("Vendor", m.get("vendor") or "")
+            with e2:
+                f_plat = st.text_input("Implementation platform", m["implementation_platform"])
+                f_usage = st.text_input("Usage frequency", m["usage_frequency"])
+                f_exp = st.number_input("Exposure covered (QAR mn)", min_value=0, step=100,
+                                        value=int(m["exposure_covered_qar_mn"]))
+                f_up = st.multiselect(
+                    "Upstream models", list(other_ids),
+                    default=[u for u in m["dependencies"]["upstream"] if u in other_ids],
+                    format_func=lambda i: other_ids[i],
+                )
+            f_desc = st.text_area("Purpose / description", m["description"])
+            l1, l2 = st.columns(2)
+            with l1:
+                f_data = st.text_area("Data sources (one per line)", "\n".join(m["data_sources"]))
+                f_users = st.text_area("Model users (one per line)", "\n".join(m["model_users"]))
+                f_regmap = st.text_area("Regulatory mapping (one per line)", "\n".join(m["regulatory_mapping"]))
+            with l2:
+                f_ass = st.text_area("Key assumptions (one per line)", "\n".join(m["key_assumptions"]))
+                f_lim = st.text_area("Known limitations (one per line)", "\n".join(m["known_limitations"]))
+
+            st.markdown("**Uses**")
+            f_uses = st.data_editor(
+                pd.DataFrame(m.get("uses") or [], columns=["use", "business_area", "decision", "status"]),
+                num_rows="dynamic", width="stretch", key="edit_uses",
+                column_config={
+                    "use": "Use", "business_area": "Business area", "decision": "Decision supported",
+                    "status": st.column_config.SelectboxColumn("Status", options=governance.USE_STATUSES),
+                },
+            )
+
+            st.markdown("**AI system (QCB AI Guideline)**")
+            f_ai = st.checkbox("This model is an AI system", bool(m.get("ai_system")))
+            a1, a2 = st.columns(2)
+            with a1:
+                f_aicat = st.selectbox(
+                    "Functional category", governance.AI_FUNCTIONAL_CATEGORIES,
+                    index=governance.AI_FUNCTIONAL_CATEGORIES.index(m["ai_functional_category"])
+                    if m.get("ai_functional_category") in governance.AI_FUNCTIONAL_CATEGORIES else 0,
+                )
+                f_airole = st.selectbox(
+                    "QDB's role", governance.AI_PROVIDER_ROLES,
+                    index=governance.AI_PROVIDER_ROLES.index(m["ai_provider_role"])
+                    if m.get("ai_provider_role") in governance.AI_PROVIDER_ROLES else 0,
+                )
+            with a2:
+                f_aiaut = st.selectbox(
+                    "Human oversight", governance.AI_AUTONOMY,
+                    index=governance.AI_AUTONOMY.index(m["ai_autonomy"])
+                    if m.get("ai_autonomy") in governance.AI_AUTONOMY else 0,
+                )
+                f_aiqcb = st.selectbox(
+                    "QCB approval status", governance.QCB_APPROVAL_STATUSES,
+                    index=governance.QCB_APPROVAL_STATUSES.index(m["qcb_approval_status"])
+                    if m.get("qcb_approval_status") in governance.QCB_APPROVAL_STATUSES else 0,
+                )
+            f_aihigh = st.checkbox("High-risk AI system (QCB classification)", bool(m.get("qcb_ai_high_risk")))
+
+            assign = {}
+            if is_admin:
+                st.markdown("**Accountability** (MRM Administrator)")
+                lod1 = [auth.user_option_label(u) for u in auth.users_for_roles("LOD1")]
+                owners = lod1 + ([m["owner"]] if m["owner"] not in lod1 else [])
+                vals = ["Not yet assigned"] + [
+                    auth.user_option_label(u) for u in auth.users_for_roles("LOD2")
+                    if not governance.independence_conflict(m, u["name"], "VAL")
+                ]
+                if m["validator"] not in vals:
+                    vals.append(m["validator"])
+                s1, s2 = st.columns(2)
+                with s1:
+                    assign["owner"] = st.selectbox("Owner", owners, index=owners.index(m["owner"]))
+                    assign["developer"] = st.text_input("Developer", m["developer"])
+                    assign["risk_type"] = st.selectbox(
+                        "Risk type", governance.RISK_TYPES,
+                        index=governance.RISK_TYPES.index(m["risk_type"])
+                        if m["risk_type"] in governance.RISK_TYPES else 0,
+                    )
+                with s2:
+                    assign["validator"] = st.selectbox(
+                        "Validator", vals, index=vals.index(m["validator"]),
+                        help="Validators who own or develop this model are excluded (independence).",
+                    )
+                    assign["sponsor"] = st.text_input("Business sponsor", m["sponsor"])
+            save = st.form_submit_button("Save changes", type="primary")
+
+        if save:
+            uses = [
+                {k: ("" if pd.isna(v) else str(v).strip()) for k, v in row.items()}
+                for row in f_uses.to_dict("records") if str(row.get("use") or "").strip()
+                and not pd.isna(row.get("use"))
+            ]
+            changes = {
+                "name": f_name.strip(), "category": f_cat.strip(), "business_line": f_bl.strip(),
+                "methodology": f_meth.strip(), "source": f_src, "vendor": f_vendor.strip() or None,
+                "implementation_platform": f_plat.strip(), "usage_frequency": f_usage.strip(),
+                "exposure_covered_qar_mn": int(f_exp), "upstream": f_up,
+                "description": f_desc.strip(), "data_sources": f_data, "model_users": f_users,
+                "regulatory_mapping": f_regmap, "key_assumptions": f_ass, "known_limitations": f_lim,
+                "uses": uses, "ai_system": f_ai,
+            }
+            if f_ai:
+                changes.update({
+                    "ai_functional_category": f_aicat, "ai_provider_role": f_airole,
+                    "ai_autonomy": f_aiaut, "qcb_approval_status": f_aiqcb, "qcb_ai_high_risk": f_aihigh,
+                })
+            changes.update(assign)
+            try:
+                changed = data_store.update_model(selected, changes)
+            except (PermissionError, ValueError) as exc:
+                st.error(str(exc))
+            else:
+                if changed:
+                    flash_and_rerun(f"Saved: {', '.join(changed)}.")
+                else:
+                    st.info("No changes to save.")

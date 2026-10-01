@@ -1,0 +1,106 @@
+[
+  {
+    "tool_id": "QDB-EUC-001",
+    "name": "ECL ETL consolidation workbook",
+    "classification": "EUC tool",
+    "description": "Prepares and stages the consolidated data template consumed by the ECL engine.",
+    "owner": "Fatima Al-Sulaiti (Head of Financial Control)",
+    "business_area": "Financial Control",
+    "platform": "Excel with macros",
+    "materiality": "High",
+    "controls": "Version control, input reconciliation to the general ledger, second-person review",
+    "ai_system": false,
+    "related_models": [
+      "QDB-IF-006"
+    ],
+    "identification_answers": {
+      "quantitative": true,
+      "theory": false,
+      "deterministic_only": true,
+      "learns_from_data": false,
+      "decision_use": true
+    },
+    "registered_by": "Maryam Al-Kaabi",
+    "registered_on": "2026-09-15",
+    "last_reviewed": "2026-09-15"
+  },
+  {
+    "tool_id": "QDB-EUC-002",
+    "name": "Provision journal calculator",
+    "classification": "EUC tool",
+    "description": "Turns ECL results into general-ledger journal entries by product and branch.",
+    "owner": "Fatima Al-Sulaiti (Head of Financial Control)",
+    "business_area": "Financial Control",
+    "platform": "Excel",
+    "materiality": "Medium",
+    "controls": "Totals reconciled to ECL engine output",
+    "ai_system": false,
+    "related_models": [
+      "QDB-IF-006"
+    ],
+    "identification_answers": {
+      "quantitative": true,
+      "theory": false,
+      "deterministic_only": true,
+      "learns_from_data": false,
+      "decision_use": true
+    },
+    "registered_by": "Maryam Al-Kaabi",
+    "registered_on": "2026-09-15",
+    "last_reviewed": "2026-09-15"
+  },
+  {
+    "tool_id": "QDB-AI-001",
+    "name": "Financial statement spreading (OCR)",
+    "classification": "AI tool (non-model)",
+    "description": "Reads uploaded financial statements and pre-fills CreditLens spreads for analyst review.",
+    "owner": "Ahmed Al-Kuwari (Head of Credit Risk)",
+    "business_area": "Credit Underwriting",
+    "platform": "Moody's CreditLens add-on",
+    "materiality": "Medium",
+    "controls": "Analyst reviews every spread before rating",
+    "ai_system": true,
+    "qcb_ai_high_risk": false,
+    "ai_functional_category": "Document processing",
+    "ai_provider_role": "User / deployer (third-party system)",
+    "ai_autonomy": "Human-in-the-loop",
+    "qcb_approval_status": "Not required",
+    "related_models": [
+      "QDB-CR-001",
+      "QDB-CR-002"
+    ],
+    "identification_answers": {
+      "quantitative": false,
+      "theory": false,
+      "deterministic_only": false,
+      "learns_from_data": true,
+      "decision_use": true
+    },
+    "registered_by": "Maryam Al-Kaabi",
+    "registered_on": "2026-09-15",
+    "last_reviewed": "2026-09-15"
+  },
+  {
+    "tool_id": "QDB-NM-001",
+    "name": "Repayment schedule calculator",
+    "classification": "Not a model",
+    "description": "Produces instalment schedules from contract terms; no estimation.",
+    "owner": "Omar Farouk (Credit Modelling)",
+    "business_area": "Credit Administration",
+    "platform": "Core banking",
+    "materiality": "Low",
+    "controls": "Core banking controls",
+    "ai_system": false,
+    "related_models": [],
+    "identification_answers": {
+      "quantitative": true,
+      "theory": false,
+      "deterministic_only": true,
+      "learns_from_data": false,
+      "decision_use": false
+    },
+    "registered_by": "Maryam Al-Kaabi",
+    "registered_on": "2026-09-15",
+    "last_reviewed": "2026-09-15"
+  }
+]

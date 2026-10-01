@@ -50,6 +50,11 @@ process input data into quantitative estimates. This includes:
 covers every AI system QDB develops, buys or outsources. AI models are therefore flagged in the
 inventory (e.g. the transaction scoring model), recorded in the AI register filed with QCB, and
 tested for bias and explainability at validation.
+
+**How a candidate is classified:** the *Register Model / Tool* page asks five identification
+questions. Models go to the inventory; calculation tools used for decisions go to the EUC
+register; AI systems that are not models go to the AI register; everything else is recorded
+as "not a model" so the decision can be evidenced.
 """
     )
     st.info(
@@ -272,8 +277,8 @@ with tab_roadmap:
     roadmap = pd.DataFrame(
         {
             "Phase": [
-                "0 Foundations (weeks 1–4)",
-                "1 Inventory (weeks 5–8)",
+                "0 Foundations (weeks 1–4) — built",
+                "1 Inventory (weeks 5–8) — built",
                 "2 Validation workflow (weeks 9–16)",
                 "3 Issues and monitoring (weeks 17–22)",
                 "4 Reporting (weeks 23–26)",

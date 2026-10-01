@@ -32,7 +32,8 @@ def _alert(n: int, text: str) -> str | None:
 
 
 utils.kpi_cards([
-    ("Models in inventory", str(total), f"{int((df['AI System']).sum())} AI system(s)"),
+    ("Models in inventory", str(total),
+     f"{int((df['AI System']).sum())} AI system(s) · {int((~df['Tier Confirmed']).sum())} tier sign-off(s) pending"),
     ("In use", str(int(in_use)), f"{total - int(in_use)} in development"),
     ("Validations on schedule", f"{on_track_share:.0%}", "of models in use"),
     ("Overdue validations", str(int(overdue_val)), _alert(overdue_val, "requires action")),
@@ -90,6 +91,7 @@ attention = df[
     df["Validation Status"].isin(["Overdue", "Never Validated"])
     | (df["High Open Issues"] > 0)
     | df["Status"].isin(["Under Remediation", "Restricted Use", "In Production - Approval Pending"])
+    | ~df["Tier Confirmed"]
 ].copy()
 attention = attention.sort_values(["High Open Issues", "Overdue Issues"], ascending=False)
 
@@ -106,6 +108,8 @@ else:
             reasons.append(f"{row['Overdue Issues']} overdue finding(s)")
         if row["Status"] in ("Under Remediation", "Restricted Use", "In Production - Approval Pending"):
             reasons.append(row["Status"].lower())
+        if not row["Tier Confirmed"]:
+            reasons.append("tier awaiting sign-off")
 
         left, mid, right = st.columns([3.2, 4.5, 1.1])
         with left:

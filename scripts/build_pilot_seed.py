@@ -46,6 +46,7 @@ USERS = [
     {"name": "Priya Menon", "title": "External Validation Consultant", "role": "LOD2"},
     {"name": "Abdulla Al-Sayed", "title": "Internal Audit", "role": "LOD3"},
     {"name": "Maryam Al-Kaabi", "title": "MRM Administrator", "role": "ADMIN"},
+    {"name": "Khalid Al-Mannai", "title": "Chief Risk Officer", "role": "CRO"},
 ]
 TITLE = {u["name"]: u["title"] for u in USERS}
 ROLE = {u["name"]: u["role"] for u in USERS}
@@ -134,8 +135,27 @@ def model(
         "exposure_covered_qar_mn": exposure,
         "ai_system": ai_system,
         "qcb_ai_high_risk": qcb_ai_high_risk,
+        "ai_functional_category": "Credit assessment and decisioning" if ai_system else None,
+        "ai_provider_role": "Provider (built by QDB)" if ai_system else None,
+        "ai_autonomy": "Human-in-the-loop" if ai_system else None,
+        "qcb_approval_status": "Required — not yet sought" if qcb_ai_high_risk else (
+            "Not required" if ai_system else None),
         "placeholder": placeholder,
         "pending_revalidation": pending_revalidation,
+        "uses": [],
+        "tier_override": None,
+        "tier_assessment": {
+            "scores": dict(scores),
+            "rationale": tier_rationale,
+            "proposed_by": owner,
+            "proposed_on": (approval_date or change_log[0]["date"]),
+            "status": "Confirmed",
+            "confirmed_by": "Maryam Al-Kaabi",
+            "confirmed_on": (approval_date or change_log[0]["date"]),
+            "override_tier": None,
+            "override_reason": None,
+        },
+        "tier_history": [],
     }
 
 
@@ -528,6 +548,87 @@ MODELS = [
     ),
 ]
 
+# ---------------------------------------------------------------- uses (mock)
+USES = {
+    "QDB-IF-001": [("Stage 1 and 2 ECL", "Finance & Risk", "12-month and lifetime PD in the monthly ECL run"),
+                   ("Risk-based pricing", "SME & Corporate Lending", "Expected-loss component of the profit rate")],
+    "QDB-IF-002": [("Stage 1–3 ECL", "Finance & Risk", "LGD in the monthly ECL run (planned)")],
+    "QDB-IF-003": [("Stage 1–3 ECL", "Finance & Risk", "Lifetime EAD in the monthly ECL run")],
+    "QDB-IF-004": [("Stage allocation", "Finance & Risk", "12-month vs lifetime ECL for each exposure")],
+    "QDB-IF-005": [("Forward-looking ECL", "Finance & Risk", "Probability weights of the five scenarios")],
+    "QDB-IF-006": [("Reported ECL", "Financial Control", "Monthly impairment figure for the financial statements")],
+    "QDB-CR-001": [("Credit approval", "SME & Corporate Lending", "Obligor grade drives approval authority"),
+                   ("IFRS 9 PD", "Finance & Risk", "Grade mapped to PD")],
+    "QDB-CR-002": [("Credit approval", "SME & Corporate Lending", "Obligor grade drives approval authority"),
+                   ("IFRS 9 PD", "Finance & Risk", "Grade mapped to PD")],
+    "QDB-PR-001": [("Pricing of new financing", "SME & Corporate Lending", "Minimum profit rate per proposal")],
+    "QDB-CR-010": [("Thin-file SME assessment", "SME Lending", "Score for SMEs without reliable financials (planned)")],
+    "QDB-CR-011": [("Owner / guarantor assessment", "SME Lending", "Bureau score input to the combination module (planned)")],
+    "QDB-CR-012": [("Company bureau assessment", "SME & Corporate Lending", "Bureau score input to the combination module (planned)")],
+    "QDB-CR-013": [("Final risk grade", "SME & Corporate Lending", "Combined grade for decisioning (planned)")],
+    "QDB-ML-001": [("Liquidity risk appetite", "Treasury / ALCO", "Survival horizon under stress")],
+    "QDB-ML-002": [("IRRBB limits", "Treasury / ALCO", "EVE and NII sensitivity against limits")],
+    "QDB-OR-001": [("Operational risk appetite", "Operational Risk", "Severe-but-plausible annual loss")],
+    "QDB-NF-001": [("Customer due diligence", "Compliance", "Customer risk rating sets the due-diligence level")],
+}
+for m in MODELS:
+    status = "Planned" if m["status"] == "In Development" else "Active"
+    m["uses"] = [{"use": u, "business_area": a, "decision": d, "status": status}
+                 for u, a, d in USES.get(m["model_id"], [])]
+
+# ---------------------------------------------------------------- EUC / AI tool register (mock)
+TOOLS = [
+    {
+        "tool_id": "QDB-EUC-001", "name": "ECL ETL consolidation workbook",
+        "classification": "EUC tool",
+        "description": "Prepares and stages the consolidated data template consumed by the ECL engine.",
+        "owner": label("Fatima Al-Sulaiti"), "business_area": "Financial Control",
+        "platform": "Excel with macros", "materiality": "High",
+        "controls": "Version control, input reconciliation to the general ledger, second-person review",
+        "ai_system": False, "related_models": ["QDB-IF-006"],
+    },
+    {
+        "tool_id": "QDB-EUC-002", "name": "Provision journal calculator",
+        "classification": "EUC tool",
+        "description": "Turns ECL results into general-ledger journal entries by product and branch.",
+        "owner": label("Fatima Al-Sulaiti"), "business_area": "Financial Control",
+        "platform": "Excel", "materiality": "Medium",
+        "controls": "Totals reconciled to ECL engine output",
+        "ai_system": False, "related_models": ["QDB-IF-006"],
+    },
+    {
+        "tool_id": "QDB-AI-001", "name": "Financial statement spreading (OCR)",
+        "classification": "AI tool (non-model)",
+        "description": "Reads uploaded financial statements and pre-fills CreditLens spreads for analyst review.",
+        "owner": label("Ahmed Al-Kuwari"), "business_area": "Credit Underwriting",
+        "platform": "Moody's CreditLens add-on", "materiality": "Medium",
+        "controls": "Analyst reviews every spread before rating",
+        "ai_system": True, "qcb_ai_high_risk": False,
+        "ai_functional_category": "Document processing",
+        "ai_provider_role": "User / deployer (third-party system)",
+        "ai_autonomy": "Human-in-the-loop", "qcb_approval_status": "Not required",
+        "related_models": ["QDB-CR-001", "QDB-CR-002"],
+    },
+    {
+        "tool_id": "QDB-NM-001", "name": "Repayment schedule calculator",
+        "classification": "Not a model",
+        "description": "Produces instalment schedules from contract terms; no estimation.",
+        "owner": label("Omar Farouk"), "business_area": "Credit Administration",
+        "platform": "Core banking", "materiality": "Low", "controls": "Core banking controls",
+        "ai_system": False, "related_models": [],
+    },
+]
+_ANSWERS = {
+    "EUC tool": {"quantitative": True, "theory": False, "deterministic_only": True, "learns_from_data": False, "decision_use": True},
+    "AI tool (non-model)": {"quantitative": False, "theory": False, "deterministic_only": False, "learns_from_data": True, "decision_use": True},
+    "Not a model": {"quantitative": True, "theory": False, "deterministic_only": True, "learns_from_data": False, "decision_use": False},
+}
+for t in TOOLS:
+    t["identification_answers"] = _ANSWERS[t["classification"]]
+    t["registered_by"] = "Maryam Al-Kaabi"
+    t["registered_on"] = "2026-09-15"
+    t["last_reviewed"] = "2026-09-15"
+
 # downstream links mirror upstream
 BY_ID = {m["model_id"]: m for m in MODELS}
 for m in MODELS:
@@ -793,6 +894,13 @@ for r in REQUESTS:
 for e in EVIDENCE:
     event(e["uploaded_at"], e["uploaded_by"], "upload_evidence", "evidence", e["evidence_id"], e["model_id"],
           f"Evidence uploaded ({e['category']}): {e['filename']}")
+for m in MODELS:
+    ta = m["tier_assessment"]
+    event(ta["confirmed_on"] + "T10:00:00", ta["confirmed_by"], "confirm_tier", "tier_assessment",
+          m["model_id"], m["model_id"], "Tier confirmed (G1)")
+for t in TOOLS:
+    event(t["registered_on"], t["registered_by"], "register_tool", "tool", t["tool_id"], "",
+          f"{t['classification']} registered: {t['name']}")
 AUDIT.sort(key=lambda e: e["timestamp"])
 
 
@@ -808,6 +916,7 @@ def main():
     dump("models.json", MODELS)
     dump("validation_requests.json", REQUESTS)
     dump("evidence.json", EVIDENCE)
+    dump("tools.json", TOOLS)
     dump("audit_log.json", AUDIT)
     with open(SEED / "monitoring.csv", "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(MONITORING[0].keys()))

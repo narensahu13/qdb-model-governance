@@ -40,6 +40,8 @@ PAGES = [
     "views/model_detail.py",
     "views/findings.py",
     "views/framework.py",
+    "views/registers.py",
+    "views/register.py",
 ]
 
 ROLE_USERS = {
@@ -47,6 +49,7 @@ ROLE_USERS = {
     "LOD2": "Priya Menon",
     "LOD3": "Abdulla Al-Sayed",
     "ADMIN": "Maryam Al-Kaabi",
+    "CRO": "Khalid Al-Mannai",
 }
 DEVELOPER = "Lina Haddad"
 
@@ -223,6 +226,96 @@ if at.exception:
     fail("Dashboard Open button", at)
 else:
     ok("Dashboard Open button")
+
+# ---------------------------------------------------------------- Phase 1: inventory flows
+def page(path: str, user: str, **extra) -> AppTest:
+    at = AppTest.from_file(str(ROOT / path), default_timeout=60)
+    at.session_state["current_user_name"] = user
+    for k, v in extra.items():
+        at.session_state[k] = v
+    at.run()
+    return at
+
+
+def by_label(widgets, label):
+    found = [w for w in widgets if w.label == label]
+    return found[0] if found else None
+
+
+# 8. Owner registers a model through the questionnaire
+before_ids = {m["model_id"] for m in repository.list_models()}
+at = page("views/register.py", DEVELOPER)
+at.radio(key="idq_quantitative").set_value("Yes")
+at.radio(key="idq_theory").set_value("Yes")
+at.run()
+at.text_input(key="rm_name").input("SMOKE Early Warning Model")
+at.text_input(key="rm_meth").input("Logistic regression")
+at.text_area(key="rm_desc").input("Smoke-test registration.")
+at.text_area(key="rm_rat").input("Advisory signal.")
+at.button(key="rm_submit").click().run()
+new_ids = {m["model_id"] for m in repository.list_models()} - before_ids
+if at.exception or len(new_ids) != 1:
+    fail("Register model through the questionnaire", at)
+    new_id = None
+else:
+    new_id = new_ids.pop()
+    ok(f"Model registered through the questionnaire ({new_id}, tier proposed)")
+
+# 9. An EUC tool is routed to the EUC register
+before_tools = len(repository.list_tools())
+at = page("views/register.py", DEVELOPER)
+at.radio(key="idq_quantitative").set_value("Yes")
+at.radio(key="idq_deterministic_only").set_value("Yes")
+at.radio(key="idq_decision_use").set_value("Yes")
+at.run()
+at.text_input(key="rt_name").input("SMOKE limit tracker")
+at.text_area(key="rt_desc").input("Excel limit tracker.")
+at.button(key="rt_submit").click().run()
+if at.exception or len(repository.list_tools()) != before_tools + 1:
+    fail("Register EUC tool", at)
+else:
+    ok("EUC tool recorded in the register")
+
+# 10. Developer edits their model's record
+at = page("views/model_detail.py", DEVELOPER, selected_model_id="QDB-IF-005")
+vendor = by_label(at.text_input, "Vendor")
+if at.exception or vendor is None:
+    fail("Open Edit Record tab", at)
+else:
+    vendor.input("SMOKE vendor")
+    by_label(at.button, "Save changes").click().run()
+    if at.exception or repository.get_model("QDB-IF-005").get("vendor") != "SMOKE vendor":
+        fail("Edit record as developer", at)
+    else:
+        ok("Developer edited own model record (audited)")
+
+# 11. Tier sign-off: validator confirms with override -> CRO approves
+if new_id:
+    at = page("views/model_detail.py", "Hassan Al-Mohannadi", selected_model_id=new_id)
+    sel = at.selectbox(key=f"ct_tier_{new_id}")
+    proposed = sel.value
+    target = 1 if proposed != 1 else 2
+    sel.set_value(target)
+    at.text_input(key=f"ct_reason_{new_id}").input("SMOKE override reason")
+    by_label(at.button, "Confirm tier").click().run()
+    if at.exception or repository.get_model(new_id)["tier_assessment"]["status"] != "Override pending CRO":
+        fail("Validator confirms tier with override", at)
+    else:
+        ok("Tier override sent to the CRO")
+        at = page("views/model_detail.py", "Khalid Al-Mannai", selected_model_id=new_id)
+        by_label(at.button, "Approve override").click().run()
+        mm = repository.get_model(new_id)
+        if at.exception or mm["tier_override"] != target or mm["tier_assessment"]["status"] != "Confirmed":
+            fail("CRO approves tier override", at)
+        else:
+            ok(f"CRO approved override to Tier {target}")
+
+# 12. Registers page shows the AI register for the QCB filing
+at = page("views/registers.py", ROLE_USERS["ADMIN"])
+if at.exception:
+    fail("Registers page", at)
+else:
+    ok("Registers page (tier queue, EUC, AI register)")
 
 # ---------------------------------------------------------------- audit integrity
 chain_ok, broken = repository.verify_audit_chain()

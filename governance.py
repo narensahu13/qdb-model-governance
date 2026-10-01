@@ -154,3 +154,123 @@ def independence_conflict(model: dict, assignee: str, request_type: str) -> str 
                 "validate it (independence rule)."
             )
     return None
+
+
+# ================================================================ Phase 1
+# ---------------------------------------------------------------- identification
+IDENTIFICATION_QUESTIONS = [
+    ("quantitative",
+     "Does it produce quantitative outputs — scores, grades, probabilities, values, "
+     "forecasts or weights?"),
+    ("theory",
+     "Does it apply statistical, economic, financial or mathematical methods or "
+     "assumptions (including calibrated parameters or expert-set weights)?"),
+    ("deterministic_only",
+     "Is it only arithmetic or fixed deterministic rules, with no estimation or calibration?"),
+    ("learns_from_data",
+     "Does it learn from data (machine learning / AI) or generate content (generative AI)?"),
+    ("decision_use",
+     "Are its outputs used for credit, pricing, provisioning, capital, liquidity, "
+     "compliance or other business decisions or reporting?"),
+]
+
+CLASS_MODEL = "Model"
+CLASS_EUC = "EUC tool"
+CLASS_AI_TOOL = "AI tool (non-model)"
+CLASS_NOT_MODEL = "Not a model"
+TOOL_CLASSES = [CLASS_EUC, CLASS_AI_TOOL, CLASS_NOT_MODEL]
+
+
+def identify(answers: dict) -> dict:
+    """Classify a candidate from the identification questionnaire.
+
+    Follows the SR 26-2 definition (a complex quantitative method applying
+    statistical, economic or financial theory; simple arithmetic and
+    deterministic rules excluded) and the QCB AI Guideline (every AI system is
+    registered, model or not)."""
+    q = {k: bool(answers.get(k)) for k, _ in IDENTIFICATION_QUESTIONS}
+    ai = q["learns_from_data"]
+    if q["quantitative"] and (ai or (q["theory"] and not q["deterministic_only"])):
+        cls = CLASS_MODEL
+        why = ("Produces quantitative estimates using "
+               + ("a method that learns from data" if ai else "statistical, economic or financial methods")
+               + " — in scope of the model inventory.")
+    elif ai:
+        cls = CLASS_AI_TOOL
+        why = ("Uses AI but does not produce quantitative estimates — recorded in the AI "
+               "register (QCB AI Guideline), not in the model inventory.")
+    elif q["decision_use"] and (q["quantitative"] or q["deterministic_only"]):
+        cls = CLASS_EUC
+        why = ("Calculation or rules without estimation, used for decisions or reporting — "
+               "recorded in the end-user computing (EUC) register with basic controls.")
+    else:
+        cls = CLASS_NOT_MODEL
+        why = "Neither a model nor a decision-relevant calculation tool — recorded for traceability only."
+    return {"classification": cls, "ai_system": ai, "reason": why}
+
+
+# ---------------------------------------------------------------- tier sign-off (gate G1)
+TIER_CONFIRMED = "Confirmed"
+TIER_PROPOSED = "Proposed"
+TIER_OVERRIDE_PENDING = "Override pending CRO"
+
+
+def effective_tier(model: dict) -> int:
+    """The tier in force: an approved override, else the rule-based tier."""
+    from tiering import compute_tier
+    if model.get("tier_override"):
+        return int(model["tier_override"])
+    return compute_tier(**model["tier_scores"])["tier"]
+
+
+def tier_confirmed(model: dict) -> bool:
+    return (model.get("tier_assessment") or {}).get("status", TIER_CONFIRMED) == TIER_CONFIRMED
+
+
+# ---------------------------------------------------------------- QCB AI register
+AI_FUNCTIONAL_CATEGORIES = [
+    "Credit assessment and decisioning",
+    "Document processing",
+    "Customer interaction",
+    "Financial crime / AML",
+    "Forecasting and analytics",
+    "Other",
+]
+AI_PROVIDER_ROLES = ["Provider (built by QDB)", "User / deployer (third-party system)"]
+AI_AUTONOMY = ["Human-in-the-loop", "Human-on-the-loop", "Fully autonomous"]
+QCB_APPROVAL_STATUSES = ["Not required", "Required — not yet sought", "Submitted to QCB", "Approved by QCB"]
+
+
+def qcb_approval_required(rec: dict) -> bool:
+    """QCB prior approval: high-risk AI, or any fully autonomous AI system."""
+    if not rec.get("ai_system"):
+        return False
+    return bool(rec.get("qcb_ai_high_risk")) or rec.get("ai_autonomy") == "Fully autonomous"
+
+
+# ---------------------------------------------------------------- record editing
+MODEL_ID_PREFIX = {
+    "IFRS 9 / Provisioning": "IF",
+    "Credit Rating & Scoring": "CR",
+    "Pricing": "PR",
+    "Market & Liquidity Risk": "ML",
+    "Operational & Non-Financial Risk": "OR",
+}
+RISK_TYPES = list(MODEL_ID_PREFIX)
+SOURCES = ["In-house", "Vendor", "Hybrid (vendor, QDB-calibrated)"]
+USE_STATUSES = ["Active", "Planned", "Retired"]
+
+# Fields an owner/developer may edit (MRM Administrator may edit these too).
+DESCRIPTIVE_FIELDS = [
+    "name", "description", "category", "business_line", "methodology", "source", "vendor",
+    "data_sources", "implementation_platform", "usage_frequency", "model_users",
+    "key_assumptions", "known_limitations", "exposure_covered_qar_mn", "regulatory_mapping",
+    "uses", "upstream", "ai_system", "qcb_ai_high_risk", "ai_functional_category",
+    "ai_provider_role", "ai_autonomy", "qcb_approval_status",
+]
+# Accountability fields: MRM Administrator only.
+ASSIGNMENT_FIELDS = ["owner", "developer", "validator", "sponsor", "risk_type"]
+
+
+def is_owner_or_developer(model: dict, user_name: str) -> bool:
+    return user_name in (person_name(model.get("owner")), person_name(model.get("developer")))

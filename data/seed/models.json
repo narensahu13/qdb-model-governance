@@ -99,8 +99,43 @@
     "exposure_covered_qar_mn": 9500,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Stage 1 and 2 ECL",
+        "business_area": "Finance & Risk",
+        "decision": "12-month and lifetime PD in the monthly ECL run",
+        "status": "Active"
+      },
+      {
+        "use": "Risk-based pricing",
+        "business_area": "SME & Corporate Lending",
+        "decision": "Expected-loss component of the profit rate",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "High",
+        "complexity": "High",
+        "regulatory_impact": "High"
+      },
+      "rationale": "Drives Stage 1 and Stage 2 ECL across the whole financing book; output feeds the financial statements.",
+      "proposed_by": "Ahmed Al-Kuwari",
+      "proposed_on": "2023-12-18",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2023-12-18",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-IF-002",
@@ -186,8 +221,37 @@
     "exposure_covered_qar_mn": 9500,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Stage 1–3 ECL",
+        "business_area": "Finance & Risk",
+        "decision": "LGD in the monthly ECL run (planned)",
+        "status": "Planned"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "High",
+        "complexity": "High",
+        "regulatory_impact": "High"
+      },
+      "rationale": "Will drive ECL for every exposure; feeds the financial statements.",
+      "proposed_by": "Ahmed Al-Kuwari",
+      "proposed_on": "2026-06-15",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2026-06-15",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-IF-003",
@@ -271,8 +335,37 @@
     "exposure_covered_qar_mn": 3100,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Stage 1–3 ECL",
+        "business_area": "Finance & Risk",
+        "decision": "Lifetime EAD in the monthly ECL run",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "Medium",
+        "complexity": "Medium",
+        "regulatory_impact": "High"
+      },
+      "rationale": "Feeds ECL directly; regulatory impact drives Tier 1.",
+      "proposed_by": "Ahmed Al-Kuwari",
+      "proposed_on": "2023-12-18",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2023-12-18",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-IF-004",
@@ -360,8 +453,37 @@
     "exposure_covered_qar_mn": 9500,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Stage allocation",
+        "business_area": "Finance & Risk",
+        "decision": "12-month vs lifetime ECL for each exposure",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "High",
+        "complexity": "Low",
+        "regulatory_impact": "High"
+      },
+      "rationale": "Stage allocation decides 12-month vs lifetime ECL for the whole book.",
+      "proposed_by": "Ahmed Al-Kuwari",
+      "proposed_on": "2023-12-18",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2023-12-18",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-IF-005",
@@ -456,8 +578,37 @@
     "exposure_covered_qar_mn": 9500,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": true
+    "pending_revalidation": true,
+    "uses": [
+      {
+        "use": "Forward-looking ECL",
+        "business_area": "Finance & Risk",
+        "decision": "Probability weights of the five scenarios",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "High",
+        "complexity": "Medium",
+        "regulatory_impact": "High"
+      },
+      "rationale": "Weights move ECL for every exposure; expert judgement involved.",
+      "proposed_by": "Ahmed Al-Kuwari",
+      "proposed_on": "2024-12-20",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2024-12-20",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-IF-006",
@@ -552,8 +703,37 @@
     "exposure_covered_qar_mn": 9500,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Reported ECL",
+        "business_area": "Financial Control",
+        "decision": "Monthly impairment figure for the financial statements",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "High",
+        "complexity": "Medium",
+        "regulatory_impact": "High"
+      },
+      "rationale": "Produces the reported ECL figure.",
+      "proposed_by": "Fatima Al-Sulaiti",
+      "proposed_on": "2023-12-18",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2023-12-18",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-CR-001",
@@ -649,8 +829,43 @@
     "exposure_covered_qar_mn": 4200,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Credit approval",
+        "business_area": "SME & Corporate Lending",
+        "decision": "Obligor grade drives approval authority",
+        "status": "Active"
+      },
+      {
+        "use": "IFRS 9 PD",
+        "business_area": "Finance & Risk",
+        "decision": "Grade mapped to PD",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "High",
+        "complexity": "Medium",
+        "regulatory_impact": "High"
+      },
+      "rationale": "Largest sector in the book; grades feed IFRS 9 PD and approval authority.",
+      "proposed_by": "Ahmed Al-Kuwari",
+      "proposed_on": "2025-12-10",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2025-12-10",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-CR-002",
@@ -737,8 +952,43 @@
     "exposure_covered_qar_mn": 2600,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Credit approval",
+        "business_area": "SME & Corporate Lending",
+        "decision": "Obligor grade drives approval authority",
+        "status": "Active"
+      },
+      {
+        "use": "IFRS 9 PD",
+        "business_area": "Finance & Risk",
+        "decision": "Grade mapped to PD",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "High",
+        "complexity": "Medium",
+        "regulatory_impact": "High"
+      },
+      "rationale": "Second-largest sector; grades feed IFRS 9 PD and approval authority.",
+      "proposed_by": "Ahmed Al-Kuwari",
+      "proposed_on": "2025-12-10",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2025-12-10",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-PR-001",
@@ -822,8 +1072,37 @@
     "exposure_covered_qar_mn": 1800,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Pricing of new financing",
+        "business_area": "SME & Corporate Lending",
+        "decision": "Minimum profit rate per proposal",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "Medium",
+        "complexity": "Medium",
+        "regulatory_impact": "Medium"
+      },
+      "rationale": "Influences margins on new business; no direct regulatory output.",
+      "proposed_by": "Yousef Al-Emadi",
+      "proposed_on": "2022-11-30",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2022-11-30",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-CR-010",
@@ -904,8 +1183,37 @@
     "exposure_covered_qar_mn": 600,
     "ai_system": true,
     "qcb_ai_high_risk": true,
+    "ai_functional_category": "Credit assessment and decisioning",
+    "ai_provider_role": "Provider (built by QDB)",
+    "ai_autonomy": "Human-in-the-loop",
+    "qcb_approval_status": "Required — not yet sought",
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Thin-file SME assessment",
+        "business_area": "SME Lending",
+        "decision": "Score for SMEs without reliable financials (planned)",
+        "status": "Planned"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "Medium",
+        "complexity": "High",
+        "regulatory_impact": "Medium"
+      },
+      "rationale": "Machine-learning model that will influence credit decisions for thin-file SMEs.",
+      "proposed_by": "Ahmed Al-Kuwari",
+      "proposed_on": "2026-08-15",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2026-08-15",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-CR-011",
@@ -983,8 +1291,37 @@
     "exposure_covered_qar_mn": 600,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Owner / guarantor assessment",
+        "business_area": "SME Lending",
+        "decision": "Bureau score input to the combination module (planned)",
+        "status": "Planned"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "Medium",
+        "complexity": "Medium",
+        "regulatory_impact": "Medium"
+      },
+      "rationale": "One input to the combination module; moderate influence on decisions.",
+      "proposed_by": "Ahmed Al-Kuwari",
+      "proposed_on": "2026-07-01",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2026-07-01",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-CR-012",
@@ -1062,8 +1399,37 @@
     "exposure_covered_qar_mn": 1500,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Company bureau assessment",
+        "business_area": "SME & Corporate Lending",
+        "decision": "Bureau score input to the combination module (planned)",
+        "status": "Planned"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "Medium",
+        "complexity": "Medium",
+        "regulatory_impact": "Medium"
+      },
+      "rationale": "One input to the combination module; moderate influence on decisions.",
+      "proposed_by": "Ahmed Al-Kuwari",
+      "proposed_on": "2026-07-01",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2026-07-01",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-CR-013",
@@ -1145,8 +1511,37 @@
     "exposure_covered_qar_mn": 4500,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": false,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Final risk grade",
+        "business_area": "SME & Corporate Lending",
+        "decision": "Combined grade for decisioning (planned)",
+        "status": "Planned"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "High",
+        "complexity": "Medium",
+        "regulatory_impact": "Medium"
+      },
+      "rationale": "Will set the final grade used for approval authority across SME lending.",
+      "proposed_by": "Ahmed Al-Kuwari",
+      "proposed_on": "2026-08-20",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2026-08-20",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-ML-001",
@@ -1226,8 +1621,37 @@
     "exposure_covered_qar_mn": 3000,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": true,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Liquidity risk appetite",
+        "business_area": "Treasury / ALCO",
+        "decision": "Survival horizon under stress",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "Medium",
+        "complexity": "Medium",
+        "regulatory_impact": "High"
+      },
+      "rationale": "Feeds regulatory liquidity reporting.",
+      "proposed_by": "Mohammed Al-Marri",
+      "proposed_on": "2021-06-30",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2021-06-30",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-ML-002",
@@ -1306,8 +1730,37 @@
     "exposure_covered_qar_mn": 2000,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": true,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "IRRBB limits",
+        "business_area": "Treasury / ALCO",
+        "decision": "EVE and NII sensitivity against limits",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "Medium",
+        "complexity": "Medium",
+        "regulatory_impact": "Medium"
+      },
+      "rationale": "Internal limits with regulatory visibility.",
+      "proposed_by": "Mohammed Al-Marri",
+      "proposed_on": "2022-03-15",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2022-03-15",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-OR-001",
@@ -1382,8 +1835,37 @@
     "exposure_covered_qar_mn": 0,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": true,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Operational risk appetite",
+        "business_area": "Operational Risk",
+        "decision": "Severe-but-plausible annual loss",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "Low",
+        "complexity": "Low",
+        "regulatory_impact": "Medium"
+      },
+      "rationale": "Management information and risk appetite only.",
+      "proposed_by": "Sara Al-Naimi",
+      "proposed_on": "2023-02-28",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2023-02-28",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   },
   {
     "model_id": "QDB-NF-001",
@@ -1462,7 +1944,36 @@
     "exposure_covered_qar_mn": 0,
     "ai_system": false,
     "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
     "placeholder": true,
-    "pending_revalidation": false
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Customer due diligence",
+        "business_area": "Compliance",
+        "decision": "Customer risk rating sets the due-diligence level",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "Medium",
+        "complexity": "Medium",
+        "regulatory_impact": "High"
+      },
+      "rationale": "Statutory AML/CFT compliance.",
+      "proposed_by": "Noora Al-Thani",
+      "proposed_on": "2024-06-30",
+      "status": "Confirmed",
+      "confirmed_by": "Maryam Al-Kaabi",
+      "confirmed_on": "2024-06-30",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": []
   }
 ]

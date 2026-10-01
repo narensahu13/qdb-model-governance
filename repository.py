@@ -27,7 +27,7 @@ from pathlib import Path
 
 import config
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -58,6 +58,10 @@ CREATE TABLE IF NOT EXISTS evidence (
     doc         TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_evidence_model ON evidence(model_id);
+CREATE TABLE IF NOT EXISTS tools (
+    tool_id TEXT PRIMARY KEY,
+    doc     TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS monitoring (
     model_id          TEXT NOT NULL,
     metric            TEXT NOT NULL,
@@ -149,6 +153,7 @@ def ensure_db() -> None:
     conn = _connect()
     try:
         if _is_seeded(conn):
+            _migrate(conn, config.SEED_DIR)
             _ready.add(key)
             return
         conn.executescript(SCHEMA)
@@ -246,8 +251,58 @@ def _seed(conn: sqlite3.Connection, seed_dir: Path) -> None:
                 ),
             )
 
+    for t in load("tools.json"):
+        conn.execute("INSERT INTO tools(tool_id, doc) VALUES (?, ?)", (t["tool_id"], _dump(t)))
+
     for ev in sorted(load("audit_log.json"), key=lambda e: e["timestamp"]):
         _append_audit(conn, ev)
+
+
+# ---------------------------------------------------------------- migrations
+MODEL_DEFAULTS_V2 = {
+    "uses": [], "tier_override": None, "tier_history": [], "ai_functional_category": None,
+    "ai_provider_role": None, "ai_autonomy": None, "qcb_approval_status": None,
+}
+
+
+def _migrate(conn: sqlite3.Connection, seed_dir: Path) -> None:
+    """Bring a database created by an earlier version up to SCHEMA_VERSION
+    without losing data entered in the app."""
+    row = conn.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()
+    version = row["value"] if row else "1"
+    if version == SCHEMA_VERSION:
+        return
+    if version == "1":
+        conn.executescript(SCHEMA)  # adds the tools table
+        with open(seed_dir / "tools.json", encoding="utf-8") as f:
+            for t in json.load(f):
+                conn.execute("INSERT OR IGNORE INTO tools(tool_id, doc) VALUES (?, ?)",
+                             (t["tool_id"], _dump(t)))
+        with open(seed_dir / "users.json", encoding="utf-8") as f:
+            for u in json.load(f):
+                conn.execute("INSERT OR IGNORE INTO users(name, role, doc) VALUES (?, ?, ?)",
+                             (u["name"], u["role"], _dump(u)))
+        with open(seed_dir / "models.json", encoding="utf-8") as f:
+            seed_models = {m["model_id"]: m for m in json.load(f)}
+        for m in _docs(conn, "SELECT doc FROM models"):
+            seed = seed_models.get(m["model_id"], {})
+            for k, default in MODEL_DEFAULTS_V2.items():
+                m.setdefault(k, seed.get(k, default))
+            m.setdefault("tier_assessment", {
+                "scores": dict(m["tier_scores"]), "rationale": m.get("tier_rationale", ""),
+                "proposed_by": "", "proposed_on": None, "status": "Confirmed",
+                "confirmed_by": "Migration", "confirmed_on": None,
+                "override_tier": None, "override_reason": None,
+            })
+            put_model(conn, m)
+        _append_audit(conn, {
+            "timestamp": datetime.now().isoformat(timespec="seconds"), "user": "System",
+            "role": "SYSTEM", "action": "migrate_schema", "entity_type": "database",
+            "entity_id": "schema", "model_id": "", "details": "Schema migrated from v1 to v2",
+        })
+    conn.execute("INSERT OR REPLACE INTO meta(key, value) VALUES ('schema_version', ?)",
+                 (SCHEMA_VERSION,))
+    conn.commit()
 
 
 # ---------------------------------------------------------------- documents
@@ -331,6 +386,27 @@ def put_evidence(conn, ev: dict) -> None:
     conn.execute(
         "INSERT INTO evidence(evidence_id, model_id, sha256, doc) VALUES (?, ?, ?, ?)",
         (ev["evidence_id"], ev["model_id"], ev["sha256"], _dump(ev)),
+    )
+
+
+def list_tools() -> list[dict]:
+    with tx() as conn:
+        return _docs(conn, "SELECT doc FROM tools ORDER BY tool_id")
+
+
+def tool_ids(conn) -> list[str]:
+    return [r[0] for r in conn.execute("SELECT tool_id FROM tools").fetchall()]
+
+
+def model_ids(conn) -> list[str]:
+    return [r[0] for r in conn.execute("SELECT model_id FROM models").fetchall()]
+
+
+def put_tool(conn, tool: dict) -> None:
+    conn.execute(
+        "INSERT INTO tools(tool_id, doc) VALUES (?, ?) "
+        "ON CONFLICT(tool_id) DO UPDATE SET doc = excluded.doc",
+        (tool["tool_id"], _dump(tool)),
     )
 
 

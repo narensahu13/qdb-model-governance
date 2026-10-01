@@ -47,7 +47,7 @@ st.caption(f"{len(filtered)} of {len(df)} models shown")
 
 # ---------------------------------------------------------------- table
 display_cols = [
-    "Model ID", "Model Name", "Risk Type", "Tier", "Status", "Last Rating",
+    "Model ID", "Model Name", "Risk Type", "Tier", "Tier Confirmed", "Status", "Last Rating",
     "Validation Status", "Next Validation Due", "Open Issues",
     "High Open Issues", "Doc Completeness (%)", "Owner", "Source", "AI System",
 ]
@@ -71,6 +71,8 @@ event = st.dataframe(
             help="Click to open the model's full governance record",
         ),
         "Tier": st.column_config.NumberColumn(width="small"),
+        "Tier Confirmed": st.column_config.CheckboxColumn(
+            "Tier signed off", width="small", help="Gate G1: tier confirmed by the MRM function"),
         "Open Issues": st.column_config.NumberColumn(width="small"),
         "High Open Issues": st.column_config.NumberColumn("High Issues", width="small"),
         "AI System": st.column_config.CheckboxColumn(
@@ -88,3 +90,29 @@ if event.selection and event.selection.rows:
     utils.go_to_model(selected_row["Model ID"])
 
 st.caption("Click a Model ID or select a row to open the governance record.")
+
+# ---------------------------------------------------------------- factsheets
+st.divider()
+fc1, fc2 = st.columns([3, 1.4])
+fc1.markdown(
+    "**Model factsheets** — one page per model for the Management Risk Committee, the CRO, "
+    "auditors and QCB, generated from the live records."
+)
+if fc2.button("Prepare factsheets for the models shown", key="prep_factsheets", width="stretch"):
+    import io
+    import zipfile
+    from datetime import date
+
+    from data_loader import factsheet_pdf
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for mid in filtered["Model ID"]:
+            zf.writestr(f"{mid}_factsheet.pdf", factsheet_pdf(mid))
+    st.session_state["_factsheet_zip"] = buf.getvalue()
+    st.session_state["_factsheet_zip_name"] = f"qdb_model_factsheets_{date.today().isoformat()}.zip"
+if st.session_state.get("_factsheet_zip"):
+    st.download_button(
+        "Download factsheets (ZIP)", st.session_state["_factsheet_zip"],
+        st.session_state["_factsheet_zip_name"], "application/zip", key="dl_factsheet_zip",
+    )

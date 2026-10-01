@@ -17,6 +17,7 @@ ROLE_LABELS = {
     "LOD2": "2nd Line — Validator (QDB or consultant)",
     "LOD3": "3rd Line — Internal Audit",
     "ADMIN": "MRM Administrator",
+    "CRO": "CRO — approver",
 }
 
 ROLE_COLORS = {
@@ -24,6 +25,7 @@ ROLE_COLORS = {
     "LOD2": "#14284b",
     "LOD3": "#b8933d",
     "ADMIN": "#607d8b",
+    "CRO": "#6a1b9a",
 }
 
 # Three request types: Model Change, Validation, Finding.
@@ -73,6 +75,14 @@ PERMISSIONS = {
     "upload_evidence": ["LOD1", "LOD2", "LOD3", "ADMIN"],
     "record_change": ["LOD1"],
     "record_audit": ["LOD3"],
+    # Phase 1 — inventory
+    "register_model": ["LOD1", "ADMIN"],
+    "register_tool": ["LOD1", "ADMIN"],
+    "edit_model": ["LOD1", "ADMIN"],          # LOD1 only for models they own or develop
+    "assign_accountability": ["ADMIN"],       # owner, developer, validator, sponsor
+    "propose_tier": ["LOD1", "ADMIN"],
+    "confirm_tier": ["LOD2", "ADMIN"],        # never the person who proposed it
+    "approve_tier_override": ["CRO"],
 }
 
 ACTION_LABELS = {
@@ -85,6 +95,13 @@ ACTION_LABELS = {
     "upload_evidence": "Upload evidence and model documents",
     "record_change": "Record a model change",
     "record_audit": "Record an internal audit review",
+    "register_model": "Register a model or tool (identification questionnaire)",
+    "register_tool": "Record an EUC / AI tool in the registers",
+    "edit_model": "Edit a model record (owners and developers: own models only)",
+    "assign_accountability": "Assign owner, developer, validator and sponsor",
+    "propose_tier": "Propose a tier assessment",
+    "confirm_tier": "Confirm a tier assessment (gate G1)",
+    "approve_tier_override": "Approve a tier override",
 }
 
 INITIATE_ACTION = {

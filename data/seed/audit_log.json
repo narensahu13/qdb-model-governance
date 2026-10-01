@@ -24,6 +24,18 @@
     "after": null
   },
   {
+    "timestamp": "2021-06-30T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-ML-001",
+    "model_id": "QDB-ML-001",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
     "timestamp": "2022-02-01T09:00:00",
     "user": "Maryam Al-Kaabi",
     "role": "ADMIN",
@@ -48,6 +60,18 @@
     "after": null
   },
   {
+    "timestamp": "2022-03-15T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-ML-002",
+    "model_id": "QDB-ML-002",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
     "timestamp": "2022-11-30T09:00:00",
     "user": "Maryam Al-Kaabi",
     "role": "ADMIN",
@@ -56,6 +80,18 @@
     "entity_id": "QDB-PR-001",
     "model_id": "QDB-PR-001",
     "details": "Model registered in the inventory: Risk-Based Pricing Model",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2022-11-30T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-PR-001",
+    "model_id": "QDB-PR-001",
+    "details": "Tier confirmed (G1)",
     "before": null,
     "after": null
   },
@@ -80,6 +116,18 @@
     "entity_id": "CHG-018",
     "model_id": "QDB-OR-001",
     "details": "Material change to v1.0: First version.",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2023-02-28T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-OR-001",
+    "model_id": "QDB-OR-001",
+    "details": "Tier confirmed (G1)",
     "before": null,
     "after": null
   },
@@ -228,6 +276,54 @@
     "after": null
   },
   {
+    "timestamp": "2023-12-18T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-IF-001",
+    "model_id": "QDB-IF-001",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2023-12-18T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-IF-003",
+    "model_id": "QDB-IF-003",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2023-12-18T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-IF-004",
+    "model_id": "QDB-IF-004",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2023-12-18T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-IF-006",
+    "model_id": "QDB-IF-006",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
     "timestamp": "2024-02-10T09:00:00",
     "user": "Lina Haddad",
     "role": "LOD1",
@@ -284,6 +380,18 @@
     "entity_id": "CHG-017",
     "model_id": "QDB-NF-001",
     "details": "Material change to v2.0: Vendor upgrade.",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2024-06-30T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-NF-001",
+    "model_id": "QDB-NF-001",
+    "details": "Tier confirmed (G1)",
     "before": null,
     "after": null
   },
@@ -416,6 +524,18 @@
     "entity_id": "VAL-005",
     "model_id": "QDB-IF-005",
     "details": "Closed (Fit with Conditions): Validation complete — rating: Fit with Conditions.",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2024-12-20T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-IF-005",
+    "model_id": "QDB-IF-005",
+    "details": "Tier confirmed (G1)",
     "before": null,
     "after": null
   },
@@ -744,6 +864,30 @@
     "after": null
   },
   {
+    "timestamp": "2025-12-10T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-CR-001",
+    "model_id": "QDB-CR-001",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2025-12-10T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-CR-002",
+    "model_id": "QDB-CR-002",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
     "timestamp": "2026-01-15T09:00:00",
     "user": "Abdulla Al-Sayed",
     "role": "LOD3",
@@ -852,6 +996,18 @@
     "after": null
   },
   {
+    "timestamp": "2026-06-15T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-IF-002",
+    "model_id": "QDB-IF-002",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
     "timestamp": "2026-07-01T09:00:00",
     "user": "Maryam Al-Kaabi",
     "role": "ADMIN",
@@ -896,6 +1052,30 @@
     "entity_id": "CHG-005",
     "model_id": "QDB-CR-012",
     "details": "Material change to v0.3: Variable selection on bureau attributes.",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2026-07-01T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-CR-011",
+    "model_id": "QDB-CR-011",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2026-07-01T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-CR-012",
+    "model_id": "QDB-CR-012",
+    "details": "Tier confirmed (G1)",
     "before": null,
     "after": null
   },
@@ -1044,6 +1224,18 @@
     "after": null
   },
   {
+    "timestamp": "2026-08-15T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-CR-010",
+    "model_id": "QDB-CR-010",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
     "timestamp": "2026-08-20T09:00:00",
     "user": "Maryam Al-Kaabi",
     "role": "ADMIN",
@@ -1080,6 +1272,18 @@
     "after": null
   },
   {
+    "timestamp": "2026-08-20T10:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "confirm_tier",
+    "entity_type": "tier_assessment",
+    "entity_id": "QDB-CR-013",
+    "model_id": "QDB-CR-013",
+    "details": "Tier confirmed (G1)",
+    "before": null,
+    "after": null
+  },
+  {
     "timestamp": "2026-09-01T09:00:00",
     "user": "David Chen",
     "role": "LOD1",
@@ -1112,6 +1316,54 @@
     "entity_id": "VAL-015",
     "model_id": "QDB-IF-006",
     "details": "VAL opened: Periodic validation (overdue)",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2026-09-15T09:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "register_tool",
+    "entity_type": "tool",
+    "entity_id": "QDB-EUC-001",
+    "model_id": "",
+    "details": "EUC tool registered: ECL ETL consolidation workbook",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2026-09-15T09:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "register_tool",
+    "entity_type": "tool",
+    "entity_id": "QDB-EUC-002",
+    "model_id": "",
+    "details": "EUC tool registered: Provision journal calculator",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2026-09-15T09:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "register_tool",
+    "entity_type": "tool",
+    "entity_id": "QDB-AI-001",
+    "model_id": "",
+    "details": "AI tool (non-model) registered: Financial statement spreading (OCR)",
+    "before": null,
+    "after": null
+  },
+  {
+    "timestamp": "2026-09-15T09:00:00",
+    "user": "Maryam Al-Kaabi",
+    "role": "ADMIN",
+    "action": "register_tool",
+    "entity_type": "tool",
+    "entity_id": "QDB-NM-001",
+    "model_id": "",
+    "details": "Not a model registered: Repayment schedule calculator",
     "before": null,
     "after": null
   }

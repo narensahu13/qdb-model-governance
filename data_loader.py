@@ -2,7 +2,8 @@
 
 Everything comes from the SQLite repository. Fields that could drift if typed
 by hand are DERIVED here, never stored on the model record:
-  * tier                 — from the tier scores (tiering engine)
+  * tier                 — from the confirmed tier scores (tiering engine),
+                           or an override approved by the CRO
   * validation_frequency — from the tier
   * approval_body        — from the tier (Management Risk Committee / CRO)
   * last_validation, last_rating, next_validation_due — from closed
@@ -23,8 +24,10 @@ DUE_SOON_DAYS = governance.DUE_SOON_DAYS
 
 def _enrich(model: dict, requests: list[dict]) -> dict:
     m = dict(model)
-    tier = compute_tier(**m["tier_scores"])["tier"]
+    m["computed_tier"] = compute_tier(**m["tier_scores"])["tier"]
+    tier = governance.effective_tier(m)
     m["tier"] = tier
+    m["tier_confirmed"] = governance.tier_confirmed(m)
     m["validation_frequency"] = governance.validation_frequency(tier)
     m["approval_body"] = governance.approval_body(tier)
     m.update(governance.derive_validation_dates(tier, requests))
@@ -140,6 +143,34 @@ def load_issues() -> pd.DataFrame:
 
 
 @st.cache_data
+def load_tools() -> list[dict]:
+    """EUC tools, AI tools and 'not a model' decisions (identification register)."""
+    return repository.list_tools()
+
+
+def ai_register() -> list[dict]:
+    """Every AI system — models and tools — for the QCB AI Guideline register."""
+    rows = []
+    for m in load_models():
+        if m.get("ai_system"):
+            rows.append({"kind": "Model", "id": m["model_id"], "name": m["name"],
+                         "owner": m["owner"], "source": m["source"], "vendor": m.get("vendor"),
+                         "status": m["status"], **{k: m.get(k) for k in AI_FIELDS}})
+    for t in load_tools():
+        if t.get("ai_system"):
+            rows.append({"kind": t["classification"], "id": t["tool_id"], "name": t["name"],
+                         "owner": t["owner"], "source": t.get("platform"), "vendor": None,
+                         "status": "In use", **{k: t.get(k) for k in AI_FIELDS}})
+    for r in rows:
+        r["qcb_approval_required"] = governance.qcb_approval_required(r)
+    return rows
+
+
+AI_FIELDS = ["qcb_ai_high_risk", "ai_functional_category", "ai_provider_role",
+             "ai_autonomy", "qcb_approval_status", "ai_system"]
+
+
+@st.cache_data
 def load_monitoring() -> pd.DataFrame:
     rows = repository.list_monitoring()
     cols = ["model_id", "metric", "period", "value", "amber_threshold",
@@ -178,6 +209,7 @@ def models_dataframe() -> pd.DataFrame:
             "Model Name": m["name"],
             "Risk Type": m["risk_type"],
             "Tier": m["tier"],
+            "Tier Confirmed": m["tier_confirmed"],
             "Status": m["status"],
             "Owner": m["owner"],
             "Validator": m["validator"],
@@ -218,3 +250,15 @@ def get_model(model_id: str) -> dict | None:
 
 def requests_for_model(model_id: str) -> list[dict]:
     return [r for r in load_validation_requests() if r["model_id"] == model_id]
+
+
+def factsheet_pdf(model_id: str) -> bytes:
+    """One-page PDF factsheet for a model, built from live data."""
+    import factsheet
+
+    m = get_model(model_id)
+    mon = load_monitoring()
+    mon = mon[mon["model_id"] == model_id].to_dict("records")
+    return factsheet.build_factsheet(
+        m, requests_for_model(model_id), mon, documentation_status(m), validation_status(m),
+    )
