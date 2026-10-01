@@ -9,7 +9,7 @@ weights, ECL engine), the CreditLens obligor rating models, the pricing model, t
 in development (transaction, credit bureau individual and corporate, combination module) and
 placeholder models for liquidity, market, operational and non-financial risk. **Model names and
 relationships are real; dates, exposures, metrics and findings are mock data** to be edited.
-People are placeholders (Model Owner 1, Model Developer 1, Model Validator 1, Internal Auditor 1, MRM Administrator 1, CRO) —
+People are role-named placeholders (Model Owner 1, Model Developer 1, Model Sponsor 1, Model User 1, Model Validator 1, Internal Auditor 1, MRM Administrator 1, CRO) —
 rename them to real people on the Administration page. Models are numbered QDB-001, QDB-002 …
 and can be renumbered there too.
 
