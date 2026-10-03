@@ -84,11 +84,13 @@ with tab_people:
 with tab_acc:
     st.caption(
         "Set the owner, developer, validator and sponsor of every model in one place. Validators "
-        "cannot be assigned to models they own or develop."
+        "cannot be assigned to models they own or develop; the sponsor must be a different person "
+        "from the owner and developer, because the two approve the model in turn."
     )
     models = load_models()
     owners = [auth.user_option_label(u) for u in auth.users_for_roles("LOD1")]
     validators = ["Not yet assigned"] + [auth.user_option_label(u) for u in auth.users_for_roles("LOD2")]
+    sponsors = [auth.user_option_label(u) for u in auth.users_for_roles("SPONSOR")]
     base = pd.DataFrame([{
         "Model ID": m["model_id"], "Model": m["name"], "Owner": m["owner"],
         "Developer": m["developer"], "Validator": m["validator"], "Sponsor": m["sponsor"],
@@ -99,6 +101,7 @@ with tab_acc:
         column_config={
             "Owner": st.column_config.SelectboxColumn(options=sorted(set(owners) | set(base["Owner"]))),
             "Validator": st.column_config.SelectboxColumn(options=sorted(set(validators) | set(base["Validator"]))),
+            "Sponsor": st.column_config.SelectboxColumn(options=sorted(set(sponsors) | set(base["Sponsor"]))),
         },
     )
     if st.button("Save accountability changes", type="primary", key="adm_acc_save"):

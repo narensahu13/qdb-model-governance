@@ -3,8 +3,10 @@
 Decisions recorded 30 September 2026:
   * No Model Validation Unit: one QDB validator or an external consultant
     performs validations; both act in the validator (LOD2) role.
-  * No Model Risk Committee: Tier 1 models are approved by the Management
-    Risk Committee; the CRO approves Tier 2 and Tier 3 (may delegate Tier 3).
+  * No Model Risk Committee and no separate approval body: a model is
+    approved by its model owner and then its model sponsor (decided
+    3 October 2026). A senior executive such as the CRO approves as the
+    sponsor of the models they sponsor.
   * Four-level validation rating scale.
   * Benchmarks: Federal Reserve SR 26-2 (April 2026, replaced SR 11-7),
     PRA SS1/23, and the QCB Artificial Intelligence Guideline (September 2024),
@@ -66,11 +68,9 @@ FREQUENCY_BY_TIER = {
     3: ("Triennial", 1095),
 }
 
-APPROVAL_BODY_BY_TIER = {
-    1: "Management Risk Committee",
-    2: "CRO",
-    3: "CRO (may delegate)",
-}
+# Approval (gate G4): the model owner signs first, then the model sponsor.
+APPROVERS = ["Model owner", "Model sponsor"]
+APPROVAL_BODY = "Model owner and model sponsor"
 
 DUE_SOON_DAYS = 90
 
@@ -85,8 +85,21 @@ def validation_frequency(tier: int) -> str:
     return FREQUENCY_BY_TIER[tier][0]
 
 
-def approval_body(tier: int) -> str:
-    return APPROVAL_BODY_BY_TIER[tier]
+def approval_body(tier: int | None = None) -> str:
+    """Who approves a model. The same for every tier: owner, then sponsor."""
+    return APPROVAL_BODY
+
+
+def next_approver(model: dict) -> str | None:
+    """'Model owner' or 'Model sponsor' — whose signature the approval waits for."""
+    if model.get("status") != STATUS_AWAITING_APPROVAL:
+        return None
+    signed = {s["as"] for s in (model.get("pending_approval") or {}).get("signatures", [])}
+    return next((a for a in APPROVERS if a not in signed), None)
+
+
+def approver_name(model: dict, approver: str) -> str:
+    return person_name(model.get("owner") if approver == "Model owner" else model.get("sponsor"))
 
 
 def counts_as_validation(req: dict) -> bool:
@@ -216,7 +229,7 @@ def identify(answers: dict) -> dict:
 # ---------------------------------------------------------------- tier sign-off (gate G1)
 TIER_CONFIRMED = "Confirmed"
 TIER_PROPOSED = "Proposed"
-TIER_OVERRIDE_PENDING = "Override pending CRO"
+TIER_OVERRIDE_PENDING = "Override pending sponsor"
 
 
 def effective_tier(model: dict) -> int:

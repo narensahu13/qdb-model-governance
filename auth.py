@@ -17,8 +17,8 @@ ROLE_LABELS = {
     "LOD2": "Model validator",
     "LOD3": "Internal audit",
     "ADMIN": "MRM administrator",
-    "CRO": "CRO — approver",
-    "VIEWER": "Read-only (sponsor, model user)",
+    "SPONSOR": "Model sponsor",
+    "VIEWER": "Read-only (model user)",
 }
 
 ROLE_COLORS = {
@@ -26,7 +26,7 @@ ROLE_COLORS = {
     "LOD2": "#14284b",
     "LOD3": "#b8933d",
     "ADMIN": "#607d8b",
-    "CRO": "#6a1b9a",
+    "SPONSOR": "#6a1b9a",
     "VIEWER": "#90a4ae",
 }
 
@@ -84,16 +84,20 @@ PERMISSIONS = {
     "assign_accountability": ["ADMIN"],       # owner, developer, validator, sponsor
     "propose_tier": ["LOD1", "ADMIN"],
     "confirm_tier": ["LOD2", "ADMIN"],        # never the person who proposed it
-    "approve_tier_override": ["CRO"],
+    "approve_tier_override": ["SPONSOR"],     # the model's own sponsor
     # Phase 2 — validation workflow
     "submit_for_validation": ["LOD1", "ADMIN"],   # G2; LOD1 only for own models
     "run_engagement": ["LOD2"],                    # scope, info requests, draft, sign-off (G3)
     "answer_info_request": ["LOD1"],
     "owner_review": ["LOD1"],
-    "record_approval": ["CRO", "ADMIN"],           # G4; ADMIN only as secretary for committee decisions
-    "update_condition": ["LOD1", "LOD2", "CRO"],
+    "record_approval": ["LOD1", "SPONSOR"],        # G4: the model's owner, then its sponsor
+    "update_condition": ["LOD1", "LOD2"],
     "verify_implementation": ["LOD2"],             # G5
     "administer": ["ADMIN"],                        # Administration page
+    # Phase 3 — KMPIs (key model performance indicators)
+    "define_kmpi": ["LOD1", "ADMIN"],              # LOD1 only for own models
+    "enter_kmpi": ["LOD1"],                        # owner or developer of the model
+    "review_kmpi": ["LOD2"],                       # independent review of a submitted return
 }
 
 ACTION_LABELS = {
@@ -112,15 +116,18 @@ ACTION_LABELS = {
     "assign_accountability": "Assign owner, developer, validator and sponsor",
     "propose_tier": "Propose a tier assessment",
     "confirm_tier": "Confirm a tier assessment (gate G1)",
-    "approve_tier_override": "Approve a tier override",
+    "approve_tier_override": "Approve a tier override (the model's sponsor)",
     "submit_for_validation": "Submit a model for validation (gate G2)",
     "run_engagement": "Run a validation engagement and sign it off (gate G3)",
     "answer_info_request": "Answer a validator's information request",
     "owner_review": "Give the owner's factual-accuracy review of a draft report",
-    "record_approval": "Record an approval decision (gate G4; committee decisions by the secretary)",
-    "update_condition": "Update a condition of approval (owner: met; validator/CRO: verify)",
+    "record_approval": "Approve a model (gate G4: its owner, then its sponsor)",
+    "update_condition": "Update a condition of approval (owner: met; validator: verify)",
     "verify_implementation": "Verify implementation (gate G5)",
     "administer": "Administration: people, accountability, model IDs, database",
+    "define_kmpi": "Define or change a model's KMPIs",
+    "enter_kmpi": "Enter and submit KMPI values for a period",
+    "review_kmpi": "Review a submitted KMPI return",
 }
 
 INITIATE_ACTION = {

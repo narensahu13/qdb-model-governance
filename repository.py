@@ -16,7 +16,6 @@ The database is created and seeded from data/seed/ on first use.
 
 from __future__ import annotations
 
-import csv
 import hashlib
 import json
 import shutil
@@ -27,7 +26,7 @@ from pathlib import Path
 
 import config
 
-SCHEMA_VERSION = "4"
+SCHEMA_VERSION = "5"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -62,16 +61,18 @@ CREATE TABLE IF NOT EXISTS tools (
     tool_id TEXT PRIMARY KEY,
     doc     TEXT NOT NULL
 );
-CREATE TABLE IF NOT EXISTS monitoring (
-    model_id          TEXT NOT NULL,
-    metric            TEXT NOT NULL,
-    period            TEXT NOT NULL,
-    value             REAL NOT NULL,
-    amber_threshold   REAL NOT NULL,
-    red_threshold     REAL NOT NULL,
-    higher_is_better  INTEGER NOT NULL,
-    rag               TEXT NOT NULL,
-    PRIMARY KEY (model_id, metric, period)
+CREATE TABLE IF NOT EXISTS kmpis (
+    kmpi_id  TEXT PRIMARY KEY,
+    model_id TEXT NOT NULL,
+    doc      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_kmpis_model ON kmpis(model_id);
+CREATE TABLE IF NOT EXISTS kmpi_returns (
+    model_id TEXT NOT NULL,
+    period   TEXT NOT NULL,
+    status   TEXT NOT NULL,
+    doc      TEXT NOT NULL,
+    PRIMARY KEY (model_id, period)
 );
 CREATE TABLE IF NOT EXISTS audit_log (
     seq         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -243,17 +244,10 @@ def _seed(conn: sqlite3.Connection, seed_dir: Path) -> None:
             (e["evidence_id"], e["model_id"], e["sha256"], _dump(e)),
         )
 
-    with open(seed_dir / "monitoring.csv", encoding="utf-8") as f:
-        for row in csv.DictReader(f):
-            conn.execute(
-                "INSERT INTO monitoring VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-                (
-                    row["model_id"], row["metric"], row["period"], float(row["value"]),
-                    float(row["amber_threshold"]), float(row["red_threshold"]),
-                    1 if row["higher_is_better"] in ("True", "true", "1") else 0,
-                    row["rag"],
-                ),
-            )
+    for k in load("kmpis.json"):
+        put_kmpi(conn, k)
+    for r in load("kmpi_returns.json"):
+        put_kmpi_return(conn, r)
 
     for t in load("tools.json"):
         conn.execute("INSERT INTO tools(tool_id, doc) VALUES (?, ?)", (t["tool_id"], _dump(t)))
@@ -269,8 +263,9 @@ def _stored_version(conn) -> str:
 
 
 def _backup_and_reset(old_version: str) -> Path:
-    """Schema v3 renumbered the pilot models (QDB-001 ...) and replaced names with
-    placeholders, so older databases are kept as a backup and rebuilt from seed."""
+    """A database from an older schema is kept as a backup and rebuilt from seed
+    (v3 renumbered the models; v5 replaced monitoring with KMPIs and the CRO
+    approval with owner and sponsor approvals)."""
     path = config.db_path()
     stamp = datetime.now().strftime("%Y%m%d%H%M%S")
     backup = path.with_name(f"{path.stem}.v{old_version}-backup-{stamp}{path.suffix}")
@@ -435,15 +430,55 @@ def put_tool(conn, tool: dict) -> None:
     )
 
 
-def list_monitoring() -> list[dict]:
-    with tx() as conn:
-        rows = conn.execute(
-            "SELECT * FROM monitoring ORDER BY model_id, metric, period"
-        ).fetchall()
-    return [
-        {**dict(r), "higher_is_better": bool(r["higher_is_better"])}
-        for r in rows
-    ]
+# ---------------------------------------------------------------- KMPIs
+def list_kmpis(conn=None) -> list[dict]:
+    if conn is None:
+        with tx() as c:
+            return list_kmpis(c)
+    return _docs(conn, "SELECT doc FROM kmpis ORDER BY kmpi_id")
+
+
+def put_kmpi(conn, k: dict) -> None:
+    conn.execute(
+        "INSERT INTO kmpis(kmpi_id, model_id, doc) VALUES (?, ?, ?) "
+        "ON CONFLICT(kmpi_id) DO UPDATE SET model_id = excluded.model_id, doc = excluded.doc",
+        (k["kmpi_id"], k["model_id"], _dump(k)),
+    )
+
+
+def kmpi_ids(conn) -> list[str]:
+    return [r[0] for r in conn.execute("SELECT kmpi_id FROM kmpis").fetchall()]
+
+
+def list_kmpi_returns(conn=None) -> list[dict]:
+    if conn is None:
+        with tx() as c:
+            return list_kmpi_returns(c)
+    return _docs(conn, "SELECT doc FROM kmpi_returns ORDER BY model_id, period")
+
+
+def get_kmpi_return(conn, model_id: str, period: str) -> dict | None:
+    rows = _docs(conn, "SELECT doc FROM kmpi_returns WHERE model_id = ? AND period = ?",
+                 (model_id, period))
+    return rows[0] if rows else None
+
+
+def put_kmpi_return(conn, r: dict) -> None:
+    conn.execute(
+        "INSERT INTO kmpi_returns(model_id, period, status, doc) VALUES (?, ?, ?, ?) "
+        "ON CONFLICT(model_id, period) DO UPDATE SET status = excluded.status, doc = excluded.doc",
+        (r["model_id"], r["period"], r["status"], _dump(r)),
+    )
+
+
+def rename_model_in_kmpis(conn, old_id: str, new_id: str) -> None:
+    for k in list_kmpis(conn):
+        if k["model_id"] == old_id:
+            put_kmpi(conn, {**k, "model_id": new_id})
+    for r in list_kmpi_returns(conn):
+        if r["model_id"] == old_id:
+            conn.execute("DELETE FROM kmpi_returns WHERE model_id = ? AND period = ?", (old_id, r["period"]))
+            put_kmpi_return(conn, {**r, "model_id": new_id})
 
 
 # ---------------------------------------------------------------- audit log

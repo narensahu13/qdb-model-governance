@@ -12,11 +12,15 @@ def test_tier_rules():
     assert tiering.compute_tier("Low", "Low", "Medium")["tier"] == 3
 
 
-def test_frequency_and_approval_body_follow_tier():
+def test_frequency_follows_tier_and_owner_then_sponsor_approve():
     assert governance.validation_frequency(1) == "Annual"
     assert governance.validation_frequency(3) == "Triennial"
-    assert governance.approval_body(1) == "Management Risk Committee"
-    assert governance.approval_body(2) == "CRO"
+    assert governance.approval_body(1) == governance.approval_body(3) == "Model owner and model sponsor"
+    m = {"status": governance.STATUS_AWAITING_APPROVAL, "owner": "A (x)", "sponsor": "B (y)"}
+    assert governance.next_approver(m) == "Model owner"
+    m["pending_approval"] = {"signatures": [{"as": "Model owner"}]}
+    assert governance.next_approver(m) == "Model sponsor"
+    assert governance.approver_name(m, "Model sponsor") == "B"
 
 
 def test_validation_dates_derived_from_latest_rated_validation():

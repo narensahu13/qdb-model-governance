@@ -95,7 +95,7 @@ st.caption("Click a Model ID or select a row to open the governance record.")
 st.divider()
 fc1, fc2 = st.columns([3, 1.4])
 fc1.markdown(
-    "**Model factsheets** — one page per model for the Management Risk Committee, the CRO, "
+    "**Model factsheets** — one page per model for owners, sponsors, senior management, "
     "auditors and QCB, generated from the live records."
 )
 if fc2.button("Prepare factsheets for the models shown", key="prep_factsheets", width="stretch"):

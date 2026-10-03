@@ -44,6 +44,7 @@ PAGES = [
     "views/register.py",
     "views/tasks.py",
     "views/admin.py",
+    "views/kmpi_monitoring.py",
 ]
 
 ROLE_USERS = {
@@ -51,7 +52,8 @@ ROLE_USERS = {
     "LOD2": "Model Validator 2",
     "LOD3": "Internal Auditor 1",
     "ADMIN": "MRM Administrator 1",
-    "CRO": "CRO",
+    "SPONSOR": "Model Sponsor 1",
+    "VIEWER": "Model User 1",
 }
 DEVELOPER = "Model Developer 1"
 
@@ -292,7 +294,7 @@ else:
     else:
         ok("Developer edited own model record (audited)")
 
-# 11. Tier sign-off: validator confirms with override -> CRO approves
+# 11. Tier sign-off: validator confirms with override -> the model's sponsor approves
 if new_id:
     at = page("views/model_detail.py", "Model Validator 1", selected_model_id=new_id)
     sel = at.selectbox(key=f"ct_tier_{new_id}")
@@ -301,17 +303,18 @@ if new_id:
     sel.set_value(target)
     at.text_input(key=f"ct_reason_{new_id}").input("SMOKE override reason")
     by_label(at.button, "Confirm tier").click().run()
-    if at.exception or repository.get_model(new_id)["tier_assessment"]["status"] != "Override pending CRO":
+    if at.exception or repository.get_model(new_id)["tier_assessment"]["status"] != "Override pending sponsor":
         fail("Validator confirms tier with override", at)
     else:
-        ok("Tier override sent to the CRO")
-        at = page("views/model_detail.py", "CRO", selected_model_id=new_id)
+        ok("Tier override sent to the model sponsor")
+        sponsor = repository.get_model(new_id)["sponsor"].split(" (")[0]
+        at = page("views/model_detail.py", sponsor, selected_model_id=new_id)
         by_label(at.button, "Approve override").click().run()
         mm = repository.get_model(new_id)
         if at.exception or mm["tier_override"] != target or mm["tier_assessment"]["status"] != "Confirmed":
-            fail("CRO approves tier override", at)
+            fail("Sponsor approves tier override", at)
         else:
-            ok(f"CRO approved override to Tier {target}")
+            ok(f"{sponsor} (sponsor) approved override to Tier {target}")
 
 # 12. Registers page shows the AI register for the QCB filing
 at = page("views/registers.py", ROLE_USERS["ADMIN"])
@@ -337,16 +340,21 @@ else:
     else:
         ok("Validator started fieldwork with independence declared")
 
-# 14. CRO approves a Tier 2 model (G4)
-at = page("views/model_detail.py", "CRO", selected_model_id="QDB-011")
-if at.exception:
-    fail("Open QDB-011 as CRO", at)
+# 14. Owner, then sponsor, approve QDB-011 (G4)
+for who in ("Model Owner 1", "Model Sponsor 3"):
+    at = page("views/model_detail.py", who, selected_model_id="QDB-011")
+    sign = by_label(at.button, "Sign")
+    if at.exception or sign is None:
+        fail(f"Open G4 form as {who}", at)
+        break
+    sign.click().run()
+    if at.exception:
+        fail(f"G4 signature by {who}", at)
+        break
+if repository.get_model("QDB-011")["status"] != "Approved — Awaiting Implementation":
+    fail("Owner + sponsor approval (G4)")
 else:
-    by_label(at.button, "Record decision").click().run()
-    if at.exception or repository.get_model("QDB-011")["status"] != "Approved — Awaiting Implementation":
-        fail("CRO approval (G4)", at)
-    else:
-        ok("CRO approved QDB-011 (G4)")
+    ok("Model Owner 1 then Model Sponsor 3 approved QDB-011 (G4)")
 
 # 15. Validator verifies implementation (G5)
 at = page("views/model_detail.py", "Model Validator 1", selected_model_id="QDB-011")
@@ -379,6 +387,59 @@ if at.exception or not any(u["name"] == "Internal Auditor A" for u in repository
     fail("Admin rename person", at)
 else:
     ok("Admin renamed Internal Auditor 1 (propagated to records)")
+
+# ---------------------------------------------------------------- Phase 3: KMPIs
+import kmpi  # noqa: E402
+
+P = kmpi.reporting_period()
+
+# 18. Developer completes and submits the QDB-001 KMPI return
+at = page("views/model_detail.py", DEVELOPER, selected_model_id="QDB-001")
+if at.exception:
+    fail("Open QDB-001 KMPIs as developer", at)
+else:
+    try:
+        for kid, v in (("KMPI-001", 0.62), ("KMPI-002", 1.15), ("KMPI-003", 1.0), ("KMPI-004", 0.08), ("KMPI-005", 1.7)):
+            at.number_input(key=f"kv_QDB-001_{P}_{kid}").set_value(v)
+        at.checkbox(key=f"ka_QDB-001_{P}").check()
+        by_label(at.button, "Submit").click().run()
+        ret = next(r for r in repository.list_kmpi_returns() if r["model_id"] == "QDB-001" and r["period"] == P)
+        if at.exception or ret["status"] != "Submitted":
+            fail("Submit KMPI return", at)
+        else:
+            ok(f"Developer submitted the {P} KMPI return for QDB-001")
+    except Exception as exc:  # widget missing: the seed period may not match today's date
+        fail(f"KMPI entry form ({exc})", at)
+
+# 19. Validator reviews QDB-008 and raises a finding for the amber KMPIs
+at = page("views/model_detail.py", "Model Validator 2", selected_model_id="QDB-008")
+try:
+    at.text_area(key=f"kr_c_QDB-008_{P}").input("SMOKE: agree a segment fix")
+    at.checkbox(key=f"kr_f_QDB-008_{P}").check()
+    by_label(at.button, "Mark reviewed").click().run()
+    ret = next(r for r in repository.list_kmpi_returns() if r["model_id"] == "QDB-008" and r["period"] == P)
+    if at.exception or ret["status"] != "Reviewed" or not ret.get("finding_id"):
+        fail("Review KMPI return with finding", at)
+    else:
+        ok(f"Validator reviewed QDB-008 and raised {ret['finding_id']}")
+except Exception as exc:
+    fail(f"KMPI review form ({exc})", at)
+
+# 20. Developer adds a KMPI to the combination module
+at = page("views/model_detail.py", "Model Developer 4", selected_model_id="QDB-013", kmpi_define_toggle=True)
+try:
+    at.text_input(key="kd_name_new").input("Combined-grade agreement (%)")
+    at.text_input(key="kd_desc_new").input("Agreement between the combined grade and the approved grade")
+    at.text_area(key="kd_def_new").input("Obligors whose approved grade equals the combined grade / obligors rated")
+    at.text_input(key="kd_amb_new").input("80")
+    at.text_input(key="kd_red_new").input("70")
+    by_label(at.button, "Add KMPI").click().run()
+    if at.exception or not any(k["model_id"] == "QDB-013" for k in repository.list_kmpis()):
+        fail("Define a KMPI", at)
+    else:
+        ok("Developer added a KMPI to QDB-013")
+except Exception as exc:
+    fail(f"KMPI definition form ({exc})", at)
 
 # ---------------------------------------------------------------- audit integrity
 chain_ok, broken = repository.verify_audit_chain()

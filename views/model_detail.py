@@ -15,6 +15,7 @@ import auth
 import data_loader
 import data_store
 import governance
+import kmpi as kmpi_rules
 import repository
 import tiering
 import utils
@@ -100,12 +101,19 @@ def _attention(m: dict, vstatus: str, model_requests: list[dict]) -> tuple[str, 
                + (f": {open_v[0]['request_id']} at *{open_v[0]['engagement']['stage']}*" if open_v else "")
                + " (Validation tab).")
     elif cur == "G4":
-        nxt = f"Step 4 of 5 — awaiting approval by the {m['approval_body']} (Lifecycle tab)."
+        signer = governance.next_approver(m)
+        nxt = (f"Step 4 of 5 — waiting for the {signer.lower()}, "
+               f"{governance.approver_name(m, signer) or 'not assigned'}, to approve (Lifecycle tab).")
     elif cur == "G5":
         nxt = "Step 5 of 5 — a validator checks the deployed version before use (Lifecycle tab)."
     else:
         nxt = (f"In use. Next validation due {utils.fmt_date(m['next_validation_due'])}."
                if m.get("next_validation_due") else f"Status: {m['status']}.")
+        period = kmpi_rules.reporting_period()
+        if data_loader.needs_kmpi_return(m, period):
+            ret = data_loader.kmpi_return(m["model_id"], period)
+            nxt += (f" {period} KMPI return: {kmpi_rules.return_status(ret).lower()}, due "
+                    f"{utils.fmt_date(kmpi_rules.due_date(period).isoformat())} (KMPIs tab).")
 
     issues = []
     if vstatus == "Overdue":
@@ -115,7 +123,7 @@ def _attention(m: dict, vstatus: str, model_requests: list[dict]) -> tuple[str, 
     if m["status"] == "In Production - Approval Pending":
         issues.append("A new version is in use before revalidation and approval.")
     if m["status"] in governance.IN_USE_STATUSES and not m.get("approval_date"):
-        issues.append(f"In use without formal approval — escalate to the {m['approval_body']}.")
+        issues.append("In use without formal approval by its owner and sponsor.")
     if not m["tier_confirmed"] and cur != "G1":
         issues.append("A tier reassessment is awaiting sign-off (Summary tab).")
     open_f = [r for r in model_requests if r["type"] == "FND" and r["status"] != "Closed"]
@@ -125,6 +133,16 @@ def _attention(m: dict, vstatus: str, model_requests: list[dict]) -> tuple[str, 
         issues.append(f"{len(high)} open high-severity finding(s).")
     if late:
         issues.append(f"{len(late)} finding(s) past their due date.")
+    period = kmpi_rules.reporting_period()
+    if data_loader.needs_kmpi_return(m, period):
+        ret = data_loader.kmpi_return(m["model_id"], period)
+        if kmpi_rules.is_overdue(ret, period):
+            issues.append(f"{period} KMPI return overdue.")
+        elif kmpi_rules.return_status(ret) == kmpi_rules.RETURNED:
+            issues.append(f"{period} KMPI return sent back by the validator.")
+    pos = data_loader.latest_kmpi_position(m["model_id"])
+    if pos and pos["red"]:
+        issues.append(f"Red KMPI in {pos['period']}: {', '.join(pos['red'])}.")
     open_cond = [c for ap in m.get("approvals") or [] for c in ap.get("conditions", [])
                  if c["status"] != governance.CONDITION_VERIFIED]
     if open_cond and m["status"] in governance.IN_USE_STATUSES | {governance.STATUS_AWAITING_IMPLEMENTATION}:
@@ -152,7 +170,7 @@ def _tier_panel(m: dict) -> None:
         if ta.get("confirmed_by"):
             note += f" by {ta['confirmed_by']} on {utils.fmt_date(ta.get('confirmed_on'))}"
         if m.get("tier_override"):
-            note += f" — CRO-approved override of the rule-based Tier {m['computed_tier']}"
+            note += f" — sponsor-approved override of the rule-based Tier {m['computed_tier']}"
         st.caption(note + ".")
     elif status == governance.TIER_PROPOSED:
         st.warning(
@@ -163,7 +181,8 @@ def _tier_panel(m: dict) -> None:
         )
     else:
         st.warning(f"Override to Tier {ta['override_tier']} (rule-based Tier {proposed_tier}) awaiting "
-                   f"CRO approval. Reason: {ta['override_reason']}")
+                   f"approval by the model sponsor, {governance.person_name(m.get('sponsor'))}. "
+                   f"Reason: {ta['override_reason']}")
 
     if status == governance.TIER_PROPOSED and auth.has_permission("confirm_tier") \
             and ta.get("proposed_by") != user["name"]:
@@ -178,9 +197,10 @@ def _tier_panel(m: dict) -> None:
         if go_confirm:
             _act(data_store.confirm_tier, "Tier signed off.", m["model_id"],
                  override_tier=ov if ov != proposed_tier else None, override_reason=reason)
-    elif status == governance.TIER_OVERRIDE_PENDING and auth.has_permission("approve_tier_override"):
-        with st.form(f"cro_tier_{m['model_id']}"):
-            comment = st.text_input("Comment", key=f"cro_c_{m['model_id']}")
+    elif status == governance.TIER_OVERRIDE_PENDING and auth.has_permission("approve_tier_override") \
+            and governance.person_name(m.get("sponsor")) == user["name"]:
+        with st.form(f"sponsor_tier_{m['model_id']}"):
+            comment = st.text_input("Comment", key=f"sponsor_c_{m['model_id']}")
             c_a, c_b = st.columns(2)
             approve = c_a.form_submit_button("Approve override", type="primary")
             reject = c_b.form_submit_button("Reject — keep rule-based tier")
@@ -268,7 +288,10 @@ def _edit_form(m: dict, user: dict) -> None:
             assign["owner"] = s1.selectbox("Model owner", owners, index=owners.index(m["owner"]))
             assign["developer"] = s1.text_input("Model developer", m["developer"])
             assign["validator"] = s2.selectbox("Model validator", vals, index=vals.index(m["validator"]))
-            assign["sponsor"] = s2.text_input("Model sponsor", m["sponsor"])
+            sponsors = [auth.user_option_label(u) for u in auth.users_for_roles("SPONSOR")]
+            sponsors += [m["sponsor"]] if m["sponsor"] and m["sponsor"] not in sponsors else []
+            assign["sponsor"] = s2.selectbox("Model sponsor (approves after the owner)", sponsors,
+                                             index=sponsors.index(m["sponsor"]) if m["sponsor"] in sponsors else 0)
         save = st.form_submit_button("Save changes", type="primary")
     if save:
         uses = [{k: ("" if pd.isna(v) else str(v).strip()) for k, v in row.items()}
@@ -323,21 +346,30 @@ def _lifecycle(m: dict, model_requests: list[dict]) -> None:
         if go:
             _act(data_store.submit_for_validation, "Submitted — a validation request is open.", m["model_id"], note)
 
-    if cur == "G4" and auth.has_permission("record_approval") and (
-            user["role"] == "CRO" or (user["role"] == "ADMIN" and m["tier"] == 1)):
-        with st.form(f"g4_{m['model_id']}"):
-            st.markdown(f"**Approval decision — {m['approval_body']}**"
-                        + (" (recorded by the secretary or the CRO)" if m["tier"] == 1 else ""))
-            decision = st.selectbox("Decision", governance.APPROVAL_DECISIONS)
-            minute = st.text_input("Committee minute reference" + (" *" if m["tier"] == 1 else " (optional)"))
-            cond = st.text_area("Conditions — one per line (for 'Approved with conditions')")
-            due = st.date_input("Conditions due by", value=date.today() + timedelta(days=90))
-            comment = st.text_input("Comment")
-            go = st.form_submit_button("Record decision", type="primary")
-        if go:
-            conds = [{"condition": c.strip(), "due": due.isoformat()} for c in cond.splitlines() if c.strip()]
-            _act(data_store.record_approval, f"Decision recorded: {decision}.",
-                 m["model_id"], decision, conds, minute, comment)
+    if cur == "G4":
+        pending = m.get("pending_approval") or {}
+        signer = governance.next_approver(m)
+        for sig in pending.get("signatures", []):
+            st.markdown(f"✅ **{sig['as']}** {governance.person_name(sig['by'])} — {sig['decision']} on "
+                        f"{utils.fmt_date(sig['on'])}" + (f" · {sig['comment']}" if sig.get("comment") else ""))
+        for c in pending.get("conditions", []):
+            st.markdown(f"&nbsp;&nbsp;• Condition: {c['condition']}", unsafe_allow_html=True)
+        st.markdown(f"🟡 **{signer}** {governance.approver_name(m, signer) or 'not assigned'} — to sign")
+        if auth.has_permission("record_approval") and governance.approver_name(m, signer) == user["name"]:
+            with st.form(f"g4_{m['model_id']}"):
+                st.markdown(f"**Your approval as {signer.lower()}**")
+                st.caption(f"Validation rating: {m.get('last_rating') or '—'}. "
+                           + ("The model sponsor signs after you." if signer == "Model owner"
+                              else "Your signature completes the approval."))
+                decision = st.selectbox("Decision", governance.APPROVAL_DECISIONS)
+                cond = st.text_area("Conditions — one per line (for 'Approved with conditions')")
+                due = st.date_input("Conditions due by", value=date.today() + timedelta(days=90))
+                comment = st.text_input("Comment (required for a rejection)")
+                go = st.form_submit_button("Sign", type="primary")
+            if go:
+                conds = [{"condition": c.strip(), "due": due.isoformat()} for c in cond.splitlines() if c.strip()]
+                _act(data_store.record_approval, f"Signed: {decision}.",
+                     m["model_id"], decision, conds, comment)
 
     if cur == "G5" and auth.has_permission("verify_implementation") and \
             not governance.independence_conflict(m, user["name"], "VAL"):
@@ -355,10 +387,13 @@ def _lifecycle(m: dict, model_requests: list[dict]) -> None:
         st.caption("No approval decisions yet.")
     for ap in reversed(approvals):
         color = {"Approved": utils.GREEN, "Approved with conditions": utils.AMBER}.get(ap["decision"], utils.RED)
+        sigs = ap.get("signatures") or []
+        who = " · ".join(f"{s['as'].replace('Model ', '')}: {governance.person_name(s['by'])} "
+                         f"({utils.fmt_date(s['on'])})" for s in sigs) or f"recorded by {ap['recorded_by']}"
         st.markdown(
-            f"{utils.badge(ap['decision'], color)} {ap['body']} · {utils.fmt_date(ap['date'])} · "
-            f"v{ap.get('version')} · recorded by {ap['recorded_by']}"
-            + (f" · {ap['minute_ref']}" if ap.get("minute_ref") else ""),
+            f"{utils.badge(ap['decision'], color)} {ap['approval_id']} · v{ap.get('version')} · {who}"
+            + (f" · {ap['minute_ref']}" if ap.get("minute_ref") else "")
+            + (f" · {ap['comment']}" if ap.get("comment") else ""),
             unsafe_allow_html=True,
         )
         for c in ap.get("conditions", []):
@@ -377,7 +412,7 @@ def _lifecycle(m: dict, model_requests: list[dict]) -> None:
                     if st.form_submit_button("Mark as met"):
                         _act(data_store.update_condition, "Condition marked as met.",
                              m["model_id"], ap["approval_id"], c["cond_id"], "met", note)
-            if c["status"] == governance.CONDITION_MET and user["role"] in ("LOD2", "CRO") \
+            if c["status"] == governance.CONDITION_MET and user["role"] == "LOD2" \
                     and not governance.is_owner_or_developer(m, user["name"]):
                 with st.form(f"cv_{key}"):
                     why = st.text_input("Comment (required to reopen)")
@@ -574,6 +609,249 @@ def _engagement(req: dict, m: dict) -> None:
         st.success(f"Signed off by {so['by']} on {utils.fmt_date(so['on'])} — {so['rating']}.")
 
 
+# ================================================================ KMPIs
+RAG_ICON = {"Green": "🟢", "Amber": "🟠", "Red": "🔴", "Not reported": "⚪", None: ""}
+STATUS_COLOR = {kmpi_rules.NOT_STARTED: utils.GREY, kmpi_rules.DRAFT: utils.AMBER,
+                kmpi_rules.RETURNED: utils.RED, kmpi_rules.SUBMITTED: utils.NAVY, kmpi_rules.REVIEWED: utils.GREEN}
+
+
+def _fmt_value(v, unit=None) -> str:
+    if v is None or v != v:
+        return "—"
+    return f"{v:g}" + ("%" if unit == "%" else f" {unit}" if unit in ("pp", "days") else "")
+
+
+def _values_table(ret: dict) -> None:
+    st.dataframe(pd.DataFrame([{
+        "KMPI": f"{kid} {v['name']}", "Value": _fmt_value(v["value"], v.get("unit")),
+        "RAG": f"{RAG_ICON[v['rag']]} {v['rag']}", "Thresholds": kmpi_rules.threshold_text(v),
+        "Explanation": v.get("comment") or "",
+    } for kid, v in ret["values"].items()]), hide_index=True, width="stretch")
+
+
+def _kmpi_entry_form(m: dict, period: str, due: list[dict], ret: dict | None, mon: pd.DataFrame) -> None:
+    values = (ret or {}).get("values", {})
+    with st.form(f"kmpi_entry_{m['model_id']}_{period}"):
+        st.markdown(f"**Enter the {period} values**")
+        st.caption("Leave a value empty only if it is not available, and say why. "
+                   "Every amber or red value needs an explanation and the action taken.")
+        entries = {}
+        for k in due:
+            kid = k["kmpi_id"]
+            saved = values.get(kid) or {}
+            prev = mon[(mon["kmpi_id"] == kid) & (mon["period"] < period)].sort_values("period")
+            last = (f"last {prev.iloc[-1]['period']}: {_fmt_value(prev.iloc[-1]['value'], k.get('unit'))} "
+                    f"{RAG_ICON[prev.iloc[-1]['rag']]}") if not prev.empty else "first period"
+            c1, c2, c3 = st.columns([3, 1.1, 3])
+            c1.markdown(f"**{kid}** {k['name']} {RAG_ICON[saved.get('rag')] if saved else ''}  \n"
+                        f"<span style='font-size:0.78rem; color:#777;'>{kmpi_rules.threshold_text(k)} · "
+                        f"{last}</span>", unsafe_allow_html=True)
+            whole = k.get("unit") in ("count", "days")
+            v = c2.number_input(f"Value {kid}", value=saved.get("value"), key=f"kv_{m['model_id']}_{period}_{kid}",
+                                step=1.0 if whole else 0.01, format="%.0f" if whole else "%.2f",
+                                label_visibility="collapsed", placeholder="value")
+            c = c3.text_input(f"Explanation {kid}", value=saved.get("comment") or "",
+                              key=f"kc_{m['model_id']}_{period}_{kid}", label_visibility="collapsed",
+                              placeholder="Explanation (required if amber, red or missing)")
+            entries[kid] = {"value": v, "comment": c}
+        note = st.text_input("Note to the validator (optional)", key=f"kn_{m['model_id']}_{period}")
+        attest = st.checkbox(kmpi_rules.ATTESTATION, key=f"ka_{m['model_id']}_{period}")
+        b1, b2, _ = st.columns([1, 1, 3])
+        save = b1.form_submit_button("Save draft")
+        submit = b2.form_submit_button("Submit", type="primary")
+    if save or submit:
+        _act(data_store.save_kmpi_return, "Submitted for the validator's review." if submit else "Draft saved.",
+             m["model_id"], period, entries, submit=bool(submit), attest=attest, note=note)
+
+
+def _kmpi_review_form(m: dict, period: str, ret: dict, kmpis: list[dict]) -> None:
+    since = kmpi_rules.period_end(kmpi_rules.previous_period(period)).isoformat()
+    changes = [(k, c) for k in kmpis for c in k.get("changes", []) if c["on"] > since]
+    if changes:
+        st.warning("KMPI definitions changed since the last period: " + "; ".join(
+            f"{k['kmpi_id']} {', '.join(c['fields'])} on {utils.fmt_date(c['on'])} ({c.get('reason') or 'no reason'})"
+            for k, c in changes))
+    breaches = [v for v in ret["values"].values() if v["rag"] in ("Amber", "Red")]
+    with st.form(f"kmpi_review_{m['model_id']}_{period}"):
+        st.markdown("**Your review**")
+        comment = st.text_area("Comment (required to send back)", key=f"kr_c_{m['model_id']}_{period}")
+        raise_f, sev = False, "Medium"
+        if breaches:
+            c1, c2 = st.columns([2, 1])
+            raise_f = c1.checkbox(f"Raise a finding for the {len(breaches)} amber/red KMPI(s)",
+                                  key=f"kr_f_{m['model_id']}_{period}")
+            sev = c2.selectbox("Severity", ["High", "Medium", "Low"], index=1, key=f"kr_s_{m['model_id']}_{period}")
+        b1, b2, _ = st.columns([1, 1, 3])
+        ok = b1.form_submit_button("Mark reviewed", type="primary")
+        back = b2.form_submit_button("Send back")
+    if ok or back:
+        _act(data_store.review_kmpi_return, "Return reviewed." if ok else "Sent back to the owner.",
+             m["model_id"], period, bool(ok), comment, raise_finding=raise_f, severity=sev)
+
+
+def _kmpi_define_form(m: dict, kmpis: list[dict]) -> None:
+    opts = ["new"] + [k["kmpi_id"] for k in kmpis]
+    names = {k["kmpi_id"]: f"{k['kmpi_id']} {k['name']}" for k in kmpis}
+    pick = st.selectbox("KMPI", opts, format_func=lambda i: "Add a new KMPI" if i == "new" else names[i],
+                        key="kd_pick")
+    k = next((x for x in kmpis if x["kmpi_id"] == pick), None) or {
+        "name": "", "category": kmpi_rules.CATEGORIES[0], "unit": "ratio", "description": "", "definition": "",
+        "data_source": "", "direction": kmpi_rules.HIGHER, "amber": "", "red": "", "frequency": "Quarterly",
+        "active": True}
+    sfx = pick
+
+    def thr(x):
+        return "" if x in ("", None) else f"{x[0]:g}-{x[1]:g}" if isinstance(x, list) else f"{x:g}"
+
+    with st.form(f"kmpi_define_{sfx}"):
+        c1, c2, c3 = st.columns([3, 1.4, 1])
+        name = c1.text_input("Name *", k["name"], key=f"kd_name_{sfx}")
+        cat = c2.selectbox("Category", kmpi_rules.CATEGORIES, index=kmpi_rules.CATEGORIES.index(k["category"])
+                           if k["category"] in kmpi_rules.CATEGORIES else 0, key=f"kd_cat_{sfx}")
+        unit = c3.selectbox("Unit", kmpi_rules.UNITS, index=kmpi_rules.UNITS.index(k.get("unit") or "ratio"),
+                            key=f"kd_unit_{sfx}")
+        desc = st.text_input("What it shows and why it matters *", k["description"], key=f"kd_desc_{sfx}")
+        definition = st.text_area("How it is calculated *", k["definition"], key=f"kd_def_{sfx}", height=80)
+        source = st.text_input("Data source", k.get("data_source") or "", key=f"kd_src_{sfx}")
+        d1, d2, d3, d4 = st.columns(4)
+        direction = d1.selectbox("Direction", kmpi_rules.DIRECTIONS,
+                                 index=kmpi_rules.DIRECTIONS.index(k["direction"]), key=f"kd_dir_{sfx}")
+        amber = d2.text_input("Amber threshold *", thr(k["amber"]), key=f"kd_amb_{sfx}",
+                              help="One number; for 'Within range' the green range, e.g. 0.8-1.2")
+        red = d3.text_input("Red threshold *", thr(k["red"]), key=f"kd_red_{sfx}",
+                            help="One number; for 'Within range' the red limits, e.g. 0.65-1.4")
+        freq = d4.selectbox("Frequency", kmpi_rules.FREQUENCIES,
+                            index=kmpi_rules.FREQUENCIES.index(k["frequency"]), key=f"kd_freq_{sfx}")
+        active = st.checkbox("Active (untick to retire)", k.get("active", True), key=f"kd_act_{sfx}")
+        reason = st.text_input("Reason for the change" + (" (required for thresholds, direction, frequency, retiring)"
+                                                           if pick != "new" else " (optional)"),
+                               key=f"kd_reason_{sfx}")
+        go = st.form_submit_button("Add KMPI" if pick == "new" else "Save changes", type="primary")
+    if go:
+        try:
+            fields = {"name": name, "category": cat, "unit": unit, "description": desc, "definition": definition,
+                      "data_source": source.strip(), "direction": direction,
+                      "amber": kmpi_rules.parse_threshold(amber, direction),
+                      "red": kmpi_rules.parse_threshold(red, direction), "frequency": freq, "active": active}
+            kid = data_store.save_kmpi(m["model_id"], fields, None if pick == "new" else pick, reason)
+        except (PermissionError, ValueError) as exc:
+            st.error(str(exc))
+        else:
+            flash_and_rerun(f"{kid} saved.")
+
+
+def _kmpi_tab(m: dict, user: dict) -> None:
+    mid = m["model_id"]
+    kmpis = data_loader.kmpis_for(mid)
+    active = [k for k in kmpis if k.get("active", True)]
+    mon = load_monitoring()
+    mon = mon[mon["model_id"] == mid]
+    first_line = user["role"] == "LOD1" and governance.is_owner_or_developer(m, user["name"])
+    in_use = m["status"] in governance.IN_USE_STATUSES
+
+    # ---- the period's return
+    periods = list(reversed(kmpi_rules.recent_periods(8)))
+    period = st.selectbox("Period", periods, key=f"kmpi_period_{mid}",
+                          help="Returns are due 30 days after the end of each quarter.")
+    due = kmpi_rules.due_kmpis(active, period)
+    ret = data_loader.kmpi_return(mid, period)
+    status = kmpi_rules.return_status(ret)
+    if not kmpis:
+        st.info("No KMPIs defined yet. The owner or developer defines them — at least one is needed "
+                "before the model goes into use (step 5).")
+    elif not in_use and not ret:
+        st.caption("Not in use yet: the KMPIs below are planned; reporting starts once the model is in use.")
+    elif not due and not ret:
+        st.caption(f"No KMPI is due for {period} (annual or semi-annual KMPIs only).")
+    else:
+        overdue = kmpi_rules.is_overdue(ret, period)
+        st.markdown(
+            f"**{period} return** {utils.badge(status, STATUS_COLOR[status])}"
+            + (utils.badge("Overdue", utils.RED) if overdue else "")
+            + f" <span style='color:#666;'>due {utils.fmt_date(kmpi_rules.due_date(period).isoformat())}"
+            + (f" · submitted by {governance.person_name(ret.get('submitted_by'))} "
+               f"on {utils.fmt_date(ret.get('submitted_on'))}" if ret and ret.get("submitted_by")
+               and status != kmpi_rules.RETURNED else "")
+            + (f" · reviewed by {governance.person_name(ret.get('reviewed_by'))}"
+               if status == kmpi_rules.REVIEWED else "")
+            + (f" · finding {ret['finding_id']}" if ret and ret.get("finding_id") else "") + "</span>",
+            unsafe_allow_html=True,
+        )
+        if status == kmpi_rules.RETURNED:
+            st.error(f"Sent back by the validator: {ret['history'][-1].get('comment')}")
+        if status == kmpi_rules.REVIEWED and ret.get("review_comment"):
+            st.caption(f"Validator: {ret['review_comment']}")
+        if status in kmpi_rules.EDITABLE and first_line and auth.has_permission("enter_kmpi") and due:
+            _kmpi_entry_form(m, period, due, ret, mon)
+        elif ret and ret.get("values"):
+            _values_table(ret)
+            if ret.get("note"):
+                st.caption(f"Note from {governance.person_name(ret.get('submitted_by'))}: {ret['note']}")
+            if status == kmpi_rules.SUBMITTED and auth.has_permission("review_kmpi") \
+                    and not governance.independence_conflict(m, user["name"], "VAL"):
+                _kmpi_review_form(m, period, ret, kmpis)
+        else:
+            st.caption(f"Waiting for {governance.person_name(m['owner'])} or "
+                       f"{governance.person_name(m['developer'])} to enter the values.")
+
+    # ---- RAG history
+    if not mon.empty:
+        st.markdown("**History**")
+        cells = mon.assign(cell=[f"{RAG_ICON[r]} {_fmt_value(v, u)}"
+                                 for r, v, u in zip(mon["rag"], mon["value"], mon["unit"])])
+        grid = cells.pivot_table(index=["kmpi_id", "metric"], columns="period", values="cell", aggfunc="first")
+        grid = grid[sorted(grid.columns)[-8:]].reset_index()
+        grid.insert(0, "KMPI", grid.pop("kmpi_id") + " " + grid.pop("metric"))
+        st.dataframe(grid.fillna(""), hide_index=True, width="stretch")
+        with st.expander("Trend charts"):
+            cols = st.columns(2)
+            for i, (kid, series) in enumerate(mon.groupby("kmpi_id")):
+                series = series.sort_values("period")
+                last = series.iloc[-1]
+                fig = pgo.Figure(pgo.Scatter(x=series["period"], y=series["value"], mode="lines+markers",
+                                             line=dict(color=utils.NAVY, width=3)))
+                for level, color in ((last["amber"], utils.AMBER), (last["red"], utils.RED)):
+                    for y in (level if isinstance(level, list) else [level]):
+                        fig.add_hline(y=y, line_dash="dash", line_color=color)
+                fig.update_layout(title=f"{kid} {last['metric']}", height=240, title_font_size=13,
+                                  margin=dict(l=10, r=10, t=40, b=10))
+                cols[i % 2].plotly_chart(fig, width="stretch", key=f"kchart_{kid}")
+        returns = [r for r in data_loader.load_kmpi_returns() if r["model_id"] == mid]
+        with st.expander(f"Returns ({len(returns)})"):
+            st.dataframe(pd.DataFrame([{
+                "Period": r["period"], "Status": r["status"],
+                "Submitted by": governance.person_name(r.get("submitted_by")) or "—",
+                "Reviewed by": governance.person_name(r.get("reviewed_by")) or "—",
+                "Worst": kmpi_rules.worst(v["rag"] for v in r["values"].values()) or "—",
+                "Finding": r.get("finding_id") or "", "Validator comment": r.get("review_comment") or "",
+            } for r in sorted(returns, key=lambda x: x["period"], reverse=True)]), hide_index=True, width="stretch")
+
+    # ---- library
+    if kmpis:
+        st.markdown(f"**KMPI library** ({len(active)} active)")
+        latest = mon.sort_values("period").groupby("kmpi_id").last() if not mon.empty else pd.DataFrame()
+        st.dataframe(pd.DataFrame([{
+            "ID": k["kmpi_id"], "KMPI": k["name"], "Category": k["category"],
+            "Thresholds": kmpi_rules.threshold_text(k), "Frequency": k["frequency"],
+            "Latest": (f"{RAG_ICON[latest.loc[k['kmpi_id'], 'rag']]} "
+                       f"{_fmt_value(latest.loc[k['kmpi_id'], 'value'], k.get('unit'))}"
+                       if k["kmpi_id"] in latest.index else "—"),
+            "Status": "Active" if k.get("active", True) else "Retired",
+        } for k in kmpis]), hide_index=True, width="stretch")
+        with st.expander("Definitions"):
+            for k in kmpis:
+                st.markdown(f"**{k['kmpi_id']} {k['name']}** — {k['description']}  \n"
+                            f"*Calculation:* {k['definition']}  \n"
+                            f"*Data:* {k.get('data_source') or '—'} · *Defined by* "
+                            f"{governance.person_name(k.get('defined_by'))} on {utils.fmt_date(k.get('defined_on'))}"
+                            + "".join(f"  \n*Changed* {utils.fmt_date(c['on'])} by {governance.person_name(c['by'])}: "
+                                      f"{', '.join(c['fields'])} — {c.get('reason') or 'no reason given'}"
+                                      for c in k.get("changes", [])))
+    if auth.has_permission("define_kmpi") and (user["role"] == "ADMIN" or first_line):
+        if st.toggle("Add or change a KMPI", key="kmpi_define_toggle"):
+            _kmpi_define_form(m, kmpis)
+
+
 # ================================================================ page
 user = auth.get_current_user()
 
@@ -651,7 +929,7 @@ with st.container(border=True):
         st.caption("Placeholder record — details to be confirmed by the model owner.")
 
 tab_sum, tab_life, tab_val, tab_docs, tab_mon = st.tabs([
-    "Summary", "Lifecycle & approvals", "Validation & findings", "Documents & audit", "Monitoring",
+    "Summary", "Lifecycle & approvals", "Validation & findings", "Documents & audit", "KMPIs",
 ])
 
 # ================================================================ Summary
@@ -662,7 +940,7 @@ with tab_sum:
         st.markdown(f"**Purpose.** {m['description']}")
         utils.kpi_cards([
             ("Tier", f"Tier {m['tier']}", "confirmed" if m["tier_confirmed"] else "awaiting sign-off"),
-            ("Approval body", m["approval_body"], f"approved {utils.fmt_date(m.get('approval_date'), 'not yet')}"),
+            ("Approved", utils.fmt_date(m.get("approval_date"), "Not yet"), "by owner and sponsor"),
             ("Last validation", utils.fmt_date(m["last_validation"], "Never"), m.get("last_rating")),
             ("Next validation", utils.fmt_date(m["next_validation_due"]), m["validation_frequency"]),
             ("Exposure", f"QAR {m['exposure_covered_qar_mn']:,} mn", None),
@@ -955,25 +1233,6 @@ with tab_docs:
         st.dataframe(tr[["When", "Who", "Action", "Record", "Details"]], hide_index=True, width="stretch",
                      height=280)
 
-# ================================================================ Monitoring
+# ================================================================ KMPIs
 with tab_mon:
-    mon = load_monitoring()
-    mon = mon[mon["model_id"] == selected]
-    if mon.empty:
-        st.info("No quantitative monitoring for this model (in development, or qualitative).")
-    else:
-        latest = mon[mon["period"] == mon["period"].max()]
-        st.markdown(" · ".join(
-            f"**{r['metric']}** {r['value']:g} "
-            + utils.badge(r["rag"], {"Green": utils.GREEN, "Amber": utils.AMBER, "Red": utils.RED}[r["rag"]])
-            for _, r in latest.iterrows()), unsafe_allow_html=True)
-        for metric, series in mon.groupby("metric"):
-            series = series.sort_values("period")
-            fig = pgo.Figure(pgo.Scatter(x=series["period"], y=series["value"], mode="lines+markers",
-                                       line=dict(color=utils.NAVY, width=3), name=metric))
-            fig.add_hline(y=series["amber_threshold"].iloc[0], line_dash="dash", line_color=utils.AMBER,
-                          annotation_text="Amber")
-            fig.add_hline(y=series["red_threshold"].iloc[0], line_dash="dash", line_color=utils.RED,
-                          annotation_text="Red")
-            fig.update_layout(title=metric, height=260, margin=dict(l=10, r=10, t=40, b=10))
-            st.plotly_chart(fig, width="stretch")
+    _kmpi_tab(m, user)

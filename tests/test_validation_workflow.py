@@ -10,7 +10,8 @@ from conftest import Upload
 
 V1 = "Model Validator 1"
 V2 = "Model Validator 2"
-CRO = "CRO"
+OWNER1 = "Model Owner 1"
+SPONSOR1, SPONSOR3 = "Model Sponsor 1", "Model Sponsor 3"
 ADMIN = "MRM Administrator 1"
 
 
@@ -100,16 +101,22 @@ def test_full_route_to_production(act_as):
     m = data_loader.get_model("QDB-010")
     assert m["status"] == governance.STATUS_AWAITING_APPROVAL
     assert governance.current_gate(m) == "G4"
-    # Tier 1: committee decision needs the minute reference
-    act_as(CRO)
-    with pytest.raises(ValueError, match="minute"):
-        data_store.record_approval("QDB-010", "Approved", [])
-    act_as(ADMIN)  # secretary records the committee decision
-    data_store.record_approval("QDB-010", "Approved with conditions",
-                               [{"condition": "Bias tests repeated after 6 months", "due": "2027-04-30"}],
-                               minute_ref="MgmtRC 2026-10 item 3")
+    # G4: the owner signs first, then the sponsor
+    act_as(SPONSOR3)
+    with pytest.raises(PermissionError, match="model owner"):
+        data_store.record_approval("QDB-010", "Approved")
+    act_as(OWNER1)
+    assert data_store.record_approval("QDB-010", "Approved with conditions",
+                                      [{"condition": "Bias tests repeated after 6 months", "due": "2027-04-30"}]) is None
+    assert data_loader.get_model("QDB-010")["status"] == governance.STATUS_AWAITING_APPROVAL
+    act_as(SPONSOR3)
+    apr = data_store.record_approval("QDB-010", "Approved")
     m = data_loader.get_model("QDB-010")
     assert m["status"] == governance.STATUS_AWAITING_IMPLEMENTATION
+    ap = m["approvals"][-1]
+    assert ap["approval_id"] == apr and ap["decision"] == "Approved with conditions"
+    assert [s["as"] for s in ap["signatures"]] == ["Model owner", "Model sponsor"]
+    # G5 needs KMPIs: QDB-010 has planned KMPIs in the seed
     act_as("Model Developer 4")
     with pytest.raises(PermissionError):
         data_store.verify_implementation("QDB-010", "x")
@@ -118,17 +125,32 @@ def test_full_route_to_production(act_as):
     assert data_loader.validation_status(data_loader.get_model("QDB-010")) == "On Track"
 
 
-def test_tier2_approval_is_the_cros(act_as):
-    act_as(ADMIN)
-    with pytest.raises(PermissionError, match="CRO"):
-        data_store.record_approval("QDB-011", "Approved")
-    act_as(CRO)
+def test_approval_is_owner_then_sponsor_only(act_as):
+    for who in (ADMIN, "Model Developer 3", V1, SPONSOR1):
+        act_as(who)
+        with pytest.raises(PermissionError):
+            data_store.record_approval("QDB-011", "Approved")
+    act_as(OWNER1)
+    data_store.record_approval("QDB-011", "Approved")
+    with pytest.raises(PermissionError, match="model sponsor"):
+        data_store.record_approval("QDB-011", "Approved")      # the owner cannot sign twice
+    act_as(SPONSOR3)
     data_store.record_approval("QDB-011", "Approved")
     assert repository.get_model("QDB-011")["status"] == governance.STATUS_AWAITING_IMPLEMENTATION
 
 
+def test_sponsor_must_differ_from_owner_and_developer(act_as):
+    act_as(ADMIN)
+    with pytest.raises(ValueError, match="four-eyes"):
+        data_store.update_model("QDB-011", {"sponsor": "Model Owner 1 (Head of Credit Risk)"})
+
+
 def test_rejection_returns_to_development(act_as):
-    act_as(CRO)
+    act_as(OWNER1)
+    with pytest.raises(ValueError, match="reason"):
+        data_store.record_approval("QDB-011", "Rejected")
+    data_store.record_approval("QDB-011", "Approved")
+    act_as(SPONSOR3)
     data_store.record_approval("QDB-011", "Rejected", comment="Rework the expatriate segment")
     assert repository.get_model("QDB-011")["status"] == "In Development"
 
@@ -157,7 +179,8 @@ def test_conditions_met_verified_then_production(act_as):
 # ---------------------------------------------------------------- tasks
 def test_task_inbox(act_as):
     titles = lambda who: [t["title"] for t in data_loader.tasks_for(repository_user(who))]  # noqa: E731
-    assert any("Approve or reject" in t for t in titles(CRO))
+    assert any("Approve as model owner" in t for t in titles(OWNER1))
+    assert not any("Approve as" in t for t in titles(SPONSOR3))    # waits for the owner first
     assert any("Verify implementation" in t for t in titles(V1))
     assert any("IR-3" in t for t in titles("Model Developer 4"))
     assert any("Scope VAL-015" in t for t in titles(V2))
@@ -192,6 +215,6 @@ def test_rename_model_id_updates_references(act_as):
 
 
 def test_only_admin_administers(act_as):
-    act_as(CRO)
+    act_as(SPONSOR1)
     with pytest.raises(PermissionError):
         data_store.save_user(None, "X", "Y", "LOD1")

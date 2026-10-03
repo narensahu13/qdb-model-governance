@@ -1,8 +1,8 @@
 """One-page model factsheet as a PDF (reportlab, free).
 
-The factsheet is the model's identity card for the Management Risk Committee,
-the CRO, auditors and QCB: what it does, who is accountable, how risky it is,
-its validation standing, open findings, monitoring position and limitations —
+The factsheet is the model's identity card for its owner and sponsor, senior
+management, auditors and QCB: what it does, who is accountable, how risky it is,
+its validation standing, open findings, KMPI position and limitations —
 all generated from the live record, never retyped.
 """
 
@@ -175,20 +175,21 @@ def build_factsheet(model: dict, requests: list[dict], monitoring: list[dict],
     for row in monitoring:
         if row["metric"] not in latest or row["period"] > latest[row["metric"]]["period"]:
             latest[row["metric"]] = row
-    m_rows = [[_p("Metric", st["label"]), _p("Latest", st["label"]), _p("RAG", st["label"])]]
+    m_rows = [[_p("KMPI", st["label"]), _p("Latest", st["label"]), _p("RAG", st["label"])]]
     for row in latest.values():
-        m_rows.append([_p(f"{row['metric']} ({row['period']})", st["cell"]),
-                       _p(f"{row['value']:g}", st["cell"]),
+        value = "—" if row["value"] is None or row["value"] != row["value"] else f"{row['value']:g}"
+        m_rows.append([_p(f"{row.get('kmpi_id', '')} {row['metric']} ({row['period']})", st["cell"]),
+                       _p(value, st["cell"]),
                        Paragraph(f"<font color='{RAG.get(row['rag'], GREY).hexval()}'><b>"
                                  f"{escape(row['rag'])}</b></font>", st["cell"])])
     if len(m_rows) == 1:
-        m_rows.append([_p("No quantitative monitoring", st["cell"]), "", ""])
+        m_rows.append([_p("No KMPIs reported yet", st["cell"]), "", ""])
 
     half = (W - 6 * mm) / 2
     pair = Table([[
         [_p(f"Open findings ({len(open_f)})", st["h"]),
          _grid(f_rows, [half * 0.62, half * 0.16, half * 0.22], st, header=True)],
-        [_p("Monitoring — latest position", st["h"]),
+        [_p("KMPIs — latest reported position", st["h"]),
          _grid(m_rows, [half * 0.62, half * 0.18, half * 0.20], st, header=True)],
     ]], colWidths=[half + 3 * mm, half + 3 * mm])
     pair.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"),

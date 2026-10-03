@@ -34,6 +34,7 @@ pages = {
     "Models": models_pages,
     "Oversight": [
         st.Page("views/findings.py", title="Findings Tracker", url_path="findings"),
+        st.Page("views/kmpi_monitoring.py", title="KMPI Monitoring", url_path="kmpi"),
         st.Page("views/registers.py", title="Registers (EUC, AI)", url_path="registers"),
     ],
     "Reference": reference_pages,

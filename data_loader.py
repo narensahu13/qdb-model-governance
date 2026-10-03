@@ -3,9 +3,9 @@
 Everything comes from the SQLite repository. Fields that could drift if typed
 by hand are DERIVED here, never stored on the model record:
   * tier                 — from the confirmed tier scores (tiering engine),
-                           or an override approved by the CRO
+                           or an override approved by the model sponsor
   * validation_frequency — from the tier
-  * approval_body        — from the tier (Management Risk Committee / CRO)
+  * approval_body        — model owner and model sponsor (every tier)
   * last_validation, last_rating, next_validation_due — from closed
     validation requests
 """
@@ -16,6 +16,7 @@ import pandas as pd
 import streamlit as st
 
 import governance
+import kmpi as kmpi_rules
 import repository
 from tiering import compute_tier
 
@@ -171,11 +172,83 @@ AI_FIELDS = ["qcb_ai_high_risk", "ai_functional_category", "ai_provider_role",
 
 
 @st.cache_data
+def load_kmpis() -> list[dict]:
+    return repository.list_kmpis()
+
+
+@st.cache_data
+def load_kmpi_returns() -> list[dict]:
+    return repository.list_kmpi_returns()
+
+
+def kmpis_for(model_id: str, active_only: bool = False) -> list[dict]:
+    return [k for k in load_kmpis() if k["model_id"] == model_id
+            and (k.get("active", True) or not active_only)]
+
+
+def kmpi_return(model_id: str, period: str) -> dict | None:
+    return next((r for r in load_kmpi_returns()
+                 if r["model_id"] == model_id and r["period"] == period), None)
+
+
+MONITORING_COLUMNS = ["model_id", "kmpi_id", "metric", "period", "value", "rag", "status",
+                      "direction", "amber", "red", "unit"]
+
+
+@st.cache_data
 def load_monitoring() -> pd.DataFrame:
-    rows = repository.list_monitoring()
-    cols = ["model_id", "metric", "period", "value", "amber_threshold",
-            "red_threshold", "higher_is_better", "rag"]
-    return pd.DataFrame(rows, columns=cols)
+    """Reported KMPI values (submitted or reviewed returns), one row per KMPI per period."""
+    rows = []
+    for r in load_kmpi_returns():
+        if r["status"] not in kmpi_rules.DONE:
+            continue
+        for kid, v in r["values"].items():
+            rows.append({"model_id": r["model_id"], "kmpi_id": kid, "metric": v["name"],
+                         "period": r["period"], "value": v["value"], "rag": v["rag"],
+                         "status": r["status"], "direction": v["direction"], "amber": v["amber"],
+                         "red": v["red"], "unit": v.get("unit")})
+    return pd.DataFrame(rows, columns=MONITORING_COLUMNS)
+
+
+def needs_kmpi_return(model: dict, period: str) -> bool:
+    """A model in use reports every KMPI due in the period."""
+    return model["status"] in governance.IN_USE_STATUSES and bool(
+        kmpi_rules.due_kmpis(kmpis_for(model["model_id"]), period))
+
+
+def kmpi_overview(period: str, today: date | None = None) -> list[dict]:
+    """One row per model that reports for the period: status, due date, RAG counts."""
+    rows = []
+    for m in load_models():
+        if not needs_kmpi_return(m, period):
+            continue
+        ret = kmpi_return(m["model_id"], period)
+        status = kmpi_rules.return_status(ret)
+        rags = [v["rag"] for v in (ret or {}).get("values", {}).values()] if status in kmpi_rules.DONE else []
+        rows.append({
+            "model_id": m["model_id"], "name": m["name"], "tier": m["tier"], "owner": m["owner"],
+            "validator": m["validator"], "status": status,
+            "due": kmpi_rules.due_date(period).isoformat(),
+            "overdue": kmpi_rules.is_overdue(ret, period, today),
+            "kmpis_due": len(kmpi_rules.due_kmpis(kmpis_for(m["model_id"]), period)),
+            "green": rags.count(kmpi_rules.GREEN), "amber": rags.count(kmpi_rules.AMBER),
+            "red": rags.count(kmpi_rules.RED), "worst": kmpi_rules.worst(rags),
+            "submitted_by": (ret or {}).get("submitted_by"), "reviewed_by": (ret or {}).get("reviewed_by"),
+            "finding_id": (ret or {}).get("finding_id"),
+        })
+    return rows
+
+
+def latest_kmpi_position(model_id: str) -> dict | None:
+    """The most recent submitted or reviewed return of a model, with its worst RAG."""
+    done = [r for r in load_kmpi_returns() if r["model_id"] == model_id and r["status"] in kmpi_rules.DONE]
+    if not done:
+        return None
+    r = max(done, key=lambda x: x["period"])
+    return {"period": r["period"], "status": r["status"],
+            "worst": kmpi_rules.worst(v["rag"] for v in r["values"].values()),
+            "red": [f"{k} {v['name']}" for k, v in r["values"].items() if v["rag"] == kmpi_rules.RED],
+            "amber": [f"{k} {v['name']}" for k, v in r["values"].items() if v["rag"] == kmpi_rules.AMBER]}
 
 
 @st.cache_data
@@ -225,6 +298,7 @@ def models_dataframe() -> pd.DataFrame:
             "Overdue Issues": int((open_issues["status"] == "Overdue").sum()),
             "Doc Completeness (%)": round(100 * sum(docs.values()) / len(docs)) if docs else 0,
             "AI System": bool(m.get("ai_system")),
+            "Latest KMPI": (latest_kmpi_position(m["model_id"]) or {}).get("worst") or "-",
         })
     return pd.DataFrame(rows)
 
@@ -338,7 +412,8 @@ def tasks_for(user: dict) -> list[dict]:
                 and ta.get("proposed_by") != name:
             tasks.append(_task("Tier sign-off", m, "Confirm the proposed tier (G1)",
                                f"Proposed by {ta.get('proposed_by')}"))
-        if ta.get("status") == governance.TIER_OVERRIDE_PENDING and role == "CRO":
+        if ta.get("status") == governance.TIER_OVERRIDE_PENDING and role == "SPONSOR" \
+                and governance.person_name(m.get("sponsor")) == name:
             tasks.append(_task("Tier override", m, f"Decide on the override to Tier {ta['override_tier']}",
                                ta.get("override_reason") or ""))
         if m["status"] == "In Development" and role == "LOD1" and mine(m) and m["tier_confirmed"]:
@@ -346,14 +421,12 @@ def tasks_for(user: dict) -> list[dict]:
             tasks.append(_task("Submit for validation", m,
                                "Upload documents for G2" if missing else "Submit for validation (G2)",
                                ("Missing: " + ", ".join(missing)) if missing else "Required documents in place"))
-        if m["status"] == governance.STATUS_AWAITING_APPROVAL:
-            if role == "CRO":
-                tasks.append(_task("Approval", m,
-                                   "Record the Management Risk Committee decision (G4)" if m["tier"] == 1
-                                   else "Approve or reject (G4)", f"Tier {m['tier']}, rated {m.get('last_rating')}"))
-            elif role == "ADMIN" and m["tier"] == 1:
-                tasks.append(_task("Approval", m, "Table at the Management Risk Committee and record the decision (G4)",
-                                   f"Rated {m.get('last_rating')}"))
+        signer = governance.next_approver(m)
+        if signer and governance.approver_name(m, signer) == name and role in ("LOD1", "SPONSOR"):
+            owner_sig = next((s for s in (m.get("pending_approval") or {}).get("signatures", [])), None)
+            tasks.append(_task("Approval", m, f"Approve as {signer.lower()} (G4)",
+                               f"Validation rating {m.get('last_rating')}"
+                               + (f"; owner: {owner_sig['decision']}" if owner_sig else "")))
         if m["status"] == governance.STATUS_AWAITING_IMPLEMENTATION and role == "LOD2" \
                 and not governance.independence_conflict(m, name, "VAL") \
                 and governance.person_name(m.get("validator")) in (name, "Not yet assigned", ""):
@@ -363,12 +436,40 @@ def tasks_for(user: dict) -> list[dict]:
                 if c["status"] == governance.CONDITION_OPEN and role == "LOD1" and (
                         mine(m) or governance.person_name(c.get("owner")) == name):
                     tasks.append(_task("Condition of approval", m, c["condition"], ap["approval_id"], c.get("due")))
-                if c["status"] == governance.CONDITION_MET and role in ("LOD2", "CRO") and not mine(m) and (
-                        role == "CRO" or governance.person_name(m.get("validator")) == name):
+                if c["status"] == governance.CONDITION_MET and role == "LOD2" and not mine(m) \
+                        and governance.person_name(m.get("validator")) == name:
                     tasks.append(_task("Condition to verify", m, c["condition"], c.get("note") or "", c.get("due")))
         if role == "ADMIN" and m["status"] not in ("Retired",) and m.get("validator") in (None, "", "Not yet assigned") \
                 and m["status"] != "In Development":
             tasks.append(_task("Assignment", m, "Assign a validator", m["status"]))
+
+    # ---- KMPI returns for the reporting period (and any earlier one still open)
+    period = kmpi_rules.reporting_period()
+    open_returns = {(r["model_id"], r["period"]) for r in load_kmpi_returns()
+                    if r["status"] != kmpi_rules.REVIEWED}
+    for m in models.values():
+        periods = {period} | {p for mid, p in open_returns if mid == m["model_id"]}
+        for p in sorted(periods):
+            if not needs_kmpi_return(m, p):
+                continue
+            ret = kmpi_return(m["model_id"], p)
+            status = kmpi_rules.return_status(ret)
+            due = kmpi_rules.due_date(p).isoformat()
+            if role == "LOD1" and mine(m) and status in kmpi_rules.EDITABLE:
+                last = (ret or {}).get("history", [{}])[-1] if ret else {}
+                tasks.append(_task("KMPI return", m,
+                                   f"{'Correct and resubmit' if status == kmpi_rules.RETURNED else 'Enter and submit'} "
+                                   f"the {p} KMPIs",
+                                   (f"Sent back: {last.get('comment')}" if status == kmpi_rules.RETURNED
+                                    else f"{status} — {len(kmpi_rules.due_kmpis(kmpis_for(m['model_id']), p))} KMPIs"),
+                                   due))
+            if role == "LOD2" and status == kmpi_rules.SUBMITTED and not mine(m) and (
+                    governance.person_name(m.get("validator")) == name
+                    or governance.person_name(m.get("validator")) in ("Not yet assigned", "")):
+                rags = [v["rag"] for v in ret["values"].values()]
+                tasks.append(_task("KMPI review", m, f"Review the {p} KMPI return",
+                                   f"{rags.count('Red')} red, {rags.count('Amber')} amber — "
+                                   f"submitted by {governance.person_name(ret.get('submitted_by'))}", due))
 
     today = date.today().isoformat()
     for t in tasks:

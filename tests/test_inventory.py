@@ -13,7 +13,7 @@ OTHER_LOD1 = "Model Owner 4"
 VALIDATOR = "Model Validator 1"
 CONSULTANT = "Model Validator 2"
 ADMIN = "MRM Administrator 1"
-CRO = "CRO"
+SPONSOR = "Model Sponsor 3"   # sponsor of new models in these tests
 
 MODEL_ANSWERS = {"quantitative": True, "theory": True}
 EUC_ANSWERS = {"quantitative": True, "deterministic_only": True, "decision_use": True}
@@ -25,6 +25,7 @@ def new_model_record(**over):
         "name": "SME Early Warning Model", "risk_type": "Credit Rating & Scoring",
         "methodology": "Logistic regression on account conduct", "description": "Flags SMEs at risk.",
         "owner": "Model Owner 1 (Head of Credit Risk)", "developer": "Model Developer 3 (Credit Modelling)",
+        "sponsor": "Model Sponsor 3 (Head of SME & Corporate Lending)",
         "upstream": ["QDB-007"], "uses": [{"use": "Watch-list", "business_area": "Credit",
                                              "decision": "Watch-list entry", "status": "Planned"}],
         "tier_scores": {"materiality": "Medium", "complexity": "Medium", "regulatory_impact": "Low"},
@@ -154,7 +155,7 @@ def test_proposer_cannot_confirm_own_tier(act_as):
         data_store.confirm_tier("QDB-004")
 
 
-def test_override_needs_reason_and_cro(act_as):
+def test_override_needs_reason_and_sponsor(act_as):
     act_as(OWNER)
     mid = data_store.register_model(new_model_record(), MODEL_ANSWERS)  # rule-based tier 2
     act_as(VALIDATOR)
@@ -162,23 +163,25 @@ def test_override_needs_reason_and_cro(act_as):
         data_store.confirm_tier(mid, override_tier=1)
     assert data_store.confirm_tier(mid, override_tier=1, override_reason="Feeds credit decisions") \
         == governance.TIER_OVERRIDE_PENDING
-    assert data_loader.get_model(mid)["tier"] == 2      # not in force until the CRO approves
+    assert data_loader.get_model(mid)["tier"] == 2      # not in force until the sponsor approves
     with pytest.raises(PermissionError):
-        data_store.decide_tier_override(mid, True)      # validator is not the CRO
-    act_as(CRO)
+        data_store.decide_tier_override(mid, True)      # validator is not a sponsor
+    act_as("Model Sponsor 1")
+    with pytest.raises(PermissionError, match="sponsor of"):
+        data_store.decide_tier_override(mid, True)      # a sponsor, but not of this model
+    act_as(SPONSOR)
     data_store.decide_tier_override(mid, True, "Agreed")
     m = data_loader.get_model(mid)
     assert m["tier"] == 1 and m["computed_tier"] == 2 and m["tier_confirmed"]
-    assert m["approval_body"] == "Management Risk Committee"
     assert "Data Quality Assessment" in m["documentation"]   # tier-1 checklist
 
 
-def test_cro_rejection_keeps_rule_based_tier(act_as):
+def test_sponsor_rejection_keeps_rule_based_tier(act_as):
     act_as(OWNER)
     mid = data_store.register_model(new_model_record(), MODEL_ANSWERS)
     act_as(VALIDATOR)
     data_store.confirm_tier(mid, override_tier=3, override_reason="Advisory only")
-    act_as(CRO)
+    act_as(SPONSOR)
     data_store.decide_tier_override(mid, False, "Keep rule-based tier")
     m = data_loader.get_model(mid)
     assert m["tier"] == 2 and m["tier_override"] is None and m["tier_confirmed"]

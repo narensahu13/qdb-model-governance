@@ -13,7 +13,7 @@
     "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Model Developer 1 (Risk Analytics)",
     "validator": "Model Validator 2 (External validation consultant)",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 1 (Chief Risk Officer)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -73,10 +73,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [
-      "PD Backtest Ratio",
-      "PSI"
-    ],
     "data_sources": [
       "Core banking loan tape",
       "CreditLens rating history",
@@ -140,7 +136,7 @@
       {
         "approval_id": "APR-005",
         "date": "2023-12-18",
-        "body": "Management Risk Committee",
+        "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
         "conditions": [
           {
@@ -149,6 +145,7 @@
             "owner": "Model Owner 1 (Head of Credit Risk)",
             "due": null,
             "status": "Open",
+            "set_by": "Model owner",
             "note": null,
             "met_on": null,
             "verified_by": null,
@@ -156,8 +153,23 @@
           }
         ],
         "version": "2.1",
-        "recorded_by": "MRM Administrator 1",
-        "minute_ref": "MgmtRC 2023-12",
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 1 (Head of Credit Risk)",
+            "on": "2023-12-18",
+            "decision": "Approved with conditions",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 1 (Chief Risk Officer)",
+            "on": "2023-12-18",
+            "decision": "Approved with conditions",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 1 (Chief Risk Officer)",
         "comment": null
       }
     ],
@@ -184,7 +196,7 @@
     "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Model Developer 2 (Risk Analytics)",
     "validator": "Not yet assigned",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 1 (Chief Risk Officer)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -230,7 +242,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [],
     "data_sources": [
       "Core banking loan tape 2016–2026",
       "Collection report",
@@ -302,7 +313,7 @@
     "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Model Developer 3 (Credit Modelling)",
     "validator": "Model Validator 2 (External validation consultant)",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 1 (Chief Risk Officer)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -347,9 +358,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [
-      "CCF Backtest Ratio"
-    ],
     "data_sources": [
       "Core banking limits and utilisation",
       "Repayment schedules"
@@ -405,12 +413,27 @@
       {
         "approval_id": "APR-006",
         "date": "2023-12-18",
-        "body": "Management Risk Committee",
+        "body": "Model owner and model sponsor",
         "decision": "Approved",
         "conditions": [],
         "version": "1.2",
-        "recorded_by": "MRM Administrator 1",
-        "minute_ref": "MgmtRC 2023-12",
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 1 (Head of Credit Risk)",
+            "on": "2023-12-18",
+            "decision": "Approved",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 1 (Chief Risk Officer)",
+            "on": "2023-12-18",
+            "decision": "Approved",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 1 (Chief Risk Officer)",
         "comment": null
       }
     ],
@@ -437,7 +460,7 @@
     "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Model Developer 1 (Risk Analytics)",
     "validator": "Model Validator 2 (External validation consultant)",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 1 (Chief Risk Officer)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -484,10 +507,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [
-      "Stage 2 Ratio (%)",
-      "Staging Override Rate (%)"
-    ],
     "data_sources": [
       "Core banking DPD",
       "CreditLens ratings",
@@ -544,12 +563,27 @@
       {
         "approval_id": "APR-007",
         "date": "2023-12-18",
-        "body": "Management Risk Committee",
+        "body": "Model owner and model sponsor",
         "decision": "Approved",
         "conditions": [],
         "version": "1.3",
-        "recorded_by": "MRM Administrator 1",
-        "minute_ref": "MgmtRC 2023-12",
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 1 (Head of Credit Risk)",
+            "on": "2023-12-18",
+            "decision": "Approved",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 1 (Chief Risk Officer)",
+            "on": "2023-12-18",
+            "decision": "Approved",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 1 (Chief Risk Officer)",
         "comment": null
       }
     ],
@@ -576,7 +610,7 @@
     "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Model Developer 1 (Risk Analytics)",
     "validator": "Model Validator 1 (QDB validator)",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 1 (Chief Risk Officer)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -631,9 +665,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [
-      "Scenario Forecast Error (%)"
-    ],
     "data_sources": [
       "IMF World Economic Outlook",
       "Planning and Statistics Authority GDP releases"
@@ -690,7 +721,7 @@
       {
         "approval_id": "APR-010",
         "date": "2024-12-20",
-        "body": "Management Risk Committee",
+        "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
         "conditions": [
           {
@@ -699,6 +730,7 @@
             "owner": "Model Owner 1 (Head of Credit Risk)",
             "due": null,
             "status": "Open",
+            "set_by": "Model owner",
             "note": null,
             "met_on": null,
             "verified_by": null,
@@ -706,8 +738,23 @@
           }
         ],
         "version": "1.0",
-        "recorded_by": "MRM Administrator 1",
-        "minute_ref": "MgmtRC 2024-12",
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 1 (Head of Credit Risk)",
+            "on": "2024-12-20",
+            "decision": "Approved with conditions",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 1 (Chief Risk Officer)",
+            "on": "2024-12-20",
+            "decision": "Approved with conditions",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 1 (Chief Risk Officer)",
         "comment": null
       }
     ],
@@ -792,9 +839,6 @@
         "audit_id": "AUD-001"
       }
     ],
-    "monitoring_metrics": [
-      "Unexplained ECL Movement (%)"
-    ],
     "data_sources": [
       "ETL consolidated data template"
     ],
@@ -848,7 +892,7 @@
       {
         "approval_id": "APR-008",
         "date": "2023-12-18",
-        "body": "Management Risk Committee",
+        "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
         "conditions": [
           {
@@ -857,6 +901,7 @@
             "owner": "Model Owner 2 (Head of Financial Control)",
             "due": null,
             "status": "Open",
+            "set_by": "Model owner",
             "note": null,
             "met_on": null,
             "verified_by": null,
@@ -864,8 +909,23 @@
           }
         ],
         "version": "4.2",
-        "recorded_by": "MRM Administrator 1",
-        "minute_ref": "MgmtRC 2023-12",
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 2 (Head of Financial Control)",
+            "on": "2023-12-18",
+            "decision": "Approved with conditions",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 2 (Chief Financial Officer)",
+            "on": "2023-12-18",
+            "decision": "Approved with conditions",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 2 (Chief Financial Officer)",
         "comment": null
       }
     ],
@@ -892,7 +952,7 @@
     "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Moody's CreditLens (vendor), calibrated by Credit Modelling",
     "validator": "Model Validator 2 (External validation consultant)",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 1 (Chief Risk Officer)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -945,10 +1005,6 @@
         "scope": "Override governance in the rating process.",
         "audit_id": "AUD-002"
       }
-    ],
-    "monitoring_metrics": [
-      "Gini",
-      "Override Rate (%)"
     ],
     "data_sources": [
       "Audited financial statements",
@@ -1013,7 +1069,7 @@
       {
         "approval_id": "APR-011",
         "date": "2025-12-10",
-        "body": "Management Risk Committee",
+        "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
         "conditions": [
           {
@@ -1022,6 +1078,7 @@
             "owner": "Model Owner 1 (Head of Credit Risk)",
             "due": null,
             "status": "Open",
+            "set_by": "Model owner",
             "note": null,
             "met_on": null,
             "verified_by": null,
@@ -1029,8 +1086,23 @@
           }
         ],
         "version": "3.0",
-        "recorded_by": "MRM Administrator 1",
-        "minute_ref": "MgmtRC 2025-12",
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 1 (Head of Credit Risk)",
+            "on": "2025-12-10",
+            "decision": "Approved with conditions",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 1 (Chief Risk Officer)",
+            "on": "2025-12-10",
+            "decision": "Approved with conditions",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 1 (Chief Risk Officer)",
         "comment": null
       }
     ],
@@ -1057,7 +1129,7 @@
     "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Moody's CreditLens (vendor), calibrated by Credit Modelling",
     "validator": "Model Validator 2 (External validation consultant)",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 1 (Chief Risk Officer)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1103,10 +1175,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [
-      "Gini",
-      "PSI"
-    ],
     "data_sources": [
       "Audited financial statements",
       "CreditLens spreading",
@@ -1169,12 +1237,27 @@
       {
         "approval_id": "APR-012",
         "date": "2025-12-10",
-        "body": "Management Risk Committee",
+        "body": "Model owner and model sponsor",
         "decision": "Approved",
         "conditions": [],
         "version": "3.0",
-        "recorded_by": "MRM Administrator 1",
-        "minute_ref": "MgmtRC 2025-12",
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 1 (Head of Credit Risk)",
+            "on": "2025-12-10",
+            "decision": "Approved",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 1 (Chief Risk Officer)",
+            "on": "2025-12-10",
+            "decision": "Approved",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 1 (Chief Risk Officer)",
         "comment": null
       }
     ],
@@ -1201,7 +1284,7 @@
     "owner": "Model Owner 6 (Head of Pricing & Strategy)",
     "developer": "Model Developer 2 (Risk Analytics)",
     "validator": "Model Validator 1 (QDB validator)",
-    "sponsor": "Model Sponsor 3 (Chief Executive Officer)",
+    "sponsor": "Model Sponsor 3 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Pricing & Strategy (use), Risk Analytics (development)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1246,9 +1329,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [
-      "Realised vs Priced Margin Variance (%)"
-    ],
     "data_sources": [
       "Treasury funding curve",
       "Cost allocation",
@@ -1304,12 +1384,27 @@
       {
         "approval_id": "APR-003",
         "date": "2022-11-30",
-        "body": "CRO",
+        "body": "Model owner and model sponsor",
         "decision": "Approved",
         "conditions": [],
         "version": "1.4",
-        "recorded_by": "CRO",
-        "minute_ref": null,
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 6 (Head of Pricing & Strategy)",
+            "on": "2022-11-30",
+            "decision": "Approved",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 3 (Head of SME & Corporate Lending)",
+            "on": "2022-11-30",
+            "decision": "Approved",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 3 (Head of SME & Corporate Lending)",
         "comment": null
       }
     ],
@@ -1336,7 +1431,7 @@
     "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Model Developer 4 (Data Science)",
     "validator": "Model Validator 2 (External validation consultant)",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 3 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1381,7 +1476,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [],
     "data_sources": [
       "Bank statements (customer-provided)",
       "Core banking repayment history"
@@ -1449,7 +1543,7 @@
     "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Model Developer 3 (Credit Modelling)",
     "validator": "Model Validator 1 (QDB validator)",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 3 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1502,7 +1596,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [],
     "data_sources": [
       "Qatar Credit Bureau — individual reports"
     ],
@@ -1568,7 +1661,7 @@
     "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Model Developer 3 (Credit Modelling)",
     "validator": "Model Validator 1 (QDB validator)",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 3 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1621,7 +1714,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [],
     "data_sources": [
       "Qatar Credit Bureau — company reports"
     ],
@@ -1674,15 +1766,16 @@
       {
         "approval_id": "APR-013",
         "date": "2026-09-25",
-        "body": "CRO",
+        "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
         "conditions": [
           {
             "cond_id": "C-1",
-            "condition": "Monitoring plan with thresholds approved before go-live",
+            "condition": "KMPIs and thresholds agreed with the validator before go-live",
             "owner": "Model Owner 1 (Head of Credit Risk)",
             "due": "2026-10-31",
             "status": "Open",
+            "set_by": "Model sponsor",
             "note": null,
             "met_on": null,
             "verified_by": null,
@@ -1690,8 +1783,23 @@
           }
         ],
         "version": "1.0",
-        "recorded_by": "CRO",
-        "minute_ref": null,
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 1 (Head of Credit Risk)",
+            "on": "2026-09-25",
+            "decision": "Approved",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 3 (Head of SME & Corporate Lending)",
+            "on": "2026-09-25",
+            "decision": "Approved with conditions",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 3 (Head of SME & Corporate Lending)",
         "comment": null
       }
     ],
@@ -1711,7 +1819,7 @@
     "owner": "Model Owner 1 (Head of Credit Risk)",
     "developer": "Model Developer 4 (Data Science)",
     "validator": "Not yet assigned",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 3 (Head of SME & Corporate Lending)",
     "lod_mapping": {
       "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -1759,7 +1867,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [],
     "data_sources": [
       "Outputs of upstream models"
     ],
@@ -1867,9 +1974,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [
-      "LCR Forecast Error (%)"
-    ],
     "data_sources": [
       "ALM system",
       "Treasury positions"
@@ -1924,12 +2028,27 @@
       {
         "approval_id": "APR-001",
         "date": "2021-06-30",
-        "body": "Management Risk Committee",
+        "body": "Model owner and model sponsor",
         "decision": "Approved",
         "conditions": [],
         "version": "1.1",
-        "recorded_by": "MRM Administrator 1",
-        "minute_ref": "MgmtRC 2021-06",
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 3 (Head of Market & Liquidity Risk)",
+            "on": "2021-06-30",
+            "decision": "Approved",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 2 (Chief Financial Officer)",
+            "on": "2021-06-30",
+            "decision": "Approved",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 2 (Chief Financial Officer)",
         "comment": null
       }
     ],
@@ -1998,9 +2117,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [
-      "NII Forecast Error (%)"
-    ],
     "data_sources": [
       "ALM system"
     ],
@@ -2054,12 +2170,27 @@
       {
         "approval_id": "APR-002",
         "date": "2022-03-15",
-        "body": "CRO",
+        "body": "Model owner and model sponsor",
         "decision": "Approved",
         "conditions": [],
         "version": "1.0",
-        "recorded_by": "CRO",
-        "minute_ref": null,
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 3 (Head of Market & Liquidity Risk)",
+            "on": "2022-03-15",
+            "decision": "Approved",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 2 (Chief Financial Officer)",
+            "on": "2022-03-15",
+            "decision": "Approved",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 2 (Chief Financial Officer)",
         "comment": null
       }
     ],
@@ -2086,7 +2217,7 @@
     "owner": "Model Owner 5 (Head of Operational Risk)",
     "developer": "Operational Risk team",
     "validator": "Model Validator 1 (QDB validator)",
-    "sponsor": "Model Sponsor 1 (Head of SME & Corporate Lending)",
+    "sponsor": "Model Sponsor 1 (Chief Risk Officer)",
     "lod_mapping": {
       "first_line": "Operational Risk (development, use, monitoring)",
       "second_line": "Model validator — QDB validator or external consultant (independent validation)",
@@ -2125,7 +2256,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [],
     "data_sources": [
       "Loss event database",
       "Workshop outputs"
@@ -2180,12 +2310,27 @@
       {
         "approval_id": "APR-004",
         "date": "2023-02-28",
-        "body": "CRO (may delegate)",
+        "body": "Model owner and model sponsor",
         "decision": "Approved",
         "conditions": [],
         "version": "1.0",
-        "recorded_by": "CRO",
-        "minute_ref": null,
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 5 (Head of Operational Risk)",
+            "on": "2023-02-28",
+            "decision": "Approved",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 1 (Chief Risk Officer)",
+            "on": "2023-02-28",
+            "decision": "Approved",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 1 (Chief Risk Officer)",
         "comment": null
       }
     ],
@@ -2254,9 +2399,6 @@
       }
     ],
     "audit_reviews": [],
-    "monitoring_metrics": [
-      "High-Risk Customer Share (%)"
-    ],
     "data_sources": [
       "Customer master",
       "Transaction monitoring alerts"
@@ -2310,7 +2452,7 @@
       {
         "approval_id": "APR-009",
         "date": "2024-06-30",
-        "body": "Management Risk Committee",
+        "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
         "conditions": [
           {
@@ -2319,6 +2461,7 @@
             "owner": "Model Owner 4 (MLRO / Head of Compliance)",
             "due": null,
             "status": "Open",
+            "set_by": "Model owner",
             "note": null,
             "met_on": null,
             "verified_by": null,
@@ -2326,8 +2469,23 @@
           }
         ],
         "version": "2.0",
-        "recorded_by": "MRM Administrator 1",
-        "minute_ref": "MgmtRC 2024-06",
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 4 (MLRO / Head of Compliance)",
+            "on": "2024-06-30",
+            "decision": "Approved with conditions",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 4 (Chief Compliance Officer)",
+            "on": "2024-06-30",
+            "decision": "Approved with conditions",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 4 (Chief Compliance Officer)",
         "comment": null
       }
     ],

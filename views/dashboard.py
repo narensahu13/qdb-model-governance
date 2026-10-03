@@ -6,7 +6,8 @@ import plotly.express as px
 import streamlit as st
 import governance
 import utils
-from data_loader import load_issues, models_dataframe
+import kmpi as kmpi_rules
+from data_loader import kmpi_overview, load_issues, models_dataframe
 
 utils.header(
     "Dashboard",
@@ -39,14 +40,22 @@ on_track_share = (len(in_scope) - overdue_val) / len(in_scope) if len(in_scope) 
 high_open = int((open_issues["severity"] == "High").sum())
 overdue_findings = int((open_issues["status"] == "Overdue").sum())
 
+_period = kmpi_rules.reporting_period()
+_k_rows = kmpi_overview(_period)
+_k_done = sum(r["status"] in kmpi_rules.DONE for r in _k_rows)
+_k_late = sum(r["overdue"] for r in _k_rows)
+_k_red = sum(r["red"] for r in _k_rows)
+
+
 def _alert(n: int, text: str) -> str | None:
     return f"<span style='color:{utils.RED}; font-weight:600;'>{text}</span>" if n else "none"
 
 
 utils.kpi_cards([
     ("Models in inventory", str(total),
-     f"{int((df['AI System']).sum())} AI system(s) · {int((~df['Tier Confirmed']).sum())} tier sign-off(s) pending"),
-    ("In use", str(int(in_use)), f"{total - int(in_use)} not yet in use"),
+     f"{int(in_use)} in use · {int((df['AI System']).sum())} AI system(s)"),
+    (f"KMPI returns {_period}", f"{_k_done} of {len(_k_rows)}",
+     _alert(_k_late, f"{_k_late} overdue") if _k_late else f"submitted · {_k_red} red KMPI(s)"),
     ("Validations on schedule", f"{on_track_share:.0%}", "of models in use"),
     ("Overdue validations", str(int(overdue_val)), _alert(overdue_val, "requires action")),
     ("Open high findings", str(high_open), _alert(high_open, "requires action")),
@@ -97,7 +106,8 @@ with col_c:
 
 # ---------------------------------------------------------------- attention required
 st.subheader("Attention Required")
-st.caption("Models with overdue or missing validations, high-severity open findings, or a status needing escalation.")
+st.caption("Models with overdue or missing validations, high-severity open findings, a red KMPI, "
+           "or a status needing escalation.")
 
 attention = df[
     df["Validation Status"].isin(["Overdue", "Never Validated"])
@@ -105,6 +115,7 @@ attention = df[
     | df["Status"].isin(["Under Remediation", "Restricted Use", "In Production - Approval Pending"])
     | ~df["Tier Confirmed"]
     | df["Status"].isin([governance.STATUS_AWAITING_APPROVAL, governance.STATUS_AWAITING_IMPLEMENTATION])
+    | (df["Latest KMPI"] == "Red")
 ].copy()
 attention = attention.sort_values(["High Open Issues", "Overdue Issues"], ascending=False)
 
@@ -127,6 +138,8 @@ else:
             reasons.append("awaiting approval (G4)")
         if row["Status"] == governance.STATUS_AWAITING_IMPLEMENTATION:
             reasons.append("awaiting implementation check (G5)")
+        if row["Latest KMPI"] == "Red":
+            reasons.append("red KMPI in the latest return")
 
         left, mid, right = st.columns([3.2, 4.5, 1.1])
         with left:

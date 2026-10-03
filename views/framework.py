@@ -23,7 +23,7 @@ QCB-licensed bank), **IFRS 9**, and **Qatar AML/CFT Law No. 20 of 2019**.
 )
 
 tab_guide, tab_def, tab_tier, tab_lifecycle, tab_committee, tab_workflow, tab_roadmap = st.tabs(
-    ["Quick guide", "Model Definition & Scope", "Risk Tiering", "Model Lifecycle", "Committees & 3LoD",
+    ["Quick guide", "Model Definition & Scope", "Risk Tiering", "Model Lifecycle", "Approval & 3LoD",
      "Workflows & Roles", "Implementation Roadmap"]
 )
 
@@ -37,14 +37,13 @@ with tab_guide:
 
 | Role | What they do here |
 |---|---|
-| **Model owner** | Accountable for the model. Registers it, keeps its record up to date, submits it for validation, answers findings |
-| **Model developer** | Builds and changes the model. Uploads documents, answers the validator's information requests, records model changes |
-| **Model sponsor** | Senior business sponsor. Read-only: follows the model's status and factsheet |
+| **Model owner** | Accountable for the model. Registers it, keeps its record up to date, submits it for validation, approves it first, answers findings, submits the quarterly KMPIs |
+| **Model developer** | Builds and changes the model. Uploads documents, answers the validator's information requests, records model changes, enters the quarterly KMPIs |
+| **Model sponsor** | Senior executive accountable for the model's use — for example the CRO, CFO or a business head. Approves the model after its owner, and decides on tier overrides |
 | **Model user** | Uses the model's output. Read-only |
-| **Model validator** | QDB validator or external consultant, independent of the model. Validates, raises findings, verifies conditions and implementation |
+| **Model validator** | QDB validator or external consultant, independent of the model. Validates, raises findings, verifies conditions and implementation, reviews KMPI returns |
 | **Internal auditor** | Third line. Reviews the framework, may raise findings |
-| **MRM administrator** | Keeps the inventory and people up to date, assigns validators, records committee decisions as secretary. Cannot approve or close |
-| **CRO** | Approves Tier 2 and 3 models and tier overrides; records Management Risk Committee decisions for Tier 1 |
+| **MRM administrator** | Keeps the inventory, people and KMPI library up to date, assigns validators, chases late returns. Cannot approve or close |
 
 **A model's five steps before use**
 
@@ -52,12 +51,19 @@ with tab_guide:
 2. **Submitted for validation** — once the required documents are uploaded.
 3. **Validation signed off** — the validator scopes the work, asks for information, sends a draft to the
    owner for a factual check (7 days), then signs off with a rating.
-4. **Approved** — by the Management Risk Committee (Tier 1) or the CRO (Tier 2 and 3), possibly with conditions.
+4. **Approved** — by the model owner, then the model sponsor, possibly with conditions.
 5. **Implementation verified** — a validator checks the deployed version is the approved one.
 
 Models already in use are revalidated on their cycle (annual, two-yearly or three-yearly by tier);
 a **material change** sends a model back through steps 3–5. Findings are raised during validation or
 audit, answered by the owner and closed by whoever raised them.
+
+**Every quarter — KMPIs**
+
+Each model in use has key model performance indicators (KMPI-001 …) with amber and red thresholds.
+Within 30 days of quarter end the owner or developer enters the values, explains every amber or red
+one, and submits; the validator reviews the return, sends it back, or raises a finding. A model needs
+at least one KMPI before it goes into use.
 """
     )
 
@@ -112,8 +118,8 @@ based on three dimensions scored High / Medium / Low:
 3. **Regulatory impact** — whether outputs feed regulatory returns, financial statements, or statutory compliance obligations
 
 Each rating maps to points (High = 3, Medium = 2, Low = 1) and the **composite score**
-is their sum (3–9). The tier is then assigned **automatically by rule** — any override needs
-CRO approval and is reported to the Management Risk Committee:
+is their sum (3–9). The tier is then assigned **automatically by rule** — any override needs a
+written reason and the model sponsor's approval:
 """
     )
     st.dataframe(
@@ -161,10 +167,10 @@ CRO approval and is reported to the Management Risk Committee:
                 "QDB validator or consultant",
                 "QDB validator or consultant (proportionate scope)",
             ],
-            "Approval Body": [
-                governance.APPROVAL_BODY_BY_TIER[1] + " (board noting for financial-statement models)",
-                governance.APPROVAL_BODY_BY_TIER[2],
-                governance.APPROVAL_BODY_BY_TIER[3],
+            "KMPI reporting": [
+                "Quarterly; several KMPIs covering discrimination, calibration, stability and data",
+                "Quarterly",
+                "Quarterly or annual, proportionate",
             ],
             "Documentation Standard": ["Full suite (6 artefacts)", "Full suite", "Proportionate (core 4 artefacts)"],
         }
@@ -172,7 +178,8 @@ CRO approval and is reported to the Management Risk Committee:
         st.dataframe(tier_df, hide_index=True, width="stretch")
         st.caption(
             "Tiers are computed by the rules above; any expert-judgement adjustment requires "
-            "CRO approval and is recorded in the model's audit trail."
+            "the model sponsor's approval and is recorded in the model's audit trail. Every tier is "
+            "approved by its owner and then its sponsor."
         )
 
 # ---------------------------------------------------------------- lifecycle
@@ -186,9 +193,9 @@ digraph {
     Initiation [label="1. Initiation &\\nBusiness Case"];
     Development [label="2. Development\\n(data, methodology,\\ndocumentation)"];
     Validation [label="3. Independent\\nValidation"];
-    Approval [label="4. Approval\\n(Mgmt Risk Committee / CRO)"];
+    Approval [label="4. Approval\\n(owner, then sponsor)"];
     Implementation [label="5. Implementation\\n& UAT"];
-    Monitoring [label="6. Ongoing Monitoring\\n& Annual Review"];
+    Monitoring [label="6. Quarterly KMPIs\\n& periodic revalidation"];
     Change [label="7. Change /\\nRecalibration"];
     Retirement [label="8. Retirement &\\nDecommissioning"];
     Initiation -> Development -> Validation -> Approval -> Implementation -> Monitoring;
@@ -202,9 +209,9 @@ digraph {
         """
 **Key lifecycle controls**
 
-- No model enters production without independent validation and formal approval (interim use needs CRO approval, compensating controls and a defined expiry)
+- No model enters production without independent validation and approval by its owner and sponsor (interim use needs the sponsor's approval, compensating controls and a defined expiry)
 - Every model has a named **owner**, **developer** and **independent validator** — the developer can never validate their own model
-- **Ongoing monitoring** with model-appropriate KPIs and RAG thresholds; breaches trigger targeted review
+- **Ongoing monitoring** through quarterly KMPIs with amber and red thresholds; the validator reviews each return and raises a finding for breaches that need action
 - **Material changes** (methodology, key assumptions, use extension) require revalidation before deployment
 - All lifecycle events are recorded in the inventory **audit trail**
 """
@@ -218,9 +225,9 @@ with tab_committee:
         st.markdown(
             """
 **Approval and oversight (QDB structure)**
-- **Board Risk Committee** — approves the MRM policy and model risk appetite; receives a quarterly model risk report; notes Tier 1 approvals that affect the financial statements
-- **Management Risk Committee** — approves Tier 1 models and their conditions; receives the model risk dashboard, overdue validations and open high findings
-- **CRO** — approves Tier 2 and Tier 3 models (may delegate Tier 3), tier overrides, finding extensions and interim use before validation
+- **Model owner, then model sponsor** — approve each model (every tier) and its conditions, after the validator has signed off; the sponsor also decides on tier overrides. A senior executive such as the CRO approves as the sponsor of the models they sponsor
+- **Four-eyes** — the sponsor is always a different person from the owner and the developer; the validator is independent of all three
+- **Board Risk Committee** — approves the MRM policy and model risk appetite; receives a quarterly model risk report (KMPI position, overdue validations, open high findings)
 - **ALCO / Compliance** — use-level sign-off for treasury and financial-crime models, alongside the approval above
 """
         )
@@ -266,9 +273,14 @@ recorded in the model's **audit trail**:
 - **Independence.** Validations and model changes cannot be assigned to the model's owner
   or developer.
 - **Lifecycle gates G1–G5.** Tier confirmed → submitted for validation with the required
-  documents → validation signed off → approved by the Management Risk Committee (Tier 1) or
-  the CRO (Tier 2/3), with tracked conditions → implementation verified by a validator. A
-  model cannot be put into use without passing all five.
+  documents → validation signed off → approved by the model owner and then the model sponsor,
+  with tracked conditions → implementation verified by a validator (and at least one KMPI
+  defined). A model cannot be put into use without passing all five.
+- **KMPIs.** Each model has a KMPI library (ID, description, calculation, data source,
+  direction, amber and red thresholds, frequency). Every quarter the owner or developer saves
+  a draft, explains every amber or red value, and submits with an attestation; the validator
+  reviews, sends back, or raises a finding. Thresholds are copied into each return, and
+  changing one needs a reason the validator sees at the next review.
 - **Validation engagement.** The validator sets the scope and declares independence, raises
   information requests that owners answer with evidence, issues a draft with a proposed
   rating, the owner gives a factual-accuracy review (7 days), and the validator signs off.
@@ -323,7 +335,7 @@ with tab_roadmap:
                 "0 Foundations (weeks 1–4) — built",
                 "1 Inventory (weeks 5–8) — built",
                 "2 Validation workflow (weeks 9–16) — built",
-                "3 Issues and monitoring (weeks 17–22)",
+                "3 Issues and monitoring (weeks 17–22) — KMPIs built",
                 "4 Reporting (weeks 23–26)",
                 "5 Pilot (weeks 27–30)",
             ],
@@ -334,9 +346,9 @@ with tab_roadmap:
                 "tier sign-off, model factsheet export",
                 "Lifecycle gates G1–G5, validation engagements with information requests, "
                 "approval decisions with conditions, task inbox",
-                "Remediation plans, extensions and risk acceptance, exceptions register, "
-                "monitoring submissions with breach escalation",
-                "Model landscape map, health heatmap, Management Risk Committee pack, "
+                "KMPI library and quarterly returns with review and breach findings (built); "
+                "remediation plans, extensions and risk acceptance, exceptions register",
+                "Model landscape map, health heatmap, quarterly model risk report, "
                 "audit dossier, annual attestation",
                 "User testing with the pilot models; decision on production",
             ],

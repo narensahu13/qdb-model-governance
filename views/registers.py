@@ -21,7 +21,7 @@ ai_rows = ai_register()
 
 utils.kpi_cards([
     ("Tier sign-offs pending", str(len(pending)),
-     f"{sum(1 for m in pending if m['tier_assessment']['status'] == governance.TIER_OVERRIDE_PENDING)} with the CRO"),
+     f"{sum(1 for m in pending if m['tier_assessment']['status'] == governance.TIER_OVERRIDE_PENDING)} with the sponsor"),
     ("EUC tools", str(sum(1 for t in tools if t["classification"] == governance.CLASS_EUC)), None),
     ("AI systems", str(len(ai_rows)),
      f"{sum(1 for r in ai_rows if r['qcb_approval_required'])} need QCB approval"),
@@ -34,7 +34,7 @@ tab_tier, tab_euc, tab_ai = st.tabs(["Tier sign-off queue", "EUC and identificat
 with tab_tier:
     st.caption(
         "Gate G1: a tier is proposed by the owner (or at registration), confirmed by the MRM "
-        "function, and — if overridden — approved by the CRO. Act on each model's Overview tab."
+        "function, and — if overridden — approved by the model sponsor. Act on each model's Overview tab."
     )
     if not pending:
         st.success("No tier assessments awaiting sign-off.")

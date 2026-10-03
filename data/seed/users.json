@@ -51,8 +51,23 @@
   },
   {
     "name": "Model Sponsor 1",
+    "title": "Chief Risk Officer",
+    "role": "SPONSOR"
+  },
+  {
+    "name": "Model Sponsor 2",
+    "title": "Chief Financial Officer",
+    "role": "SPONSOR"
+  },
+  {
+    "name": "Model Sponsor 3",
     "title": "Head of SME & Corporate Lending",
-    "role": "VIEWER"
+    "role": "SPONSOR"
+  },
+  {
+    "name": "Model Sponsor 4",
+    "title": "Chief Compliance Officer",
+    "role": "SPONSOR"
   },
   {
     "name": "Model User 1",
@@ -78,10 +93,5 @@
     "name": "MRM Administrator 1",
     "title": "MRM Administrator",
     "role": "ADMIN"
-  },
-  {
-    "name": "CRO",
-    "title": "Chief Risk Officer",
-    "role": "CRO"
   }
 ]

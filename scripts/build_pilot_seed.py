@@ -3,7 +3,7 @@
 It builds QDB's pilot inventory (the IFRS 9 suite, CreditLens rating models,
 pricing, the scoring models in development and placeholder models for other
 risk types) with a consistent history of validations, changes, findings,
-evidence, monitoring and audit events.
+evidence, KMPIs with quarterly returns and audit events.
 
 Model NAMES and their relationships reflect QDB's real landscape; every other
 attribute (people, dates, exposures, metrics, findings) is MOCK data to be
@@ -16,7 +16,6 @@ Run from the project root:  python scripts/build_pilot_seed.py
 
 from __future__ import annotations
 
-import csv
 import json
 import random
 import sys
@@ -42,13 +41,16 @@ USERS = [
     {"name": "Model Developer 2", "title": "Risk Analytics", "role": "LOD1"},
     {"name": "Model Developer 3", "title": "Credit Modelling", "role": "LOD1"},
     {"name": "Model Developer 4", "title": "Data Science", "role": "LOD1"},
-    {"name": "Model Sponsor 1", "title": "Head of SME & Corporate Lending", "role": "VIEWER"},
+    # Sponsors are senior executives; a CRO or CFO approves as the sponsor of their models.
+    {"name": "Model Sponsor 1", "title": "Chief Risk Officer", "role": "SPONSOR"},
+    {"name": "Model Sponsor 2", "title": "Chief Financial Officer", "role": "SPONSOR"},
+    {"name": "Model Sponsor 3", "title": "Head of SME & Corporate Lending", "role": "SPONSOR"},
+    {"name": "Model Sponsor 4", "title": "Chief Compliance Officer", "role": "SPONSOR"},
     {"name": "Model User 1", "title": "Credit Underwriting", "role": "VIEWER"},
     {"name": "Model Validator 1", "title": "QDB validator", "role": "LOD2"},
     {"name": "Model Validator 2", "title": "External validation consultant", "role": "LOD2"},
     {"name": "Internal Auditor 1", "title": "Internal Audit", "role": "LOD3"},
     {"name": "MRM Administrator 1", "title": "MRM Administrator", "role": "ADMIN"},
-    {"name": "CRO", "title": "Chief Risk Officer", "role": "CRO"},
 ]
 TITLE = {u["name"]: u["title"] for u in USERS}
 ROLE = {u["name"]: u["role"] for u in USERS}
@@ -127,7 +129,6 @@ def model(
         "documentation": {d: (d in docs_done) for d in checklist},
         "change_log": change_log,
         "audit_reviews": audit_reviews or [],
-        "monitoring_metrics": monitoring_metrics,
         "data_sources": data_sources,
         "implementation_platform": platform,
         "usage_frequency": usage,
@@ -839,7 +840,15 @@ REQ_BY_ID = {r["request_id"]: r for r in REQUESTS}
 # ---------------------------------------------------------------- approvals and implementation (mock)
 from datetime import date as _date, timedelta as _td  # noqa: E402
 
-APPROVAL_BODY = {1: "Management Risk Committee", 2: "CRO", 3: "CRO (may delegate)"}
+# Sponsor of each model (who approves it after its owner).
+SPONSOR_BY_MODEL = {
+    **{f"QDB-{i:03d}": "Model Sponsor 1" for i in (1, 2, 3, 4, 5, 7, 8, 16)},   # CRO
+    **{f"QDB-{i:03d}": "Model Sponsor 2" for i in (6, 14, 15)},                 # CFO
+    **{f"QDB-{i:03d}": "Model Sponsor 3" for i in (9, 10, 11, 12, 13)},         # business
+    "QDB-017": "Model Sponsor 4",                                               # compliance
+}
+for m in MODELS:
+    m["sponsor"] = label(SPONSOR_BY_MODEL[m["model_id"]])
 _apr = 0
 for m in sorted(MODELS, key=lambda x: x["approval_date"] or "9999"):
     m["approvals"] = []
@@ -852,19 +861,26 @@ for m in sorted(MODELS, key=lambda x: x["approval_date"] or "9999"):
         or m["model_id"] == "QDB-005"
     conditions = []
     if m["model_id"] == "QDB-012":
-        conditions = [{"cond_id": "C-1", "condition": "Monitoring plan with thresholds approved before go-live",
-                       "owner": label("Model Owner 1"), "due": "2026-10-31", "status": "Open",
+        conditions = [{"cond_id": "C-1", "condition": "KMPIs and thresholds agreed with the validator before go-live",
+                       "owner": label("Model Owner 1"), "due": "2026-10-31", "status": "Open", "set_by": "Model sponsor",
                        "note": None, "met_on": None, "verified_by": None, "verified_on": None}]
     elif with_cond:
         conditions = [{"cond_id": "C-1", "condition": "Remediate the validation findings by their due dates",
-                       "owner": m["owner"], "due": None, "status": "Open", "note": None,
+                       "owner": m["owner"], "due": None, "status": "Open", "set_by": "Model owner", "note": None,
                        "met_on": None, "verified_by": None, "verified_on": None}]
+    decision = "Approved with conditions" if conditions else "Approved"
     m["approvals"].append({
-        "approval_id": f"APR-{_apr:03d}", "date": m["approval_date"], "body": APPROVAL_BODY[tier],
-        "decision": "Approved with conditions" if conditions else "Approved",
+        "approval_id": f"APR-{_apr:03d}", "date": m["approval_date"], "body": "Model owner and model sponsor",
+        "decision": decision,
         "conditions": conditions, "version": "1.0" if m["model_id"] == "QDB-005" else m["version"],
-        "recorded_by": "MRM Administrator 1" if tier == 1 else "CRO",
-        "minute_ref": f"MgmtRC {m['approval_date'][:7]}" if tier == 1 else None,
+        "signatures": [
+            {"as": "Model owner", "by": m["owner"], "on": m["approval_date"],
+             "decision": decision if conditions and conditions[0]["set_by"] == "Model owner" else "Approved",
+             "comment": None},
+            {"as": "Model sponsor", "by": m["sponsor"], "on": m["approval_date"], "decision": decision,
+             "comment": None},
+        ],
+        "recorded_by": m["sponsor"],
         "comment": None,
     })
     if m["status"] != "Approved — Awaiting Implementation":
@@ -918,45 +934,311 @@ evidence("QDB-001", "validation_request", val_pd["request_id"], "pd_validation_r
          "Annual validation report 2025", PRIYA, "2025-10-15T16:00:00",
          "IFRS 9 PD model — annual validation report 2025\nRating: Fit with Conditions.")
 
-# ---------------------------------------------------------------- monitoring
-QUARTERS = ["2024-Q4", "2025-Q1", "2025-Q2", "2025-Q3", "2025-Q4", "2026-Q1", "2026-Q2", "2026-Q3"]
-SERIES = [
-    ("QDB-001", "PD Backtest Ratio", 1.02, 1.12, 0.02, 1.20, 1.40, False),
-    ("QDB-001", "PSI", 0.04, 0.08, 0.008, 0.10, 0.25, False),
-    ("QDB-003", "CCF Backtest Ratio", 0.92, 0.96, 0.02, 1.10, 1.25, False),
-    ("QDB-004", "Stage 2 Ratio (%)", 8.5, 11.0, 0.4, 14.0, 18.0, False),
-    ("QDB-004", "Staging Override Rate (%)", 3.5, 4.5, 0.4, 8.0, 12.0, False),
-    ("QDB-005", "Scenario Forecast Error (%)", 6.0, 11.5, 0.8, 10.0, 15.0, False),
-    ("QDB-006", "Unexplained ECL Movement (%)", 2.0, 4.0, 0.5, 5.0, 10.0, False),
-    ("QDB-007", "Gini", 0.56, 0.53, 0.01, 0.50, 0.45, True),
-    ("QDB-007", "Override Rate (%)", 18.0, 24.0, 1.0, 15.0, 25.0, False),
-    ("QDB-008", "Gini", 0.57, 0.48, 0.01, 0.50, 0.45, True),
-    ("QDB-008", "PSI", 0.05, 0.12, 0.008, 0.10, 0.25, False),
-    ("QDB-009", "Realised vs Priced Margin Variance (%)", 4.0, 6.0, 0.7, 8.0, 12.0, False),
-    ("QDB-014", "LCR Forecast Error (%)", 2.5, 4.5, 0.6, 5.0, 8.0, False),
-    ("QDB-015", "NII Forecast Error (%)", 3.0, 4.0, 0.6, 6.0, 10.0, False),
-    ("QDB-017", "High-Risk Customer Share (%)", 9.0, 16.0, 0.6, 12.0, 15.0, False),
+MODEL_BY_ID = {m["model_id"]: m for m in MODELS}
+# ---------------------------------------------------------------- KMPI library (mock thresholds)
+# (model, name, category, unit, direction, amber, red, frequency, description, definition, data source,
+#  series start, series end, note used when the value is amber or red)
+H, L, R = "Higher is better", "Lower is better", "Within range"
+LIBRARY = [
+    # QDB-001 IFRS 9 PD
+    ("QDB-001", "Gini — 12-month PD rank ordering", "Discrimination", "ratio", H, 0.55, 0.45, "Quarterly",
+     "How well the PD model ranks obligors that go on to default above those that do not.",
+     "Gini = 2 × AUC − 1, using each obligor's 12-month PD at the start of the window and defaults observed over the following 12 months (performing SME and corporate obligors).",
+     "Rating and PD history (CreditLens extract); default register", 0.66, 0.62, None),
+    ("QDB-001", "Default-rate back-test (observed ÷ predicted)", "Calibration / back-testing", "ratio", R, [0.80, 1.20], [0.65, 1.40], "Quarterly",
+     "Whether predicted PDs match the default rate actually observed.",
+     "Observed 12-month default rate of the cohort performing 12 months before period end ÷ the cohort's exposure-weighted average predicted 12-month PD.",
+     "Default register; PD history", 1.02, 1.15, None),
+    ("QDB-001", "Rating grades failing the binomial test", "Calibration / back-testing", "count", L, 1, 3, "Quarterly",
+     "Grade-level calibration: grades where defaults are significantly higher than the grade PD implies.",
+     "Number of rating grades whose observed default count exceeds the 99% one-sided binomial bound implied by the grade PD.",
+     "Default register; PD master scale", 0, 1, "One grade (B3) breached; driven by two large contracting-sector defaults — under review with Credit."),
+    ("QDB-001", "Rating distribution stability (PSI)", "Stability", "ratio", L, 0.10, 0.25, "Quarterly",
+     "Whether today's portfolio still looks like the population the model was built on.",
+     "PSI = Σ (actual% − expected%) × ln(actual% ÷ expected%) over rating grades, current portfolio against the development sample.",
+     "Rating history (CreditLens extract)", 0.04, 0.08, None),
+    ("QDB-001", "Exposure on fallback PD (%)", "Data quality", "%", L, 2.0, 5.0, "Quarterly",
+     "Exposure that gets no model PD because the obligor has no valid current rating.",
+     "Exposure of obligors without a valid current rating, given the fallback PD ÷ total exposure in scope.",
+     "ECL input file; CreditLens rating dates", 1.2, 1.6, None),
+    # QDB-002 IFRS 9 LGD (in development — KMPIs planned)
+    ("QDB-002", "LGD back-test (realised ÷ predicted)", "Calibration / back-testing", "ratio", R, [0.85, 1.15], [0.70, 1.30], "Quarterly",
+     "Whether predicted losses match the losses realised on closed workouts.",
+     "Realised LGD on workouts closed in the last 12 months ÷ LGD predicted at the date of default.",
+     "Workout and recovery records; collateral register", None, None, None),
+    ("QDB-002", "Collateral valuations older than 12 months (%)", "Data quality", "%", L, 10.0, 20.0, "Quarterly",
+     "Stale collateral values overstate recoveries.",
+     "Collateral value with a valuation date more than 12 months before period end ÷ total collateral value used in LGD.",
+     "Collateral register", None, None, None),
+    # QDB-003 EAD / CCF
+    ("QDB-003", "CCF back-test (realised ÷ predicted EAD)", "Calibration / back-testing", "ratio", R, [0.90, 1.10], [0.80, 1.25], "Quarterly",
+     "Whether undrawn commitments are drawn down at default as the model predicts.",
+     "Realised exposure at default ÷ EAD predicted 12 months before default, facilities that defaulted in the last 12 months.",
+     "Facility limits and balances history; default register", 0.93, 0.96, None),
+    ("QDB-003", "Defaults drawn above the approved limit (%)", "Data quality", "%", L, 5.0, 10.0, "Quarterly",
+     "Drawings above limit at default point to a CCF floor that is too low or to limit-control gaps.",
+     "Defaulted facilities whose drawn balance at default exceeded the approved limit ÷ defaulted facilities in the last 12 months.",
+     "Facility limits and balances history", 2.0, 3.0, None),
+    # QDB-004 Staging (SICR)
+    ("QDB-004", "Defaults not in Stage 2 twelve months before (%)", "Calibration / back-testing", "%", L, 30.0, 50.0, "Quarterly",
+     "Tests whether the SICR criteria catch deterioration early — a default should normally pass through Stage 2 first.",
+     "Obligors that defaulted in the last 12 months and were in Stage 1 twelve months before default ÷ all defaults in the last 12 months.",
+     "Staging history; default register", 22.0, 27.0, None),
+    ("QDB-004", "Stage 2 share of performing exposure (%)", "Stability", "%", R, [6.0, 14.0], [4.0, 18.0], "Quarterly",
+     "Whether the Stage 2 population is moving outside the range expected for QDB's portfolio.",
+     "Stage 2 exposure ÷ (Stage 1 + Stage 2) exposure at period end.",
+     "ECL engine output", 8.5, 11.0, None),
+    ("QDB-004", "Stage 2 triggered only by the 30-day backstop (%)", "Calibration / back-testing", "%", L, 20.0, 35.0, "Quarterly",
+     "A high share means the PD-based criteria are reacting late and the backstop is doing the work.",
+     "Stage 2 exposure where the only SICR trigger met is 30+ days past due ÷ total Stage 2 exposure.",
+     "Staging trigger flags (ECL engine)", 12.0, 16.0, None),
+    ("QDB-004", "Manual staging overrides (%)", "Overrides and use", "%", L, 8.0, 12.0, "Quarterly",
+     "Reliance on judgement instead of the staging rules.",
+     "Exposure whose stage was changed manually from the rule-based stage ÷ total exposure in scope.",
+     "Staging override log", 3.5, 4.5, None),
+    # QDB-005 Scenario weights
+    ("QDB-005", "Base-case GDP forecast error (pp)", "Calibration / back-testing", "pp", L, 1.5, 3.0, "Quarterly",
+     "How far the base scenario was from what actually happened.",
+     "|Base-scenario forecast of Qatar real non-hydrocarbon GDP growth − published outturn (PSA)|, percentage points, for the quarter four quarters back.",
+     "Scenario set archive; PSA national accounts", 0.6, 1.9, "Base case missed the 2025 construction slowdown; scenario anchors to be refreshed at the Q4 update."),
+    ("QDB-005", "Days since scenarios were last refreshed", "Data quality", "days", L, 100, 190, "Quarterly",
+     "Scenarios should be refreshed every quarter so the ECL reflects current conditions.",
+     "Calendar days between period end and the approval date of the scenario set used in that period's ECL.",
+     "Scenario set approvals", 60, 85, None),
+    ("QDB-005", "Weighted-to-base ECL uplift (%)", "Business outcome", "%", R, [2.0, 15.0], [0.0, 25.0], "Quarterly",
+     "Checks that the weights produce a sensible non-linearity — neither none nor an extreme one.",
+     "(Probability-weighted ECL − base-scenario ECL) ÷ base-scenario ECL.",
+     "ECL engine scenario runs", 6.0, 8.0, None),
+    # QDB-006 ECL engine
+    ("QDB-006", "Unexplained ECL movement (%)", "Business outcome", "%", L, 5.0, 10.0, "Quarterly",
+     "The part of the quarter's ECL change that the ECL walk cannot explain.",
+     "ECL movement not attributed to a driver (new business, repayments, stage transfers, risk parameters, macro, overlays) ÷ opening ECL.",
+     "ECL walk", 2.0, 4.0, None),
+    ("QDB-006", "Exposure reconciliation break to the ledger (%)", "Data quality", "%", L, 0.5, 1.0, "Quarterly",
+     "Completeness of the engine's input against the books.",
+     "|Exposure in the ECL engine − general-ledger exposure| ÷ general-ledger exposure, in-scope portfolios at period end.",
+     "ECL engine input; general ledger", 0.10, 0.30, None),
+    ("QDB-006", "Post-model adjustments (% of ECL)", "Overrides and use", "%", L, 10.0, 20.0, "Quarterly",
+     "Growing overlays signal the models no longer capture the risk.",
+     "Management overlays and post-model adjustments ÷ total reported ECL.",
+     "ECL overlay register", 7.0, 12.0, "Overlay for the contracting sector (approved by the CFO) pending the PD redevelopment."),
+    # QDB-007 CreditLens — Manufacturing
+    ("QDB-007", "Gini — rating rank ordering", "Discrimination", "ratio", H, 0.50, 0.45, "Quarterly",
+     "How well the scorecard ranks manufacturing obligors by default risk.",
+     "Gini = 2 × AUC − 1 of the model grade against defaults over the following 12 months.",
+     "CreditLens rating history; default register", 0.56, 0.53, None),
+    ("QDB-007", "Rating overrides (%)", "Overrides and use", "%", L, 15.0, 25.0, "Quarterly",
+     "Frequent overrides mean users do not trust the model grade.",
+     "Obligors whose approved grade differs from the model grade by one notch or more ÷ obligors rated in the period.",
+     "CreditLens override log", 18.0, 24.0, "Override rate above policy — FND-004 open; override reasons being analysed with Credit."),
+    ("QDB-007", "Ratings older than 12 months (%)", "Data quality", "%", L, 5.0, 10.0, "Quarterly",
+     "Stale ratings mean decisions and ECL use out-of-date risk.",
+     "Obligors in scope whose last approved rating is more than 12 months old at period end ÷ obligors in scope.",
+     "CreditLens rating dates", 3.0, 4.0, None),
+    # QDB-008 CreditLens — Services
+    ("QDB-008", "Gini — rating rank ordering", "Discrimination", "ratio", H, 0.50, 0.45, "Quarterly",
+     "How well the scorecard ranks services obligors by default risk.",
+     "Gini = 2 × AUC − 1 of the model grade against defaults over the following 12 months.",
+     "CreditLens rating history; default register", 0.57, 0.48, "Decline concentrated in hospitality obligors onboarded since 2025; segment analysis under way."),
+    ("QDB-008", "Rating distribution stability (PSI)", "Stability", "ratio", L, 0.10, 0.25, "Quarterly",
+     "Whether today's services portfolio still looks like the development population.",
+     "PSI over rating grades, current portfolio against the development sample.",
+     "CreditLens rating history", 0.05, 0.12, "Shift towards hospitality and education obligors after the 2025 programme launch."),
+    ("QDB-008", "Rating overrides (%)", "Overrides and use", "%", L, 15.0, 25.0, "Quarterly",
+     "Frequent overrides mean users do not trust the model grade.",
+     "Obligors whose approved grade differs from the model grade by one notch or more ÷ obligors rated in the period.",
+     "CreditLens override log", 10.0, 12.0, None),
+    # QDB-009 Pricing
+    ("QDB-009", "Realised vs priced margin variance (%)", "Business outcome", "%", L, 8.0, 12.0, "Quarterly",
+     "Whether loans earn the risk-adjusted margin the model priced.",
+     "|Realised net interest margin − margin priced by the model| ÷ priced margin, loans disbursed in the last 12 months.",
+     "Loan pricing records; finance margin report", 4.0, 6.0, None),
+    ("QDB-009", "Deals priced below the model floor (%)", "Overrides and use", "%", L, 10.0, 20.0, "Quarterly",
+     "Pricing exceptions erode the model's purpose.",
+     "Loans disbursed in the period at a rate below the model's floor rate (approved exceptions) ÷ loans disbursed.",
+     "Pricing exception log", 6.0, 9.0, None),
+    # QDB-010 Transaction scoring (AI system, in validation — KMPIs planned)
+    ("QDB-010", "Gini — transaction score", "Discrimination", "ratio", H, 0.40, 0.30, "Quarterly",
+     "How well the bank-statement score ranks applicants by default risk.",
+     "Gini = 2 × AUC − 1 of the score at application against 12-month default.",
+     "Scoring log; default register", None, None, None),
+    ("QDB-010", "Largest input-feature PSI", "Stability", "ratio", L, 0.10, 0.25, "Quarterly",
+     "Drift in any input feature of a machine-learning model.",
+     "Highest PSI across the model's input features, applications in the period against the development sample.",
+     "Scoring log", None, None, None),
+    ("QDB-010", "Approval-rate gap between customer segments (pp)", "Fairness (AI)", "pp", L, 5.0, 10.0, "Quarterly",
+     "Fairness monitoring required for AI systems by the QCB AI Guideline.",
+     "Largest difference in model-recommended approval rate between customer segments (sector, company age band, size band), percentage points.",
+     "Scoring log; customer master", None, None, None),
+    ("QDB-010", "Applications with insufficient statement history (%)", "Data quality", "%", L, 10.0, 20.0, "Quarterly",
+     "Applicants the model cannot score reliably.",
+     "Applications with fewer than 6 months of bank-statement data ÷ applications scored.",
+     "Open-banking feed; scoring log", None, None, None),
+    # QDB-011 / QDB-012 Credit bureau scores (pre-implementation — KMPIs planned)
+    ("QDB-011", "Gini — bureau score (individuals)", "Discrimination", "ratio", H, 0.45, 0.35, "Quarterly",
+     "How well the bureau score ranks individual guarantors and owners by default risk.",
+     "Gini = 2 × AUC − 1 of the score against 12-month default.", "Credit bureau extract; default register", None, None, None),
+    ("QDB-011", "Bureau hit rate (%)", "Data quality", "%", H, 90.0, 80.0, "Quarterly",
+     "Applicants the bureau cannot match get no score.",
+     "Applicants matched to a credit bureau record ÷ applicants scored.", "Credit bureau extract", None, None, None),
+    ("QDB-012", "Gini — bureau score (corporates)", "Discrimination", "ratio", H, 0.45, 0.35, "Quarterly",
+     "How well the corporate bureau score ranks companies by default risk.",
+     "Gini = 2 × AUC − 1 of the score against 12-month default.", "Credit bureau extract; default register", None, None, None),
+    ("QDB-012", "Bureau hit rate (%)", "Data quality", "%", H, 85.0, 75.0, "Quarterly",
+     "Companies the bureau cannot match get no score.",
+     "Companies matched to a credit bureau record ÷ companies scored.", "Credit bureau extract", None, None, None),
+    # QDB-014 Liquidity stress testing
+    ("QDB-014", "Actual ÷ modelled stressed outflow (%)", "Calibration / back-testing", "%", L, 80.0, 100.0, "Quarterly",
+     "Whether real outflows approach what the stress model assumes.",
+     "Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
+     "Treasury cash-flow report; stress test output", 45.0, 60.0, None),
+    ("QDB-014", "LCR forecast error (pp)", "Calibration / back-testing", "pp", L, 5.0, 8.0, "Quarterly",
+     "Accuracy of the liquidity projection.",
+     "|Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
+     "ALCO pack; regulatory LCR return", 2.5, 4.5, None),
+    # QDB-015 IRRBB
+    ("QDB-015", "NII forecast error (%)", "Calibration / back-testing", "%", L, 6.0, 10.0, "Quarterly",
+     "Accuracy of the net interest income projection.",
+     "|Forecast NII − actual NII| ÷ actual NII for the quarter, forecast made one quarter earlier.",
+     "ALM system; finance NII", 3.0, 4.0, None),
+    ("QDB-015", "Deposit run-off back-test (actual ÷ assumed)", "Calibration / back-testing", "ratio", R, [0.80, 1.20], [0.60, 1.40], "Quarterly",
+     "Whether non-maturity deposits behave as the behavioural assumption says.",
+     "Actual run-off of non-maturity deposits in the last 12 months ÷ run-off assumed by the model.",
+     "Deposit balances history", 0.95, 1.10, None),
+    # QDB-016 Operational risk scenarios (annual)
+    ("QDB-016", "Losses exceeding scenario severity (count)", "Calibration / back-testing", "count", L, 0, 1, "Annual",
+     "A loss larger than the severe-but-plausible scenario means the scenario is understated.",
+     "Internal and relevant external loss events in the last 12 months larger than the severe loss of the matching scenario.",
+     "Operational loss database", 0, 0, None),
+    ("QDB-016", "Scenarios reviewed in the last 12 months (%)", "Data quality", "%", H, 90.0, 75.0, "Annual",
+     "Scenarios must be refreshed by the business each year.",
+     "Scenarios with a business review dated in the last 12 months ÷ scenarios in the register.",
+     "Scenario register", 100.0, 92.0, None),
+    # QDB-017 AML customer risk rating
+    ("QDB-017", "High-risk customer share (%)", "Stability", "%", R, [5.0, 12.0], [3.0, 15.0], "Quarterly",
+     "A share outside the expected range points to factor weights out of line with QDB's customers.",
+     "Customers rated High risk ÷ active customers at period end.",
+     "AML platform customer risk scores", 9.0, 16.5, "Driven by the uncalibrated nationality and sector weights — FND-006 open; recalibration in progress."),
+    ("QDB-017", "Suspicious activity reports on low-risk customers (%)", "Discrimination", "%", L, 20.0, 35.0, "Quarterly",
+     "If many reports concern customers rated Low risk, the rating misses risky customers.",
+     "Suspicious activity reports filed in the last 12 months on customers rated Low risk at the time ÷ all reports filed.",
+     "AML case management", 15.0, 18.0, None),
+    ("QDB-017", "Customer risk reviews overdue (%)", "Data quality", "%", L, 5.0, 10.0, "Quarterly",
+     "Overdue periodic reviews leave ratings stale.",
+     "Customers whose periodic risk review is past due ÷ active customers.",
+     "AML platform review dates", 3.0, 6.0, "Backlog from the June system migration; extra reviewers assigned until year end."),
 ]
 
+DEFINED_BY = {"QDB-006": "Model Owner 2", "QDB-014": "Model Owner 3", "QDB-015": "Model Owner 3",
+              "QDB-016": "Model Owner 5", "QDB-017": "Model Owner 4", "QDB-009": "Model Owner 6"}
+KMPIS, SERIES = [], {}
+for i, (mid, name, cat, unit, direction, amber, red, freq, desc, definition, source, start, end, note) in enumerate(LIBRARY, 1):
+    kid = f"KMPI-{i:03d}"
+    m = MODEL_BY_ID[mid]
+    KMPIS.append({
+        "kmpi_id": kid, "model_id": mid, "name": name, "category": cat, "description": desc,
+        "definition": definition, "data_source": source, "unit": unit, "direction": direction,
+        "amber": amber, "red": red, "frequency": freq, "active": True,
+        "defined_by": label(DEFINED_BY.get(mid, "Model Developer 1")),
+        "defined_on": "2024-10-15" if start is not None else "2026-09-01", "changes": [],
+    })
+    if start is not None:
+        SERIES[kid] = (start, end, note)
 
-def rag(value, amber, red, hib):
-    if hib:
-        return "Red" if value < red else "Amber" if value < amber else "Green"
-    return "Red" if value > red else "Amber" if value > amber else "Green"
+KMPI_RETURNS = []
+REPORTED = ["2024-Q4", "2025-Q1", "2025-Q2", "2025-Q3", "2025-Q4", "2026-Q1", "2026-Q2"]
+CURRENT = "2026-Q3"
+ALL_Q = REPORTED + [CURRENT]
+# 2026-Q3 (due 30 Oct 2026): a mix of states so every role has something to do.
+CURRENT_STATE = {"QDB-003": "Submitted", "QDB-008": "Submitted", "QDB-004": "Returned",
+                 "QDB-001": "Draft", "QDB-006": "Draft"}
+LINKED_FINDING = {("QDB-007", "2026-Q2"): "FND-004", ("QDB-017", "2026-Q2"): "FND-006"}
 
 
-MONITORING = []
-for mid, metric, start, end, noise, amber, red, hib in SERIES:
-    for i, q in enumerate(QUARTERS):
-        base = start + (end - start) * i / (len(QUARTERS) - 1)
-        v = round(base + random.uniform(-noise, noise), 4)
-        if i == len(QUARTERS) - 1:
-            v = round(end, 4)
-        MONITORING.append({
-            "model_id": mid, "metric": metric, "period": q, "value": v,
-            "amber_threshold": amber, "red_threshold": red, "higher_is_better": hib,
-            "rag": rag(v, amber, red, hib),
-        })
+def _kmpi_rag(v, k):
+    if v is None:
+        return "Not reported"
+    d, a, r = k["direction"], k["amber"], k["red"]
+    if d == H:
+        return "Red" if v < r else "Amber" if v < a else "Green"
+    if d == L:
+        return "Red" if v > r else "Amber" if v > a else "Green"
+    return "Red" if v < r[0] or v > r[1] else "Amber" if v < a[0] or v > a[1] else "Green"
+
+
+def _value(k, i):
+    start, end, _ = SERIES[k["kmpi_id"]]
+    base = start + (end - start) * i / (len(ALL_Q) - 1)
+    if i < len(ALL_Q) - 2:
+        base += random.uniform(-1, 1) * abs(end - start) * 0.08
+    if k["unit"] in ("count", "days"):
+        return int(round(base))
+    return round(base, 2 if k["unit"] == "ratio" else 1)
+
+
+def _end(q):
+    y, n = int(q[:4]), int(q[-1])
+    return {1: f"{y}-04-", 2: f"{y}-07-", 3: f"{y}-10-", 4: f"{y + 1}-01-"}[n]
+
+
+for m in MODELS:
+    ks = [k for k in KMPIS if k["model_id"] == m["model_id"] and k["kmpi_id"] in SERIES]
+    if not ks:
+        continue
+    reviewer = m["validator"] if m["validator"] != "Not yet assigned" else label(HASSAN)
+    preparer = m["developer"] if m["developer"].split(" (")[0] in ROLE else m["owner"]
+    for qi, q in enumerate(ALL_Q):
+        due = [k for k in ks if k["frequency"] == "Quarterly" or (k["frequency"] == "Annual" and q.endswith("Q4"))]
+        if not due:
+            continue
+        state = "Reviewed" if q in REPORTED else CURRENT_STATE.get(m["model_id"])
+        if state is None:
+            continue
+        values = {}
+        for n, k in enumerate(due):
+            v = _value(k, qi)
+            if state == "Draft" and n >= 2:
+                v = None          # draft: only the first two values entered so far
+            rag_ = _kmpi_rag(v, k)
+            note = SERIES[k["kmpi_id"]][2]
+            comment = (note or "Above appetite; driver analysis in the quarterly monitoring pack.") \
+                if rag_ in ("Amber", "Red") else ""
+            values[k["kmpi_id"]] = {"name": k["name"], "value": v, "comment": comment,
+                                    "direction": k["direction"], "amber": k["amber"], "red": k["red"],
+                                    "unit": k["unit"], "rag": rag_}
+        e = _end(q)
+        history = [{"action": "Saved", "by": preparer, "on": f"{e}10", "comment": None}]
+        ret = {"model_id": m["model_id"], "period": q, "status": state, "values": values,
+               "history": history, "entered_by": preparer, "updated_on": f"{e}10"}
+        if state in ("Submitted", "Reviewed", "Returned"):
+            history.append({"action": "Submitted", "by": preparer, "on": f"{e}20", "comment": None})
+            ret.update({"submitted_by": preparer, "submitted_on": f"{e}20",
+                        "attestation": "I confirm these values were calculated as defined in the KMPI library, from the "
+                                       "stated data sources, and that every amber or red value is explained."})
+        if state == "Reviewed":
+            breaches = [v for v in values.values() if v["rag"] in ("Amber", "Red")]
+            fid = LINKED_FINDING.get((m["model_id"], q))
+            comment = (f"Reviewed. Breach tracked in {fid}." if fid else
+                       "Reviewed; amber values explained and accepted for now — re-check next quarter." if breaches
+                       else "Reviewed; values agree to the monitoring pack.")
+            day = f"{e}28" if not e.endswith("01-") else f"{e}28"
+            history.append({"action": "Reviewed", "by": reviewer, "on": day, "comment": comment})
+            ret.update({"reviewed_by": reviewer, "reviewed_on": day, "review_comment": comment})
+            if fid:
+                ret["finding_id"] = fid
+        if state == "Returned":
+            msg = "Stage 2 share does not agree to the Q3 staging MI pack (11.0% here, 11.6% in the pack) — please recheck and resubmit."
+            history.append({"action": "Returned", "by": reviewer, "on": "2026-10-02", "comment": msg})
+            ret["submitted_on"] = "2026-10-01"
+            history[-2]["on"] = "2026-10-01"
+        if state in ("Submitted", "Draft"):
+            for h in history:
+                h["on"] = "2026-10-01" if h["action"] == "Saved" else "2026-10-02"
+            ret["updated_on"] = history[-1]["on"]
+            if state == "Submitted":
+                ret["submitted_on"] = "2026-10-02"
+        KMPI_RETURNS.append(ret)
+
 
 # ---------------------------------------------------------------- audit events (history)
 AUDIT = []
@@ -1001,11 +1283,22 @@ for m in MODELS:
           m["model_id"], m["model_id"], "Tier confirmed (G1)")
 for m in MODELS:
     for ap in m["approvals"]:
-        event(ap["date"] + "T15:00:00", ap["recorded_by"], "record_approval", "approval",
-              ap["approval_id"], m["model_id"], f"{ap['decision']} by {ap['body']} (G4)")
+        for i, sig in enumerate(ap["signatures"]):
+            event(f"{ap['date']}T1{4 + i}:00:00", sig["by"].split(" (")[0], "record_approval", "approval",
+                  ap["approval_id"], m["model_id"], f"{sig['decision']} by the {sig['as'].lower()} (G4)")
     for im in m["implementation"]:
         event(im["verified_on"] + "T11:00:00", HASSAN, "verify_implementation", "implementation",
               m["model_id"], m["model_id"], f"Implementation of v{im['version']} verified (G5)")
+for k in KMPIS:
+    event(k["defined_on"] + "T09:30:00", k["defined_by"].split(" (")[0], "save_kmpi", "kmpi", k["kmpi_id"],
+          k["model_id"], f"KMPI {k['kmpi_id']} added: {k['name']}")
+_KR_ACTION = {"Saved": "save_kmpi_return", "Submitted": "submit_kmpi_return",
+              "Reviewed": "review_kmpi_return", "Returned": "return_kmpi_return"}
+for r in KMPI_RETURNS:
+    for i, h in enumerate(r["history"]):
+        event(f"{h['on']}T1{i}:00:00", h["by"].split(" (")[0], _KR_ACTION[h["action"]], "kmpi_return",
+              f"{r['model_id']}/{r['period']}", r["model_id"],
+              f"KMPI return {r['period']} {h['action'].lower()}" + (f": {h['comment'][:60]}" if h.get("comment") else ""))
 for t in TOOLS:
     event(t["registered_on"], t["registered_by"], "register_tool", "tool", t["tool_id"], "",
           f"{t['classification']} registered: {t['name']}")
@@ -1026,12 +1319,11 @@ def main():
     dump("evidence.json", EVIDENCE)
     dump("tools.json", TOOLS)
     dump("audit_log.json", AUDIT)
-    with open(SEED / "monitoring.csv", "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=list(MONITORING[0].keys()))
-        w.writeheader()
-        w.writerows(MONITORING)
+    dump("kmpis.json", KMPIS)
+    dump("kmpi_returns.json", KMPI_RETURNS)
+    (SEED / "monitoring.csv").unlink(missing_ok=True)
     print(f"{len(MODELS)} models, {len(REQUESTS)} requests, {len(EVIDENCE)} evidence files, "
-          f"{len(MONITORING)} monitoring rows, {len(AUDIT)} audit events written to {SEED}")
+          f"{len(KMPIS)} KMPIs, {len(KMPI_RETURNS)} KMPI returns, {len(AUDIT)} audit events written to {SEED}")
 
 
 if __name__ == "__main__":

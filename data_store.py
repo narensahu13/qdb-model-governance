@@ -16,13 +16,14 @@ from __future__ import annotations
 
 import copy
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import streamlit as st
 
 import auth
 import config
 import governance
+import kmpi as kmpi_rules
 import repository
 
 REQUEST_STATUSES = ["Open", "In Progress", "Closed"]
@@ -617,7 +618,6 @@ def register_model(record: dict, answers: dict) -> str:
             "documentation": _checklist_for(tier),
             "change_log": [],
             "audit_reviews": [],
-            "monitoring_metrics": [],
             "data_sources": _clean_list(record.get("data_sources")),
             "implementation_platform": record.get("implementation_platform") or "",
             "usage_frequency": record.get("usage_frequency") or "",
@@ -737,6 +737,11 @@ def update_model(model_id: str, changes: dict) -> list[str]:
             return []
         if "validator" in changed and m["validator"] != "Not yet assigned":
             _check_independence(m, m["validator"], "VAL")
+        sponsor = governance.person_name(m.get("sponsor"))
+        if sponsor and sponsor in (governance.person_name(m.get("owner")),
+                                   governance.person_name(m.get("developer"))):
+            raise ValueError("The model sponsor must be a different person from the owner and the developer: "
+                             "the two approvals are a four-eyes check.")
         if not m.get("ai_system"):
             for k in ("qcb_ai_high_risk", "ai_functional_category", "ai_provider_role",
                       "ai_autonomy", "qcb_approval_status"):
@@ -803,7 +808,7 @@ def propose_tier(model_id: str, scores: dict, rationale: str) -> None:
 def confirm_tier(model_id: str, override_tier: int | None = None,
                  override_reason: str | None = None) -> str:
     """Gate G1: the MRM function confirms the proposed tier. An override (a tier
-    different from the rule-based one) needs a reason and CRO approval.
+    different from the rule-based one) needs a reason and the model sponsor's approval.
     Returns the resulting assessment status."""
     from tiering import compute_tier
 
@@ -821,10 +826,12 @@ def confirm_tier(model_id: str, override_tier: int | None = None,
         if override_tier and int(override_tier) != computed:
             if not (override_reason or "").strip():
                 raise ValueError("An override needs a written reason.")
+            if not governance.person_name(m.get("sponsor")):
+                raise ValueError("An override is approved by the model sponsor — assign a sponsor first.")
             ta.update({"status": governance.TIER_OVERRIDE_PENDING, "confirmed_by": user["name"],
                        "confirmed_on": date.today().isoformat(),
                        "override_tier": int(override_tier), "override_reason": override_reason.strip()})
-            details = f"Tier override to {override_tier} (rule-based {computed}) sent to the CRO"
+            details = f"Tier override to {override_tier} (rule-based {computed}) sent to the sponsor"
         else:
             _apply_tier(m, ta["scores"], ta["rationale"], None, user["name"])
             details = f"Tier {computed} confirmed (G1)"
@@ -836,23 +843,26 @@ def confirm_tier(model_id: str, override_tier: int | None = None,
 
 
 def decide_tier_override(model_id: str, approve: bool, comment: str = "") -> None:
-    """CRO approves or rejects a tier override. Rejection confirms the rule-based tier."""
+    """The model's sponsor approves or rejects a tier override. Rejection confirms
+    the rule-based tier."""
     auth.require("approve_tier_override")
     user = auth.get_current_user()
     with repository.tx() as conn:
         m = _model_or_fail(conn, model_id)
+        if governance.person_name(m.get("sponsor")) != user["name"]:
+            raise PermissionError(f"Only the sponsor of {model_id} decides on its tier override.")
         ta = m.get("tier_assessment") or {}
         if ta.get("status") != governance.TIER_OVERRIDE_PENDING:
             raise ValueError("There is no tier override awaiting approval.")
         before = copy.deepcopy(m)
         override = ta["override_tier"] if approve else None
         confirmer = ta.get("confirmed_by")
-        ta["cro_decision"] = {"approved": bool(approve), "by": user["name"],
+        ta["sponsor_decision"] = {"approved": bool(approve), "by": user["name"],
                               "on": date.today().isoformat(), "comment": comment.strip()}
         _apply_tier(m, ta["scores"], ta["rationale"], override, confirmer)
         repository.put_model(conn, m)
         log_event(conn, "decide_tier_override", "tier_assessment", model_id, model_id,
-                  f"Tier override {'approved' if approve else 'rejected'} by CRO"
+                  f"Tier override {'approved' if approve else 'rejected'} by the sponsor"
                   + (f": {comment.strip()[:60]}" if comment.strip() else ""),
                   before=before, after=m)
     _refresh()
@@ -1091,12 +1101,13 @@ def sign_off(request_id: str, rating: str, comment: str, tests: list[str] | None
 
 
 def record_approval(model_id: str, decision: str, conditions: list[dict] | None = None,
-                    minute_ref: str = "", comment: str = "") -> str:
-    """Gate G4: record the approval body's decision.
+                    comment: str = "") -> str | None:
+    """Gate G4: the model owner signs first, then the model sponsor.
 
-    Tier 1 — Management Risk Committee decision, recorded by the CRO or the MRM
-    Administrator as committee secretary, with the minute reference.
-    Tier 2/3 — the CRO's own decision."""
+    Each signs Approved, Approved with conditions or Rejected. A rejection by either
+    ends the approval. Conditions from both signatures are combined. When the
+    sponsor signs, the approval is complete and the model waits for implementation
+    verification (G5). Returns the approval ID once complete, else None."""
     auth.require("record_approval")
     user = auth.get_current_user()
     if decision not in governance.APPROVAL_DECISIONS:
@@ -1104,52 +1115,67 @@ def record_approval(model_id: str, decision: str, conditions: list[dict] | None 
     conditions = [c for c in (conditions or []) if str(c.get("condition") or "").strip()]
     if decision == "Approved with conditions" and not conditions:
         raise ValueError("List at least one condition.")
+    if decision == "Rejected" and not comment.strip():
+        raise ValueError("Give the reason for the rejection.")
     with repository.tx() as conn:
         m = _model_or_fail(conn, model_id)
         if m["status"] != governance.STATUS_AWAITING_APPROVAL:
             raise ValueError(f"{model_id} is not awaiting approval.")
-        tier = governance.effective_tier(m)
-        body = governance.approval_body(tier)
-        if tier == 1:
-            if not minute_ref.strip():
-                raise ValueError("Give the Management Risk Committee minute reference.")
-        elif user["role"] != "CRO":
-            raise PermissionError(f"Tier {tier} models are approved by the CRO.")
-        if governance.is_owner_or_developer(m, user["name"]):
-            raise PermissionError("An owner or developer cannot record the approval of their own model.")
+        signer = governance.next_approver(m)
+        expected = governance.approver_name(m, signer)
+        if user["name"] != expected:
+            raise PermissionError(
+                f"{model_id} is waiting for the {signer.lower()} ({expected or 'not assigned'}) to sign.")
+        if user["name"] == governance.person_name(m.get("developer")):
+            raise PermissionError("The model developer cannot approve the model.")
         before = copy.deepcopy(m)
-        existing = [a["approval_id"] for mm in repository.list_models_conn(conn)
-                    for a in mm.get("approvals") or []]
-        approval_id = _next_id(existing, "APR")
         today = date.today().isoformat()
-        conds = [{
-            "cond_id": f"C-{i}", "condition": str(c["condition"]).strip(),
-            "owner": c.get("owner") or m["owner"], "due": c.get("due") or None,
-            "status": governance.CONDITION_OPEN, "note": None, "met_on": None,
-            "verified_by": None, "verified_on": None,
-        } for i, c in enumerate(conditions, start=1)] if decision != "Rejected" else []
-        m.setdefault("approvals", []).append({
-            "approval_id": approval_id, "date": today, "body": body, "decision": decision,
-            "conditions": conds, "version": m["version"], "recorded_by": user["name"],
-            "minute_ref": minute_ref.strip() or None, "comment": comment.strip() or None,
-        })
-        if decision == "Rejected":
-            prior = [a for a in m["approvals"][:-1] if a["decision"] != "Rejected"]
-            m["status"] = "Under Remediation" if prior else "In Development"
+        pending = m.setdefault("pending_approval", {"signatures": [], "conditions": []})
+        pending["signatures"].append({"as": signer, "by": auth.user_option_label(user), "on": today,
+                                      "decision": decision, "comment": comment.strip() or None})
+        if decision != "Rejected":
+            pending["conditions"] += [{"condition": str(c["condition"]).strip(),
+                                       "owner": c.get("owner") or m["owner"], "due": c.get("due") or None,
+                                       "set_by": signer} for c in conditions]
+        complete = decision == "Rejected" or signer == governance.APPROVERS[-1]
+        approval_id = None
+        if complete:
+            existing = [a["approval_id"] for mm in repository.list_models_conn(conn)
+                        for a in mm.get("approvals") or []]
+            approval_id = _next_id(existing, "APR")
+            conds = [{
+                "cond_id": f"C-{i}", "condition": c["condition"], "owner": c["owner"], "due": c["due"],
+                "set_by": c["set_by"], "status": governance.CONDITION_OPEN, "note": None, "met_on": None,
+                "verified_by": None, "verified_on": None,
+            } for i, c in enumerate(pending["conditions"], start=1)] if decision != "Rejected" else []
+            final = "Rejected" if decision == "Rejected" else \
+                "Approved with conditions" if conds else "Approved"
+            m.setdefault("approvals", []).append({
+                "approval_id": approval_id, "date": today, "body": governance.approval_body(),
+                "decision": final, "conditions": conds, "version": m["version"],
+                "signatures": pending["signatures"], "recorded_by": auth.user_option_label(user),
+                "comment": comment.strip() or None,
+            })
+            m.pop("pending_approval", None)
+            if final == "Rejected":
+                prior = [a for a in m["approvals"][:-1] if a["decision"] != "Rejected"]
+                m["status"] = "Under Remediation" if prior else "In Development"
+            else:
+                m["status"] = governance.STATUS_AWAITING_IMPLEMENTATION
+                m["approval_date"] = today
+            details = f"{final} — signed by the {signer.lower()} (G4 complete)"
         else:
-            m["status"] = governance.STATUS_AWAITING_IMPLEMENTATION
-            m["approval_date"] = today
+            details = f"{decision} by the {signer.lower()} — waiting for the model sponsor (G4)"
         repository.put_model(conn, m)
-        log_event(conn, "record_approval", "approval", approval_id, model_id,
-                  f"{decision} by {body} (G4)" + (f" — {minute_ref.strip()}" if minute_ref.strip() else ""),
-                  before=before, after=m)
+        log_event(conn, "record_approval", "approval", approval_id or f"{model_id}/pending", model_id,
+                  details, before=before, after=m)
     _refresh()
     return approval_id
 
 
 def update_condition(model_id: str, approval_id: str, cond_id: str, action: str, note: str = "") -> None:
-    """Conditions of approval: the owner marks one met; a validator or the CRO
-    verifies it, or reopens it with a reason."""
+    """Conditions of approval: the owner marks one met; a validator verifies it,
+    or reopens it with a reason."""
     auth.require("update_condition")
     user = auth.get_current_user()
     with repository.tx() as conn:
@@ -1172,8 +1198,8 @@ def update_condition(model_id: str, approval_id: str, cond_id: str, action: str,
                 raise ValueError("Say how the condition was met.")
             cond.update({"status": governance.CONDITION_MET, "note": note.strip(), "met_on": today})
         elif action in ("verify", "reopen"):
-            if user["role"] not in ("LOD2", "CRO"):
-                raise PermissionError("A validator or the CRO verifies conditions.")
+            if user["role"] != "LOD2":
+                raise PermissionError("A validator verifies conditions.")
             if governance.is_owner_or_developer(m, user["name"]):
                 raise PermissionError("Owners and developers cannot verify their own conditions.")
             if cond["status"] != governance.CONDITION_MET:
@@ -1205,6 +1231,9 @@ def verify_implementation(model_id: str, note: str) -> str:
         _check_independence(m, user["name"], "VAL")
         if not note.strip():
             raise ValueError("Describe what was checked (version, configuration, reconciliation).")
+        if not [k for k in _kmpis_of(conn, model_id) if k.get("active", True)]:
+            raise ValueError("Define at least one KMPI before the model goes into use, "
+                             "so its performance is monitored from the first period.")
         before = copy.deepcopy(m)
         m.setdefault("implementation", []).append({
             "version": m["version"], "verified_by": auth.user_option_label(user),
@@ -1223,11 +1252,199 @@ def verify_implementation(model_id: str, note: str) -> str:
 
 
 
+# ================================================================ Phase 3 — KMPIs
+KMPI_FIELDS = ["name", "category", "description", "definition", "data_source", "unit",
+               "direction", "amber", "red", "frequency", "active"]
+_KMPI_CONTROL_FIELDS = {"direction", "amber", "red", "frequency", "active"}
+
+
+def _require_first_line(m: dict, user: dict, what: str) -> None:
+    if user["role"] == "LOD1" and not governance.is_owner_or_developer(m, user["name"]):
+        raise PermissionError(f"Only the owner or developer of {m['model_id']} can {what}.")
+
+
+def save_kmpi(model_id: str, fields: dict, kmpi_id: str | None = None, reason: str = "") -> str:
+    """Add a KMPI to a model's library, or change one. Changing a threshold,
+    the direction, the frequency, or retiring a KMPI needs a reason; every
+    change is kept on the KMPI so the validator sees it at the next review."""
+    auth.require("define_kmpi")
+    user = auth.get_current_user()
+    fields = {k: v for k, v in fields.items() if k in KMPI_FIELDS}
+    for f in ("name", "description", "definition"):
+        if f in fields:
+            fields[f] = str(fields[f] or "").strip()
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        _require_first_line(m, user, "define its KMPIs")
+        today = date.today().isoformat()
+        if kmpi_id is None:
+            missing = [f for f in ("name", "description", "definition", "direction", "amber", "red")
+                       if fields.get(f) in (None, "")]
+            if missing:
+                raise ValueError(f"Complete: {', '.join(missing)}.")
+            kmpi_id = _next_id(repository.kmpi_ids(conn), "KMPI")
+            k = {"kmpi_id": kmpi_id, "model_id": model_id, "category": "Calibration / back-testing",
+                 "data_source": "", "unit": "ratio", "frequency": "Quarterly", "active": True,
+                 **fields, "defined_by": auth.user_option_label(user), "defined_on": today, "changes": []}
+            before = None
+            details = f"KMPI {kmpi_id} added: {k['name']}"
+        else:
+            k = next((x for x in repository.list_kmpis(conn) if x["kmpi_id"] == kmpi_id), None)
+            if k is None or k["model_id"] != model_id:
+                raise ValueError(f"Unknown KMPI {kmpi_id} for {model_id}.")
+            before = copy.deepcopy(k)
+            changed = {f: v for f, v in fields.items() if v != k.get(f)}
+            if not changed:
+                return kmpi_id
+            if set(changed) & _KMPI_CONTROL_FIELDS and not reason.strip():
+                raise ValueError("Give a reason for changing a threshold, the direction, "
+                                 "the frequency, or retiring a KMPI.")
+            k.update(changed)
+            k.setdefault("changes", []).append({
+                "on": today, "by": auth.user_option_label(user), "reason": reason.strip() or None,
+                "fields": sorted(changed),
+                "before": {f: before.get(f) for f in changed}, "after": changed,
+            })
+            details = f"KMPI {kmpi_id} changed: {', '.join(sorted(changed))}" + \
+                (f" — {reason.strip()[:60]}" if reason.strip() else "")
+        if not k["name"]:
+            raise ValueError("A KMPI needs a name.")
+        if k["direction"] not in kmpi_rules.DIRECTIONS or k["frequency"] not in kmpi_rules.FREQUENCIES:
+            raise ValueError("Choose a direction and a frequency from the lists.")
+        kmpi_rules.check_thresholds(k["direction"], k["amber"], k["red"])
+        repository.put_kmpi(conn, k)
+        log_event(conn, "save_kmpi", "kmpi", kmpi_id, model_id, details, before=before, after=k)
+    _refresh()
+    return kmpi_id
+
+
+def _kmpis_of(conn, model_id: str) -> list[dict]:
+    return [k for k in repository.list_kmpis(conn) if k["model_id"] == model_id]
+
+
+def save_kmpi_return(model_id: str, period: str, entries: dict, submit: bool = False,
+                     attest: bool = False, note: str = "") -> str:
+    """The owner or developer enters the period's KMPI values ({kmpi_id: {value,
+    comment}}) and saves a draft, or submits. Submitting needs a value (or a
+    reason it is missing) for every KMPI due, an explanation for every amber or
+    red value, and the attestation. Thresholds are copied into the return, so
+    a later threshold change does not rewrite history. Returns the new status."""
+    auth.require("enter_kmpi")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        _require_first_line(m, user, "report its KMPIs")
+        ret = repository.get_kmpi_return(conn, model_id, period)
+        status = kmpi_rules.return_status(ret)
+        if status not in kmpi_rules.EDITABLE:
+            raise ValueError(f"The {period} return is {status.lower()} and can no longer be changed.")
+        due = kmpi_rules.due_kmpis(_kmpis_of(conn, model_id), period)
+        if not due:
+            raise ValueError(f"{model_id} has no KMPIs due for {period}.")
+        before = copy.deepcopy(ret)
+        ret = ret or {"model_id": model_id, "period": period, "status": kmpi_rules.DRAFT,
+                      "values": {}, "history": []}
+        for k in due:
+            e = entries.get(k["kmpi_id"])
+            if e is None:
+                continue
+            value = e.get("value")
+            value = None if value is None or (isinstance(value, float) and value != value) else float(value)
+            ret["values"][k["kmpi_id"]] = {
+                "name": k["name"], "value": value, "comment": (e.get("comment") or "").strip(),
+                "direction": k["direction"], "amber": k["amber"], "red": k["red"], "unit": k.get("unit"),
+                "rag": kmpi_rules.rag(value, k["direction"], k["amber"], k["red"]),
+            }
+        today = date.today().isoformat()
+        ret.update({"entered_by": auth.user_option_label(user), "updated_on": today})
+        if submit:
+            problems = kmpi_rules.submission_problems(due, ret["values"])
+            if problems:
+                raise ValueError("Cannot submit yet — " + "; ".join(problems) + ".")
+            if not attest:
+                raise ValueError("Tick the attestation to submit.")
+            ret.update({"status": kmpi_rules.SUBMITTED, "submitted_by": auth.user_option_label(user),
+                        "submitted_on": today, "attestation": kmpi_rules.ATTESTATION,
+                        "note": note.strip() or None})
+            action, details = "submit_kmpi_return", f"KMPI return {period} submitted"
+        else:
+            ret["status"] = kmpi_rules.DRAFT if status != kmpi_rules.RETURNED else kmpi_rules.RETURNED
+            action, details = "save_kmpi_return", f"KMPI return {period} saved as draft"
+        ret["history"].append({"action": "Submitted" if submit else "Saved", "by": auth.user_option_label(user),
+                               "on": today, "comment": note.strip() or None})
+        worst = kmpi_rules.worst(v["rag"] for v in ret["values"].values())
+        repository.put_kmpi_return(conn, ret)
+        log_event(conn, action, "kmpi_return", f"{model_id}/{period}", model_id,
+                  details + (f" — worst {worst}" if worst else ""), before=before, after=ret)
+    _refresh()
+    return ret["status"]
+
+
+def review_kmpi_return(model_id: str, period: str, accept: bool, comment: str = "",
+                       raise_finding: bool = False, severity: str = "Medium") -> str | None:
+    """The validator reviews a submitted return: marks it reviewed, or sends it
+    back with a reason. On review the validator may raise one finding for the
+    amber and red KMPIs; it is opened through the normal finding workflow.
+    Returns the finding ID if one was raised."""
+    auth.require("review_kmpi")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        _check_independence(m, user["name"], "VAL")
+        ret = repository.get_kmpi_return(conn, model_id, period)
+        if kmpi_rules.return_status(ret) != kmpi_rules.SUBMITTED:
+            raise ValueError(f"The {period} return has not been submitted.")
+        if not accept and not comment.strip():
+            raise ValueError("Say what must be corrected before sending the return back.")
+        breaches = {kid: v for kid, v in ret["values"].items() if v["rag"] in (kmpi_rules.AMBER, kmpi_rules.RED)}
+        if raise_finding and (not accept or not breaches):
+            raise ValueError("A finding can be raised when reviewing a return with amber or red KMPIs.")
+        before = copy.deepcopy(ret)
+        today = date.today().isoformat()
+        if accept:
+            ret.update({"status": kmpi_rules.REVIEWED, "reviewed_by": auth.user_option_label(user),
+                        "reviewed_on": today, "review_comment": comment.strip() or None})
+        else:
+            ret["status"] = kmpi_rules.RETURNED
+        ret["history"].append({"action": "Reviewed" if accept else "Returned",
+                               "by": auth.user_option_label(user), "on": today,
+                               "comment": comment.strip() or None})
+        repository.put_kmpi_return(conn, ret)
+        log_event(conn, "review_kmpi_return" if accept else "return_kmpi_return", "kmpi_return",
+                  f"{model_id}/{period}", model_id,
+                  f"KMPI return {period} " + ("reviewed" if accept else f"sent back: {comment.strip()[:60]}"),
+                  before=before, after=ret)
+    _refresh()
+    if not raise_finding:
+        return None
+    lines = [f"{kid} {v['name']}: {v['value'] if v['value'] is not None else 'not reported'} ({v['rag']})"
+             + (f" — owner's explanation: {v['comment']}" if v.get("comment") else "")
+             for kid, v in breaches.items()]
+    fid = create_request(model_id, {
+        "type": "FND", "title": f"KMPI breach {period}: " + ", ".join(v["name"] for v in breaches.values())[:80],
+        "description": "Raised from the KMPI review.\n" + "\n".join(lines),
+        "assigned_to": m["owner"], "severity": severity, "source": "Monitoring",
+        "remediation": comment.strip() or "Investigate the breach and agree corrective action.",
+        "due_date": (date.today() + timedelta(days=90)).isoformat(),
+    })
+    with repository.tx() as conn:
+        ret = repository.get_kmpi_return(conn, model_id, period)
+        before = copy.deepcopy(ret)
+        ret["finding_id"] = fid
+        repository.put_kmpi_return(conn, ret)
+        log_event(conn, "link_finding", "kmpi_return", f"{model_id}/{period}", model_id,
+                  f"Finding {fid} raised from the {period} KMPI review", before=before, after=ret)
+    _refresh()
+    return fid
+
+
+
 # ================================================================ Administration
 PERSON_FIELDS = {
     "owner", "developer", "validator", "assigned_to", "initiated_by", "author", "uploaded_by",
     "proposed_by", "confirmed_by", "by", "declared_by", "issued_by", "answered_by",
-    "recorded_by", "verified_by", "registered_by", "raised_by", "auditor",
+    "recorded_by", "verified_by", "registered_by", "raised_by", "auditor", "sponsor",
+    "entered_by", "submitted_by", "reviewed_by", "defined_by",
 }
 
 
@@ -1354,6 +1571,7 @@ def rename_model_id(old_id: str, new_id: str) -> None:
                 changed = True
             if changed:
                 repository.update_evidence(conn, e)
+        repository.rename_model_in_kmpis(conn, old_id, new_id)
         for t in repository.list_tools_conn(conn):
             if old_id in (t.get("related_models") or []):
                 t["related_models"] = [new_id if x == old_id else x for x in t["related_models"]]

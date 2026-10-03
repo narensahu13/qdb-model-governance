@@ -11,7 +11,7 @@ user = auth.get_current_user()
 utils.header(
     "My Tasks",
     f"What is waiting on {user['name']} ({auth.ROLE_LABELS[user['role']]}) — "
-    "information requests, reviews, sign-offs, approvals and conditions.",
+    "information requests, reviews, sign-offs, approvals, conditions and KMPI returns.",
 )
 
 tasks = tasks_for(user)

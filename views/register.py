@@ -104,7 +104,9 @@ if result["classification"] == governance.CLASS_MODEL:
                              index=auth.default_option_index(owner_opts, own_label), key="rm_owner")
         developer = st.text_input("Developer", value=own_label if user["role"] == "LOD1" else "",
                                   key="rm_dev")
-        sponsor = st.text_input("Business sponsor", key="rm_sponsor")
+        sponsor_opts = [auth.user_option_label(u) for u in auth.users_for_roles("SPONSOR")]
+        sponsor = st.selectbox("Model sponsor *", sponsor_opts, key="rm_sponsor",
+                               help="Senior executive who approves the model after its owner.")
         status = st.selectbox(
             "Lifecycle status *", ["In Development", "In Validation", "In Production"], key="rm_status",
             help="Choose In Production when recording a model that is already in use.",
