@@ -551,6 +551,27 @@ MODELS = [
         exposure=0, placeholder=True,
         change_log=[chg("2024-05-01", "2.0", "Vendor upgrade.", "Model Owner 4", "Material", "Vendor release.")],
     ),
+    model(
+        "QDB-018", "Legacy SME Rating Scorecard (pre-CreditLens)",
+        version="3.2", risk_type="Credit Rating & Scoring", category="Rating",
+        business_line="SME & Corporate Lending", source="In-house",
+        methodology="Expert-weighted scorecard of financial and qualitative factors",
+        description="Obligor rating used before the CreditLens sector models; retired when they went live.",
+        owner="Model Owner 1", developer="Model Developer 3", validator=HASSAN,
+        sponsor="", area="credit",
+        scores={"materiality": "High", "complexity": "Low", "regulatory_impact": "Medium"},
+        tier_rationale="Drove obligor grades for the whole SME book.",
+        status="In Production", approval_date="2019-05-30",
+        regulatory_mapping=CREDIT_REG, upstream=[],
+        docs_done=["Model Development Document", "Methodology Document", "Validation Report"],
+        monitoring_metrics=[],
+        data_sources=["Financial statements", "Relationship manager questionnaire"], platform="Excel",
+        usage="Per credit application", users=["Credit Underwriting"],
+        assumptions=["Expert weights reflect default drivers"], limitations=["Not statistically calibrated"],
+        exposure=0,
+        change_log=[chg("2019-03-01", "3.2", "Last recalibration of weights.", "Model Developer 3", "Material",
+                        "Annual review.")],
+    ),
 ]
 
 # ---------------------------------------------------------------- uses (mock)
@@ -842,7 +863,7 @@ from datetime import date as _date, timedelta as _td  # noqa: E402
 
 # Sponsor of each model (who approves it after its owner).
 SPONSOR_BY_MODEL = {
-    **{f"QDB-{i:03d}": "Model Sponsor 1" for i in (1, 2, 3, 4, 5, 7, 8, 16)},   # CRO
+    **{f"QDB-{i:03d}": "Model Sponsor 1" for i in (1, 2, 3, 4, 5, 7, 8, 16, 18)},   # CRO
     **{f"QDB-{i:03d}": "Model Sponsor 2" for i in (6, 14, 15)},                 # CFO
     **{f"QDB-{i:03d}": "Model Sponsor 3" for i in (9, 10, 11, 12, 13)},         # business
     "QDB-017": "Model Sponsor 4",                                               # compliance
@@ -1129,115 +1150,156 @@ LIBRARY = [
      "AML platform review dates", 3.0, 6.0, "Backlog from the June system migration; extra reviewers assigned until year end."),
 ]
 
+import kmpi as _k  # noqa: E402
+
+SEED_TODAY = _date(2026, 10, 4)          # the date the sample data is written for
 DEFINED_BY = {"QDB-006": "Model Owner 2", "QDB-014": "Model Owner 3", "QDB-015": "Model Owner 3",
               "QDB-016": "Model Owner 5", "QDB-017": "Model Owner 4", "QDB-009": "Model Owner 6"}
+# How often each model reports its KMPIs (default quarterly).
+MODEL_FREQUENCY = {"QDB-014": "Monthly", "QDB-009": "Semi-annual", "QDB-016": "Annual"}
+# A KMPI can be reported less often than its model.
+KMPI_FREQUENCY = {"Rating grades failing the binomial test": "Annual"}
+for m in MODELS:
+    m["kmpi_frequency"] = MODEL_FREQUENCY.get(m["model_id"], "Quarterly")
+
+
+def _fmt(v, unit):
+    if v is None:
+        return ""
+    if unit in ("count", "days"):
+        return f"{int(round(v))}" + (" days" if unit == "days" else "")
+    if unit == "ratio":
+        return f"{v:.2f}"
+    return f"{v:.1f}" + ("%" if unit == "%" else " pp")
+
+
+def _criterion(direction, amber, unit):
+    def n(x):
+        return _fmt(x, unit)
+    if direction == H:
+        return f"Pass if ≥ {n(amber)}, otherwise Fail."
+    if direction == L:
+        return f"Pass if ≤ {n(amber)}, otherwise Fail."
+    return f"Pass if between {n(amber[0])} and {n(amber[1])}, otherwise Fail."
+
+
+def _passes(v, direction, amber):
+    if direction == H:
+        return v >= amber
+    if direction == L:
+        return v <= amber
+    return amber[0] <= v <= amber[1]
+
+
 KMPIS, SERIES = [], {}
 for i, (mid, name, cat, unit, direction, amber, red, freq, desc, definition, source, start, end, note) in enumerate(LIBRARY, 1):
     kid = f"KMPI-{i:03d}"
-    m = MODEL_BY_ID[mid]
     KMPIS.append({
-        "kmpi_id": kid, "model_id": mid, "name": name, "category": cat, "description": desc,
-        "definition": definition, "data_source": source, "unit": unit, "direction": direction,
-        "amber": amber, "red": red, "frequency": freq, "active": True,
+        "kmpi_id": kid, "model_id": mid, "name": name,
+        "description": f"{_criterion(direction, amber, unit)} {definition}",
+        "frequency": KMPI_FREQUENCY.get(name, "As model"), "active": True,
         "defined_by": label(DEFINED_BY.get(mid, "Model Developer 1")),
-        "defined_on": "2024-10-15" if start is not None else "2026-09-01", "changes": [],
+        "defined_on": "2024-10-15" if start is not None else "2026-09-01",
     })
     if start is not None:
-        SERIES[kid] = (start, end, note)
+        SERIES[kid] = (start, end, note, unit, direction, amber)
 
 KMPI_RETURNS = []
-REPORTED = ["2024-Q4", "2025-Q1", "2025-Q2", "2025-Q3", "2025-Q4", "2026-Q1", "2026-Q2"]
-CURRENT = "2026-Q3"
-ALL_Q = REPORTED + [CURRENT]
-# 2026-Q3 (due 30 Oct 2026): a mix of states so every role has something to do.
+# Current periods (as of SEED_TODAY): a mix of states so every role has something to do.
 CURRENT_STATE = {"QDB-003": "Submitted", "QDB-008": "Submitted", "QDB-004": "Returned",
-                 "QDB-001": "Draft", "QDB-006": "Draft"}
+                 "QDB-001": "Draft", "QDB-006": "Draft", "QDB-014": "Submitted"}
 LINKED_FINDING = {("QDB-007", "2026-Q2"): "FND-004", ("QDB-017", "2026-Q2"): "FND-006"}
-
-
-def _kmpi_rag(v, k):
-    if v is None:
-        return "Not reported"
-    d, a, r = k["direction"], k["amber"], k["red"]
-    if d == H:
-        return "Red" if v < r else "Amber" if v < a else "Green"
-    if d == L:
-        return "Red" if v > r else "Amber" if v > a else "Green"
-    return "Red" if v < r[0] or v > r[1] else "Amber" if v < a[0] or v > a[1] else "Green"
-
-
-def _value(k, i):
-    start, end, _ = SERIES[k["kmpi_id"]]
-    base = start + (end - start) * i / (len(ALL_Q) - 1)
-    if i < len(ALL_Q) - 2:
-        base += random.uniform(-1, 1) * abs(end - start) * 0.08
-    if k["unit"] in ("count", "days"):
-        return int(round(base))
-    return round(base, 2 if k["unit"] == "ratio" else 1)
-
-
-def _end(q):
-    y, n = int(q[:4]), int(q[-1])
-    return {1: f"{y}-04-", 2: f"{y}-07-", 3: f"{y}-10-", 4: f"{y + 1}-01-"}[n]
-
+GENERIC_FAIL = "Outside tolerance; driver analysis in the monitoring pack, actions agreed with the validator."
 
 for m in MODELS:
     ks = [k for k in KMPIS if k["model_id"] == m["model_id"] and k["kmpi_id"] in SERIES]
     if not ks:
         continue
+    freq = m["kmpi_frequency"]
+    cutoff = max("2024-01-01", m["approval_date"] or "2024-01-01")
+    periods = [p for p in reversed(_k.recent_periods(freq, 12 if freq == "Monthly" else 8, SEED_TODAY))
+               if _k.period_end(p).isoformat() >= cutoff]
+    current = periods[-1]
     reviewer = m["validator"] if m["validator"] != "Not yet assigned" else label(HASSAN)
     preparer = m["developer"] if m["developer"].split(" (")[0] in ROLE else m["owner"]
-    for qi, q in enumerate(ALL_Q):
-        due = [k for k in ks if k["frequency"] == "Quarterly" or (k["frequency"] == "Annual" and q.endswith("Q4"))]
+    for qi, p in enumerate(periods):
+        due = _k.due_kmpis(ks, p)
         if not due:
             continue
-        state = "Reviewed" if q in REPORTED else CURRENT_STATE.get(m["model_id"])
+        state = CURRENT_STATE.get(m["model_id"]) if p == current else "Reviewed"
+        if p == current and state is None and _k.due_date(p) < SEED_TODAY:
+            state = "Reviewed"            # e.g. a semi-annual return already due and done
         if state is None:
             continue
         values = {}
         for n, k in enumerate(due):
-            v = _value(k, qi)
-            if state == "Draft" and n >= 2:
-                v = None          # draft: only the first two values entered so far
-            rag_ = _kmpi_rag(v, k)
-            note = SERIES[k["kmpi_id"]][2]
-            comment = (note or "Above appetite; driver analysis in the quarterly monitoring pack.") \
-                if rag_ in ("Amber", "Red") else ""
-            values[k["kmpi_id"]] = {"name": k["name"], "value": v, "comment": comment,
-                                    "direction": k["direction"], "amber": k["amber"], "red": k["red"],
-                                    "unit": k["unit"], "rag": rag_}
-        e = _end(q)
-        history = [{"action": "Saved", "by": preparer, "on": f"{e}10", "comment": None}]
-        ret = {"model_id": m["model_id"], "period": q, "status": state, "values": values,
-               "history": history, "entered_by": preparer, "updated_on": f"{e}10"}
+            start, end, note, unit, direction, amber = SERIES[k["kmpi_id"]]
+            base = start + (end - start) * qi / max(len(periods) - 1, 1)
+            if qi < len(periods) - 2:
+                base += random.uniform(-1, 1) * abs(end - start) * 0.08
+            result = "Pass" if _passes(round(base, 4), direction, amber) else "Fail"
+            value = _fmt(base, unit)
+            if state == "Draft" and m["model_id"] == "QDB-001" and n >= 2:
+                value, result = "", None      # partly filled draft
+            values[k["kmpi_id"]] = {"name": k["name"], "description": k["description"], "value": value,
+                                    "result": result,
+                                    "comment": (note or GENERIC_FAIL) if result == "Fail" else ""}
+        end_d = _k.period_end(p)
+        on = lambda days: (end_d + _td(days=days)).isoformat()  # noqa: E731
+        history = [{"action": "Saved", "by": preparer, "on": on(10), "comment": None}]
+        ret = {"model_id": m["model_id"], "period": p, "status": state, "values": values,
+               "history": history, "entered_by": preparer, "updated_on": on(10)}
         if state in ("Submitted", "Reviewed", "Returned"):
-            history.append({"action": "Submitted", "by": preparer, "on": f"{e}20", "comment": None})
-            ret.update({"submitted_by": preparer, "submitted_on": f"{e}20",
-                        "attestation": "I confirm these values were calculated as defined in the KMPI library, from the "
-                                       "stated data sources, and that every amber or red value is explained."})
+            history.append({"action": "Submitted", "by": preparer, "on": on(20), "comment": None})
+            ret.update({"submitted_by": preparer, "submitted_on": on(20), "attestation": _k.ATTESTATION})
         if state == "Reviewed":
-            breaches = [v for v in values.values() if v["rag"] in ("Amber", "Red")]
-            fid = LINKED_FINDING.get((m["model_id"], q))
-            comment = (f"Reviewed. Breach tracked in {fid}." if fid else
-                       "Reviewed; amber values explained and accepted for now — re-check next quarter." if breaches
-                       else "Reviewed; values agree to the monitoring pack.")
-            day = f"{e}28" if not e.endswith("01-") else f"{e}28"
-            history.append({"action": "Reviewed", "by": reviewer, "on": day, "comment": comment})
-            ret.update({"reviewed_by": reviewer, "reviewed_on": day, "review_comment": comment})
+            fails = [v for v in values.values() if v["result"] == "Fail"]
+            fid = LINKED_FINDING.get((m["model_id"], p))
+            comment = (f"Reviewed. Fail tracked in {fid}." if fid else
+                       "Reviewed; fails explained and accepted for now — re-check next period." if fails
+                       else "Reviewed; results agree to the monitoring pack.")
+            history.append({"action": "Reviewed", "by": reviewer, "on": on(27), "comment": comment})
+            ret.update({"reviewed_by": reviewer, "reviewed_on": on(27), "review_comment": comment})
             if fid:
                 ret["finding_id"] = fid
-        if state == "Returned":
-            msg = "Stage 2 share does not agree to the Q3 staging MI pack (11.0% here, 11.6% in the pack) — please recheck and resubmit."
-            history.append({"action": "Returned", "by": reviewer, "on": "2026-10-02", "comment": msg})
-            ret["submitted_on"] = "2026-10-01"
-            history[-2]["on"] = "2026-10-01"
-        if state in ("Submitted", "Draft"):
+        if p == current and state in ("Draft", "Submitted", "Returned"):
             for h in history:
                 h["on"] = "2026-10-01" if h["action"] == "Saved" else "2026-10-02"
-            ret["updated_on"] = history[-1]["on"]
-            if state == "Submitted":
+            ret["updated_on"] = "2026-10-01"
+            if state != "Draft":
                 ret["submitted_on"] = "2026-10-02"
+        if state == "Returned":
+            msg = ("The Stage 2 share does not agree to the Q3 staging MI pack (11.0% here, 11.6% in the pack) — "
+                   "please recheck and resubmit.")
+            history.append({"action": "Returned", "by": reviewer, "on": "2026-10-03", "comment": msg})
         KMPI_RETURNS.append(ret)
+
+# ---------------------------------------------------------------- annual confirmations (mock)
+LAST_CONFIRMED = {"QDB-001": "2026-02-10", "QDB-003": "2026-02-10", "QDB-004": "2026-02-10",
+                  "QDB-005": "2026-02-10", "QDB-006": "2026-03-05", "QDB-007": "2026-01-20",
+                  "QDB-008": "2026-01-20", "QDB-009": "2025-11-10", "QDB-014": "2025-09-20",
+                  "QDB-015": "2026-03-15", "QDB-016": "2026-04-02"}          # QDB-017: never confirmed
+CONFIRMATION_STATEMENTS = [
+    "The record is accurate: purpose, uses, users, data sources and platform",
+    "The model is used as approved, with no unrecorded changes",
+    "The known limitations and the KMPIs are still appropriate",
+]
+for m in MODELS:
+    m["confirmations"] = []
+    if m["model_id"] in LAST_CONFIRMED:
+        m["confirmations"].append({"on": LAST_CONFIRMED[m["model_id"]], "by": m["owner"],
+                                   "statements": CONFIRMATION_STATEMENTS, "comment": None})
+
+# ---------------------------------------------------------------- decommissioned model (mock)
+_legacy = MODEL_BY_ID["QDB-018"]
+_legacy.update({
+    "status": "Retired", "status_before_retirement": "In Production", "retired_on": "2025-12-31",
+    "decommission": {"status": "Approved", "reason": "Replaced by another model", "replaced_by": "QDB-007",
+                     "last_use": "2025-12-31", "note": "Replaced by the CreditLens sector models (QDB-007, QDB-008).",
+                     "requested_by": label("Model Owner 1"), "requested_on": "2025-11-15",
+                     "decided_by": label("Model Sponsor 1"), "decided_on": "2025-11-30",
+                     "decision_comment": "All SME obligors re-rated in CreditLens."},
+})
 
 
 # ---------------------------------------------------------------- audit events (history)
@@ -1289,6 +1351,16 @@ for m in MODELS:
     for im in m["implementation"]:
         event(im["verified_on"] + "T11:00:00", HASSAN, "verify_implementation", "implementation",
               m["model_id"], m["model_id"], f"Implementation of v{im['version']} verified (G5)")
+for m in MODELS:
+    for c in m.get("confirmations", []):
+        event(c["on"] + "T10:00:00", c["by"].split(" (")[0], "confirm_model", "confirmation", m["model_id"],
+              m["model_id"], "Annual confirmation by the owner")
+    d = m.get("decommission")
+    if d:
+        event(d["requested_on"] + "T10:00:00", d["requested_by"].split(" (")[0], "request_decommission",
+              "decommission", m["model_id"], m["model_id"], f"Decommissioning requested: {d['reason']}")
+        event(d["decided_on"] + "T10:00:00", d["decided_by"].split(" (")[0], "decide_decommission",
+              "decommission", m["model_id"], m["model_id"], "Retired — decommissioning approved by the sponsor")
 for k in KMPIS:
     event(k["defined_on"] + "T09:30:00", k["defined_by"].split(" (")[0], "save_kmpi", "kmpi", k["kmpi_id"],
           k["model_id"], f"KMPI {k['kmpi_id']} added: {k['name']}")

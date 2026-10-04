@@ -34,17 +34,17 @@ open_issues = issues[issues["status"] != "Closed"]
 IN_USE = sorted(governance.IN_USE_STATUSES)
 total = len(df)
 in_use = df["Status"].isin(IN_USE).sum()
-in_scope = df[df["Validation Status"] != "Pre-implementation"]
+in_scope = df[~df["Validation Status"].isin(["Pre-implementation", "Retired"])]
 overdue_val = (in_scope["Validation Status"].isin(["Overdue", "Never Validated"])).sum()
 on_track_share = (len(in_scope) - overdue_val) / len(in_scope) if len(in_scope) else 1.0
 high_open = int((open_issues["severity"] == "High").sum())
 overdue_findings = int((open_issues["status"] == "Overdue").sum())
 
-_period = kmpi_rules.reporting_period()
-_k_rows = kmpi_overview(_period)
+_k_rows = [r for r in kmpi_overview() if r["kmpis_due"]]
 _k_done = sum(r["status"] in kmpi_rules.DONE for r in _k_rows)
 _k_late = sum(r["overdue"] for r in _k_rows)
-_k_red = sum(r["red"] for r in _k_rows)
+_k_fail = sum(r["fail"] for r in _k_rows)
+_conf_late = int((df["Annual Confirmation"] == "Overdue").sum())
 
 
 def _alert(n: int, text: str) -> str | None:
@@ -53,9 +53,10 @@ def _alert(n: int, text: str) -> str | None:
 
 utils.kpi_cards([
     ("Models in inventory", str(total),
-     f"{int(in_use)} in use · {int((df['AI System']).sum())} AI system(s)"),
-    (f"KMPI returns {_period}", f"{_k_done} of {len(_k_rows)}",
-     _alert(_k_late, f"{_k_late} overdue") if _k_late else f"submitted · {_k_red} red KMPI(s)"),
+     f"{int(in_use)} in use · {int((df['Status'] == 'Retired').sum())} retired · "
+     + (_alert(_conf_late, f"{_conf_late} confirmation(s) overdue") if _conf_late else "confirmations up to date")),
+    ("KMPI returns due now", f"{_k_done} of {len(_k_rows)}",
+     _alert(_k_late, f"{_k_late} overdue") if _k_late else f"submitted · {_k_fail} KMPI(s) failed"),
     ("Validations on schedule", f"{on_track_share:.0%}", "of models in use"),
     ("Overdue validations", str(int(overdue_val)), _alert(overdue_val, "requires action")),
     ("Open high findings", str(high_open), _alert(high_open, "requires action")),
@@ -106,8 +107,8 @@ with col_c:
 
 # ---------------------------------------------------------------- attention required
 st.subheader("Attention Required")
-st.caption("Models with overdue or missing validations, high-severity open findings, a red KMPI, "
-           "or a status needing escalation.")
+st.caption("Models with overdue or missing validations, high-severity open findings, a failed KMPI, "
+           "an overdue annual confirmation, or a status needing escalation.")
 
 attention = df[
     df["Validation Status"].isin(["Overdue", "Never Validated"])
@@ -115,8 +116,10 @@ attention = df[
     | df["Status"].isin(["Under Remediation", "Restricted Use", "In Production - Approval Pending"])
     | ~df["Tier Confirmed"]
     | df["Status"].isin([governance.STATUS_AWAITING_APPROVAL, governance.STATUS_AWAITING_IMPLEMENTATION])
-    | (df["Latest KMPI"] == "Red")
+    | (df["KMPI Fails"] > 0)
+    | (df["Annual Confirmation"] == "Overdue")
 ].copy()
+attention = attention[attention["Status"] != "Retired"]
 attention = attention.sort_values(["High Open Issues", "Overdue Issues"], ascending=False)
 
 if attention.empty:
@@ -138,8 +141,10 @@ else:
             reasons.append("awaiting approval (G4)")
         if row["Status"] == governance.STATUS_AWAITING_IMPLEMENTATION:
             reasons.append("awaiting implementation check (G5)")
-        if row["Latest KMPI"] == "Red":
-            reasons.append("red KMPI in the latest return")
+        if row["KMPI Fails"]:
+            reasons.append(f"{row['KMPI Fails']} KMPI(s) failed in the latest return")
+        if row["Annual Confirmation"] == "Overdue":
+            reasons.append("annual confirmation overdue")
 
         left, mid, right = st.columns([3.2, 4.5, 1.1])
         with left:

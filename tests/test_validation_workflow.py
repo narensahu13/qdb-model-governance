@@ -167,12 +167,13 @@ def test_material_change_goes_back_through_approval(act_as):
 
 def test_conditions_met_verified_then_production(act_as):
     act_as("Model Developer 3")
-    data_store.update_condition("QDB-012", "APR-013", "C-1", "met", "Plan approved 30 Sep")
+    apr = repository.get_model("QDB-012")["approvals"][-1]["approval_id"]
+    data_store.update_condition("QDB-012", apr, "C-1", "met", "Plan approved 30 Sep")
     act_as("Model Developer 3")
     with pytest.raises(PermissionError):
-        data_store.update_condition("QDB-012", "APR-013", "C-1", "verify")
+        data_store.update_condition("QDB-012", apr, "C-1", "verify")
     act_as(V1)
-    data_store.update_condition("QDB-012", "APR-013", "C-1", "verify")
+    data_store.update_condition("QDB-012", apr, "C-1", "verify")
     assert data_store.verify_implementation("QDB-012", "Deployed v1.0 checked") == "In Production"
 
 

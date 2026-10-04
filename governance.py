@@ -130,8 +130,10 @@ def derive_validation_dates(tier: int, requests: list[dict]) -> dict:
 
 
 def validation_status(model: dict, today: date | None = None) -> str:
-    """On Track / Due Soon / Overdue / Never Validated / Pre-implementation."""
+    """On Track / Due Soon / Overdue / Never Validated / Pre-implementation / Retired."""
     today = today or date.today()
+    if model.get("status") == "Retired":
+        return "Retired"
     if model.get("last_validation") is None:
         if model.get("status") in PRE_IMPLEMENTATION_STATUSES:
             return "Pre-implementation"
@@ -389,3 +391,52 @@ def engagement_can_sign_off(eng: dict, today: date | None = None) -> str | None:
         return (f"Waiting for the owner's factual-accuracy review (until "
                 f"{(issued + timedelta(days=OWNER_REVIEW_DAYS)).isoformat()}).")
     return "Issue the draft report first."
+
+
+# ================================================================ Phase 3 — annual confirmation and decommissioning
+STATUS_RETIRED = "Retired"
+
+# Annual confirmation: once a year the model owner confirms the record still
+# reflects how the model is used. If something is not true, the owner updates
+# the record (or records a model change, or requests decommissioning) first.
+CONFIRMATION_DAYS = 365
+CONFIRMATION_ITEMS = [
+    "The record is accurate: purpose, uses, users, data sources and platform",
+    "The model is used as approved, with no unrecorded changes",
+    "The known limitations and the KMPIs are still appropriate",
+]
+
+
+def confirmation_due(model: dict) -> str | None:
+    """Next annual confirmation date for a model in use (None if not in use)."""
+    if model.get("status") not in IN_USE_STATUSES:
+        return None
+    confs = model.get("confirmations") or []
+    start = confs[-1]["on"] if confs else (model.get("approval_date") or model.get("registered_on"))
+    if not start:
+        return date.today().isoformat()
+    return (date.fromisoformat(start) + timedelta(days=CONFIRMATION_DAYS)).isoformat()
+
+
+def confirmation_status(model: dict, today: date | None = None) -> str | None:
+    """'Confirmed' / 'Due soon' (60 days) / 'Overdue', or None when not in use."""
+    due = confirmation_due(model)
+    if due is None:
+        return None
+    today = today or date.today()
+    if due < today.isoformat():
+        return "Overdue"
+    if due <= (today + timedelta(days=60)).isoformat():
+        return "Due soon"
+    return "Confirmed"
+
+
+# Decommissioning: the owner requests it, the model's sponsor approves; the model
+# becomes Retired and its record is kept read-only.
+DECOMMISSION_REASONS = [
+    "Replaced by another model",
+    "No longer used",
+    "Business or product discontinued",
+    "Not fit for purpose",
+    "Other",
+]

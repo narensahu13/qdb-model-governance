@@ -98,6 +98,9 @@ PERMISSIONS = {
     "define_kmpi": ["LOD1", "ADMIN"],              # LOD1 only for own models
     "enter_kmpi": ["LOD1"],                        # owner or developer of the model
     "review_kmpi": ["LOD2"],                       # independent review of a submitted return
+    "confirm_model": ["LOD1"],                     # annual confirmation by the model owner
+    "request_decommission": ["LOD1"],              # the model owner asks to retire a model
+    "approve_decommission": ["SPONSOR"],           # the model's sponsor decides
 }
 
 ACTION_LABELS = {
@@ -126,8 +129,11 @@ ACTION_LABELS = {
     "verify_implementation": "Verify implementation (gate G5)",
     "administer": "Administration: people, accountability, model IDs, database",
     "define_kmpi": "Define or change a model's KMPIs",
-    "enter_kmpi": "Enter and submit KMPI values for a period",
+    "enter_kmpi": "Enter or upload KMPI results for a period and submit them",
     "review_kmpi": "Review a submitted KMPI return",
+    "confirm_model": "Give the annual confirmation for a model (its owner)",
+    "request_decommission": "Request decommissioning of a model (its owner)",
+    "approve_decommission": "Approve decommissioning of a model (its sponsor)",
 }
 
 INITIATE_ACTION = {

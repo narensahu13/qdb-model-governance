@@ -51,7 +51,7 @@ def test_identification(answers, expected):
 def test_register_model_creates_proposed_tier_and_mirrors_dependencies(act_as):
     act_as(OWNER)
     mid = data_store.register_model(new_model_record(), MODEL_ANSWERS)
-    assert mid == "QDB-018"
+    assert mid == "QDB-019"
     m = data_loader.get_model(mid)
     assert m["tier"] == 2 and not m["tier_confirmed"]
     assert m["tier_assessment"]["proposed_by"] == OWNER

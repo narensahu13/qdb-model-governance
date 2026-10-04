@@ -10,7 +10,7 @@ utils.header(
 df = models_dataframe()
 
 # ---------------------------------------------------------------- filters
-f1, f2, f3, f4, f5 = st.columns([1.6, 1, 1.3, 1.3, 1.8])
+f1, f2, f3, f4, f5, f6 = st.columns([1.6, 0.8, 1.3, 1.3, 1.8, 0.9], vertical_alignment="bottom")
 with f1:
     risk_types = st.multiselect("Risk Type", sorted(df["Risk Type"].unique()))
 with f2:
@@ -20,12 +20,14 @@ with f3:
 with f4:
     val_statuses = st.multiselect(
         "Validation Status",
-        ["On Track", "Due Soon", "Overdue", "Never Validated", "Pre-implementation"],
+        ["On Track", "Due Soon", "Overdue", "Never Validated", "Pre-implementation", "Retired"],
     )
 with f5:
     search = st.text_input("Search", placeholder="Model name, ID, owner, methodology...")
+with f6:
+    show_retired = st.toggle("Retired", help="Show retired models")
 
-filtered = df.copy()
+filtered = df.copy() if show_retired or "Retired" in statuses else df[df["Status"] != "Retired"].copy()
 if risk_types:
     filtered = filtered[filtered["Risk Type"].isin(risk_types)]
 if tiers:
@@ -49,7 +51,7 @@ st.caption(f"{len(filtered)} of {len(df)} models shown")
 display_cols = [
     "Model ID", "Model Name", "Risk Type", "Tier", "Tier Confirmed", "Status", "Last Rating",
     "Validation Status", "Next Validation Due", "Open Issues",
-    "High Open Issues", "Doc Completeness (%)", "Owner", "Source", "AI System",
+    "High Open Issues", "KMPI Fails", "Annual Confirmation", "Doc Completeness (%)", "Owner", "Source", "AI System",
 ]
 
 # Render Model ID as an in-app link to the Model Detail page (?model=<id> is
@@ -75,6 +77,9 @@ event = st.dataframe(
             "Tier signed off", width="small", help="Gate G1: tier confirmed by the MRM function"),
         "Open Issues": st.column_config.NumberColumn(width="small"),
         "High Open Issues": st.column_config.NumberColumn("High Issues", width="small"),
+        "KMPI Fails": st.column_config.NumberColumn("KMPI fails", width="small",
+                                                    help="KMPIs failed in the latest submitted return"),
+        "Annual Confirmation": st.column_config.TextColumn("Confirmation", width="small"),
         "AI System": st.column_config.CheckboxColumn(
             "AI", width="small", help="AI system under the QCB AI Guideline",
         ),

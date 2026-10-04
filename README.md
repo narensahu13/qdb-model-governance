@@ -18,8 +18,9 @@ Governance set-up (decided 30 September 2026):
 - Validation by one QDB validator or an external consultant — no dedicated validation unit.
 - Approval (decided 3 October 2026): the model owner, then the model sponsor, for every tier. There is
   no separate CRO approval — a CRO, CFO or business head approves as the sponsor of their models.
-- KMPIs: every model has key model performance indicators reported quarterly by its owner or developer
-  and reviewed by the validator.
+- KMPIs (decided 4 October 2026): each KMPI has an ID and a description with its pass/fail criterion;
+  each model reports at its own frequency; results are typed in or uploaded, then reviewed by the validator.
+- Annual confirmation by the owner; decommissioning requested by the owner and approved by the sponsor.
 - Validation rating scale: Fit for Purpose · Fit with Conditions · Restricted Use · Not Fit for Purpose.
 - Benchmarks: Federal Reserve **SR 26-2** (April 2026, replaced SR 11-7), PRA SS1/23, and the
   **QCB Artificial Intelligence Guideline** (2024), which applies to QDB as a QCB-licensed bank.
@@ -55,12 +56,12 @@ fingerprint recorded at upload and re-checked on every download. Point the platf
 
 | Page | Purpose |
 |---|---|
-| My Tasks | Start here: everything waiting on you — information requests, reviews, sign-offs, approvals, conditions, KMPI returns |
+| My Tasks | Start here: everything waiting on you — information requests, reviews, sign-offs, approvals, conditions, KMPI returns, annual confirmations, decommissioning |
 | Dashboard | Model risk at a glance: KPIs, tier and validation status, models needing escalation, validation calendar |
 | Model Inventory | Filterable register of all models, including the AI-system flag; click a row to open the model |
-| Model Detail | Summary (uses, tier sign-off, edit record), Lifecycle & approvals (steps 1–5, owner and sponsor signatures, conditions, versions), Validation & findings (MC / VAL / FND threads), Documents & audit (uploads, checklist, file integrity, audit trail), KMPIs (quarterly entry and review, history, library); one-click PDF factsheet |
+| Model Detail | Summary (uses, tier sign-off, edit record), Lifecycle & approvals (steps 1–5, owner and sponsor signatures, conditions, annual confirmation, decommissioning, versions), Validation & findings (MC / VAL / FND threads), Documents & audit (uploads, checklist, file integrity, audit trail), KMPIs (results by table or Excel upload, review, history, KMPI list); one-click PDF factsheet |
 | Findings Tracker | Bank-wide findings plus other open change and validation requests |
-| KMPI Monitoring | Every model's quarterly KMPI return: status, overdue, amber and red KMPIs, RAG history, library export (CSV) |
+| KMPI Monitoring | Every model's current KMPI return at its own frequency: status, overdue, KMPIs not passed, pass/fail trend, export of all KMPIs (CSV) |
 | Registers | Tier sign-off queue, EUC / identification register, AI register for the QCB filing (CSV export) |
 | Register Model / Tool | Identification questionnaire that routes a candidate to the model inventory, the EUC register or the AI register, then captures the record and proposed tier |
 | How It Works | Quick guide (who does what, the five steps), then the framework: model definition, tiering, lifecycle, governance structure, permissions, roadmap |
@@ -82,7 +83,9 @@ fingerprint recorded at upload and re-checked on every download. Point the platf
 | Lifecycle gates G1–G5 | Tier confirmed → submitted with required documents → validation signed off → approved by the owner, then the sponsor → implementation verified (at least one KMPI defined); a model cannot reach use without all five |
 | Validation engagement | Scope and independence declaration, information requests answered with evidence, draft with proposed rating, owner's factual-accuracy review (7 days), sign-off; validations close only through sign-off |
 | Approvals and conditions | The owner signs, then the sponsor; either can add conditions or reject (with a reason). Conditions are marked met by the owner and verified by a validator |
-| KMPIs | Library per model (KMPI-001 …: description, calculation, data source, direction, amber/red thresholds, frequency). Quarterly return due 30 days after quarter end: the owner or developer saves a draft, explains every amber/red or missing value, submits with an attestation; the validator reviews, sends back, or raises a finding. Thresholds are copied into each return; changing one needs a reason, shown to the validator at the next review |
+| KMPIs | Each model has KMPIs with an ID (KMPI-001 …), a name and a description that states the pass/fail criterion. The owner sets how often the model reports (monthly, quarterly, semi-annual, annual); a KMPI can be reported less often. Each return is due 30 days after period end: the owner or developer enters Value, Result (Pass / Fail / Not available) and Comment — in the table or by uploading the Excel template — explains every fail, and submits; the validator reviews, sends back, or raises a finding. The description is copied into each return |
+| Annual confirmation | Once a year the owner ticks three statements (record accurate, used as approved, limitations and KMPIs still fit); overdue confirmations show on My Tasks, the dashboard and the inventory |
+| Decommissioning | The owner requests it (reason, replacement, last day of use, plan for models it feeds); the sponsor approves; the model becomes Retired and its record read-only |
 
 ## Editing the model data
 
@@ -97,8 +100,8 @@ tab). The seed files below only define the starting data; edit them and run
 | `data/seed/users.json` | Users and roles for the "Acting as" selector, including the model sponsors (replaced by single sign-on in production) |
 | `data/seed/tools.json` | EUC tools, AI tools and "not a model" decisions |
 | `data/seed/evidence.json` + `data/seed/evidence/` | Seed evidence files |
-| `data/seed/kmpis.json` | KMPI library: 44 KMPIs across the pilot models, with thresholds |
-| `data/seed/kmpi_returns.json` | Quarterly KMPI returns 2024-Q4 to 2026-Q2 (reviewed) and 2026-Q3 (in progress) |
+| `data/seed/kmpis.json` | 44 KMPIs across the pilot models, each with its pass/fail criterion |
+| `data/seed/kmpi_returns.json` | KMPI returns since 2024 at each model's frequency (most quarterly; liquidity monthly, pricing semi-annual, op risk annual) |
 | `data/seed/audit_log.json` | Historical audit events |
 
 `scripts/build_pilot_seed.py` generated the first version of these files; do not re-run it unless
@@ -108,14 +111,14 @@ you want to discard edits to the seed.
 
 ```bash
 pip install -r requirements-dev.txt
-python -m pytest tests          # rules, repository, workflows, inventory, validation workflow, KMPIs (81 tests)
+python -m pytest tests          # rules, repository, workflows, inventory, validation workflow, KMPIs (78 tests)
 python scripts/smoke_test.py    # every page and form through Streamlit AppTest
 ```
 
 Both run against a throwaway copy of the seed, never your working database. A database from an
 earlier version (before model numbering changed to QDB-001) is kept as a backup file next to
 the new one and rebuilt from the seed on first start (this happens once after this update, because
-KMPIs and the owner/sponsor approval changed the database).
+KMPIs, approvals, annual confirmation and decommissioning changed the database).
 
 ## Structure
 
@@ -125,7 +128,7 @@ views/              Dashboard, Inventory, Model Detail, Findings, KMPI Monitorin
 config.py           Database and evidence-folder locations
 repository.py       SQLite storage, audit log with hash chain (no Streamlit dependency)
 governance.py       QDB rules: rating scale, approvers, frequencies, independence
-kmpi.py             KMPI rules: RAG, thresholds, periods, due dates, submission checks
+kmpi.py             KMPI rules: periods for every frequency, due dates, pass/fail checks, Excel template
 tiering.py          Rule-based tiering engine
 data_loader.py      Read side, with derived fields
 data_store.py       Write side: one transaction per change, audit before/after, rule checks

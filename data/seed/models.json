@@ -134,7 +134,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-005",
+        "approval_id": "APR-006",
         "date": "2023-12-18",
         "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
@@ -179,6 +179,19 @@
         "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2023-12-25",
         "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": [
+      {
+        "on": "2026-02-10",
+        "by": "Model Owner 1 (Head of Credit Risk)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
       }
     ]
   },
@@ -297,7 +310,9 @@
     },
     "tier_history": [],
     "approvals": [],
-    "implementation": []
+    "implementation": [],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": []
   },
   {
     "model_id": "QDB-003",
@@ -411,7 +426,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-006",
+        "approval_id": "APR-007",
         "date": "2023-12-18",
         "body": "Model owner and model sponsor",
         "decision": "Approved",
@@ -443,6 +458,19 @@
         "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2023-12-25",
         "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": [
+      {
+        "on": "2026-02-10",
+        "by": "Model Owner 1 (Head of Credit Risk)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
       }
     ]
   },
@@ -561,7 +589,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-007",
+        "approval_id": "APR-008",
         "date": "2023-12-18",
         "body": "Model owner and model sponsor",
         "decision": "Approved",
@@ -593,6 +621,19 @@
         "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2023-12-25",
         "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": [
+      {
+        "on": "2026-02-10",
+        "by": "Model Owner 1 (Head of Credit Risk)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
       }
     ]
   },
@@ -719,7 +760,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-010",
+        "approval_id": "APR-011",
         "date": "2024-12-20",
         "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
@@ -764,6 +805,19 @@
         "verified_by": "Model Validator 1 (QDB validator)",
         "verified_on": "2024-12-27",
         "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": [
+      {
+        "on": "2026-02-10",
+        "by": "Model Owner 1 (Head of Credit Risk)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
       }
     ]
   },
@@ -890,7 +944,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-008",
+        "approval_id": "APR-009",
         "date": "2023-12-18",
         "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
@@ -935,6 +989,19 @@
         "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2023-12-25",
         "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": [
+      {
+        "on": "2026-03-05",
+        "by": "Model Owner 2 (Head of Financial Control)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
       }
     ]
   },
@@ -1067,7 +1134,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-011",
+        "approval_id": "APR-012",
         "date": "2025-12-10",
         "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
@@ -1112,6 +1179,19 @@
         "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2025-12-17",
         "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": [
+      {
+        "on": "2026-01-20",
+        "by": "Model Owner 1 (Head of Credit Risk)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
       }
     ]
   },
@@ -1235,7 +1315,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-012",
+        "approval_id": "APR-013",
         "date": "2025-12-10",
         "body": "Model owner and model sponsor",
         "decision": "Approved",
@@ -1267,6 +1347,19 @@
         "verified_by": "Model Validator 2 (External validation consultant)",
         "verified_on": "2025-12-17",
         "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": [
+      {
+        "on": "2026-01-20",
+        "by": "Model Owner 1 (Head of Credit Risk)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
       }
     ]
   },
@@ -1382,7 +1475,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-003",
+        "approval_id": "APR-004",
         "date": "2022-11-30",
         "body": "Model owner and model sponsor",
         "decision": "Approved",
@@ -1414,6 +1507,19 @@
         "verified_by": "Model Validator 1 (QDB validator)",
         "verified_on": "2022-12-07",
         "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Semi-annual",
+    "confirmations": [
+      {
+        "on": "2025-11-10",
+        "by": "Model Owner 6 (Head of Pricing & Strategy)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
       }
     ]
   },
@@ -1527,7 +1633,9 @@
     },
     "tier_history": [],
     "approvals": [],
-    "implementation": []
+    "implementation": [],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": []
   },
   {
     "model_id": "QDB-011",
@@ -1645,7 +1753,9 @@
     },
     "tier_history": [],
     "approvals": [],
-    "implementation": []
+    "implementation": [],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": []
   },
   {
     "model_id": "QDB-012",
@@ -1764,7 +1874,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-013",
+        "approval_id": "APR-014",
         "date": "2026-09-25",
         "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
@@ -1803,7 +1913,9 @@
         "comment": null
       }
     ],
-    "implementation": []
+    "implementation": [],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": []
   },
   {
     "model_id": "QDB-013",
@@ -1916,7 +2028,9 @@
     },
     "tier_history": [],
     "approvals": [],
-    "implementation": []
+    "implementation": [],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": []
   },
   {
     "model_id": "QDB-014",
@@ -2026,7 +2140,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-001",
+        "approval_id": "APR-002",
         "date": "2021-06-30",
         "body": "Model owner and model sponsor",
         "decision": "Approved",
@@ -2058,6 +2172,19 @@
         "verified_by": "Model Validator 1 (QDB validator)",
         "verified_on": "2021-07-07",
         "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Monthly",
+    "confirmations": [
+      {
+        "on": "2025-09-20",
+        "by": "Model Owner 3 (Head of Market & Liquidity Risk)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
       }
     ]
   },
@@ -2168,7 +2295,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-002",
+        "approval_id": "APR-003",
         "date": "2022-03-15",
         "body": "Model owner and model sponsor",
         "decision": "Approved",
@@ -2200,6 +2327,19 @@
         "verified_by": "Model Validator 1 (QDB validator)",
         "verified_on": "2022-03-22",
         "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": [
+      {
+        "on": "2026-03-15",
+        "by": "Model Owner 3 (Head of Market & Liquidity Risk)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
       }
     ]
   },
@@ -2308,7 +2448,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-004",
+        "approval_id": "APR-005",
         "date": "2023-02-28",
         "body": "Model owner and model sponsor",
         "decision": "Approved",
@@ -2340,6 +2480,19 @@
         "verified_by": "Model Validator 1 (QDB validator)",
         "verified_on": "2023-03-07",
         "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Annual",
+    "confirmations": [
+      {
+        "on": "2026-04-02",
+        "by": "Model Owner 5 (Head of Operational Risk)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
       }
     ]
   },
@@ -2450,7 +2603,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-009",
+        "approval_id": "APR-010",
         "date": "2024-06-30",
         "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
@@ -2496,6 +2649,160 @@
         "verified_on": "2024-07-07",
         "note": "Deployed version matches the validated version (backfilled)."
       }
-    ]
+    ],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": []
+  },
+  {
+    "model_id": "QDB-018",
+    "name": "Legacy SME Rating Scorecard (pre-CreditLens)",
+    "version": "3.2",
+    "risk_type": "Credit Rating & Scoring",
+    "category": "Rating",
+    "business_line": "SME & Corporate Lending",
+    "methodology": "Expert-weighted scorecard of financial and qualitative factors",
+    "source": "In-house",
+    "vendor": null,
+    "description": "Obligor rating used before the CreditLens sector models; retired when they went live.",
+    "owner": "Model Owner 1 (Head of Credit Risk)",
+    "developer": "Model Developer 3 (Credit Modelling)",
+    "validator": "Model Validator 1 (QDB validator)",
+    "sponsor": "Model Sponsor 1 (Chief Risk Officer)",
+    "lod_mapping": {
+      "first_line": "Credit Risk / Risk Analytics (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "High",
+      "complexity": "Low",
+      "regulatory_impact": "Medium"
+    },
+    "tier_rationale": "Drove obligor grades for the whole SME book.",
+    "status": "Retired",
+    "approval_date": "2019-05-30",
+    "regulatory_mapping": [
+      "QCB credit risk instructions",
+      "IFRS 9 (feeds PD)",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": []
+    },
+    "documentation": {
+      "Model Development Document": true,
+      "Methodology Document": true,
+      "Data Quality Assessment": false,
+      "User Guide / Operating Manual": false,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": false
+    },
+    "change_log": [
+      {
+        "date": "2019-03-01",
+        "version": "3.2",
+        "description": "Last recalibration of weights.",
+        "author": "Model Developer 3",
+        "classification": "Material",
+        "justification": "Annual review.",
+        "change_id": "CHG-022"
+      }
+    ],
+    "audit_reviews": [],
+    "data_sources": [
+      "Financial statements",
+      "Relationship manager questionnaire"
+    ],
+    "implementation_platform": "Excel",
+    "usage_frequency": "Per credit application",
+    "model_users": [
+      "Credit Underwriting"
+    ],
+    "key_assumptions": [
+      "Expert weights reflect default drivers"
+    ],
+    "known_limitations": [
+      "Not statistically calibrated"
+    ],
+    "exposure_covered_qar_mn": 0,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
+    "placeholder": false,
+    "pending_revalidation": false,
+    "uses": [],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "High",
+        "complexity": "Low",
+        "regulatory_impact": "Medium"
+      },
+      "rationale": "Drove obligor grades for the whole SME book.",
+      "proposed_by": "Model Owner 1",
+      "proposed_on": "2019-05-30",
+      "status": "Confirmed",
+      "confirmed_by": "MRM Administrator 1",
+      "confirmed_on": "2019-05-30",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": [],
+    "approvals": [
+      {
+        "approval_id": "APR-001",
+        "date": "2019-05-30",
+        "body": "Model owner and model sponsor",
+        "decision": "Approved",
+        "conditions": [],
+        "version": "3.2",
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 1 (Head of Credit Risk)",
+            "on": "2019-05-30",
+            "decision": "Approved",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 1 (Chief Risk Officer)",
+            "on": "2019-05-30",
+            "decision": "Approved",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 1 (Chief Risk Officer)",
+        "comment": null
+      }
+    ],
+    "implementation": [
+      {
+        "version": "3.2",
+        "verified_by": "Model Validator 1 (QDB validator)",
+        "verified_on": "2019-06-06",
+        "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": [],
+    "status_before_retirement": "In Production",
+    "retired_on": "2025-12-31",
+    "decommission": {
+      "status": "Approved",
+      "reason": "Replaced by another model",
+      "replaced_by": "QDB-007",
+      "last_use": "2025-12-31",
+      "note": "Replaced by the CreditLens sector models (QDB-007, QDB-008).",
+      "requested_by": "Model Owner 1 (Head of Credit Risk)",
+      "requested_on": "2025-11-15",
+      "decided_by": "Model Sponsor 1 (Chief Risk Officer)",
+      "decided_on": "2025-11-30",
+      "decision_comment": "All SME obligors re-rated in CreditLens."
+    }
   }
 ]

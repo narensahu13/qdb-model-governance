@@ -37,13 +37,13 @@ with tab_guide:
 
 | Role | What they do here |
 |---|---|
-| **Model owner** | Accountable for the model. Registers it, keeps its record up to date, submits it for validation, approves it first, answers findings, submits the quarterly KMPIs |
-| **Model developer** | Builds and changes the model. Uploads documents, answers the validator's information requests, records model changes, enters the quarterly KMPIs |
-| **Model sponsor** | Senior executive accountable for the model's use — for example the CRO, CFO or a business head. Approves the model after its owner, and decides on tier overrides |
+| **Model owner** | Accountable for the model. Registers it, keeps its record up to date, submits it for validation, approves it first, answers findings, reports KMPIs, gives the annual confirmation, requests decommissioning |
+| **Model developer** | Builds and changes the model. Uploads documents, answers the validator's information requests, records model changes, reports KMPIs |
+| **Model sponsor** | Senior executive accountable for the model's use — for example the CRO, CFO or a business head. Approves the model after its owner, decides on tier overrides and on decommissioning |
 | **Model user** | Uses the model's output. Read-only |
 | **Model validator** | QDB validator or external consultant, independent of the model. Validates, raises findings, verifies conditions and implementation, reviews KMPI returns |
 | **Internal auditor** | Third line. Reviews the framework, may raise findings |
-| **MRM administrator** | Keeps the inventory, people and KMPI library up to date, assigns validators, chases late returns. Cannot approve or close |
+| **MRM administrator** | Keeps the inventory and people up to date, assigns validators, chases late KMPI returns and confirmations. Cannot approve or close |
 
 **A model's five steps before use**
 
@@ -58,12 +58,18 @@ Models already in use are revalidated on their cycle (annual, two-yearly or thre
 a **material change** sends a model back through steps 3–5. Findings are raised during validation or
 audit, answered by the owner and closed by whoever raised them.
 
-**Every quarter — KMPIs**
+**While in use**
 
-Each model in use has key model performance indicators (KMPI-001 …) with amber and red thresholds.
-Within 30 days of quarter end the owner or developer enters the values, explains every amber or red
-one, and submits; the validator reviews the return, sends it back, or raises a finding. A model needs
-at least one KMPI before it goes into use.
+- **KMPIs** — each model has key model performance indicators (KMPI-001 …), each with a description
+  that states its pass/fail criterion. The model's owner sets how often they are reported (monthly,
+  quarterly, semi-annual or annual). Within 30 days of each period end the owner or developer fills
+  in Value, Result (Pass / Fail / Not available) and Comment — in the table or by uploading the Excel
+  template — and submits; the validator reviews, sends it back, or raises a finding. A model needs at
+  least one KMPI before it goes into use.
+- **Annual confirmation** — once a year the owner ticks three statements: the record is accurate,
+  the model is used as approved, the limitations and KMPIs still fit.
+- **Decommissioning** — the owner asks to retire a model (reason, replacement, last day of use); the
+  sponsor approves. The record is kept, read-only.
 """
     )
 
@@ -167,10 +173,10 @@ written reason and the model sponsor's approval:
                 "QDB validator or consultant",
                 "QDB validator or consultant (proportionate scope)",
             ],
-            "KMPI reporting": [
-                "Quarterly; several KMPIs covering discrimination, calibration, stability and data",
-                "Quarterly",
-                "Quarterly or annual, proportionate",
+            "KMPI reporting (typical)": [
+                "Quarterly or monthly; KMPIs for discrimination, calibration, stability and data",
+                "Quarterly or semi-annual",
+                "Semi-annual or annual, proportionate",
             ],
             "Documentation Standard": ["Full suite (6 artefacts)", "Full suite", "Proportionate (core 4 artefacts)"],
         }
@@ -195,9 +201,9 @@ digraph {
     Validation [label="3. Independent\\nValidation"];
     Approval [label="4. Approval\\n(owner, then sponsor)"];
     Implementation [label="5. Implementation\\n& UAT"];
-    Monitoring [label="6. Quarterly KMPIs\\n& periodic revalidation"];
+    Monitoring [label="6. KMPIs, annual confirmation\\n& periodic revalidation"];
     Change [label="7. Change /\\nRecalibration"];
-    Retirement [label="8. Retirement &\\nDecommissioning"];
+    Retirement [label="8. Decommissioning\\n(owner asks, sponsor approves)"];
     Initiation -> Development -> Validation -> Approval -> Implementation -> Monitoring;
     Monitoring -> Change [label="trigger breach /\\nperiodic revalidation"];
     Change -> Validation;
@@ -211,7 +217,8 @@ digraph {
 
 - No model enters production without independent validation and approval by its owner and sponsor (interim use needs the sponsor's approval, compensating controls and a defined expiry)
 - Every model has a named **owner**, **developer** and **independent validator** — the developer can never validate their own model
-- **Ongoing monitoring** through quarterly KMPIs with amber and red thresholds; the validator reviews each return and raises a finding for breaches that need action
+- **Ongoing monitoring** through KMPIs with pass/fail criteria, reported at each model's own frequency; the validator reviews each return and raises a finding for fails that need action
+- **Annual confirmation** by each owner that the record still holds; **decommissioning** approved by the sponsor, with the record kept
 - **Material changes** (methodology, key assumptions, use extension) require revalidation before deployment
 - All lifecycle events are recorded in the inventory **audit trail**
 """
@@ -276,11 +283,13 @@ recorded in the model's **audit trail**:
   documents → validation signed off → approved by the model owner and then the model sponsor,
   with tracked conditions → implementation verified by a validator (and at least one KMPI
   defined). A model cannot be put into use without passing all five.
-- **KMPIs.** Each model has a KMPI library (ID, description, calculation, data source,
-  direction, amber and red thresholds, frequency). Every quarter the owner or developer saves
-  a draft, explains every amber or red value, and submits with an attestation; the validator
-  reviews, sends back, or raises a finding. Thresholds are copied into each return, and
-  changing one needs a reason the validator sees at the next review.
+- **KMPIs.** Each model has a short list of KMPIs: ID, name, and a description with the
+  pass/fail criterion. Each period the owner or developer records Value, Result and Comment
+  (typed in or uploaded from the Excel template), explains every fail, and submits; the
+  validator reviews, sends back, or raises a finding. The description is copied into each
+  return, so later edits do not rewrite history.
+- **Annual confirmation and decommissioning.** The owner confirms each model once a year;
+  retiring a model needs the sponsor's approval and keeps the record read-only.
 - **Validation engagement.** The validator sets the scope and declares independence, raises
   information requests that owners answer with evidence, issues a draft with a proposed
   rating, the owner gives a factual-accuracy review (7 days), and the validator signs off.
@@ -335,7 +344,7 @@ with tab_roadmap:
                 "0 Foundations (weeks 1–4) — built",
                 "1 Inventory (weeks 5–8) — built",
                 "2 Validation workflow (weeks 9–16) — built",
-                "3 Issues and monitoring (weeks 17–22) — KMPIs built",
+                "3 Issues and monitoring (weeks 17–22) — partly built",
                 "4 Reporting (weeks 23–26)",
                 "5 Pilot (weeks 27–30)",
             ],
@@ -346,10 +355,10 @@ with tab_roadmap:
                 "tier sign-off, model factsheet export",
                 "Lifecycle gates G1–G5, validation engagements with information requests, "
                 "approval decisions with conditions, task inbox",
-                "KMPI library and quarterly returns with review and breach findings (built); "
+                "KMPIs with pass/fail returns, annual confirmation, decommissioning (built); "
                 "remediation plans, extensions and risk acceptance, exceptions register",
                 "Model landscape map, health heatmap, quarterly model risk report, "
-                "audit dossier, annual attestation",
+                "audit dossier",
                 "User testing with the pilot models; decision on production",
             ],
         }

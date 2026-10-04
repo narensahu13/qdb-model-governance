@@ -23,8 +23,8 @@ NAVY = colors.HexColor("#14284b")
 GOLD = colors.HexColor("#b8933d")
 GREY = colors.HexColor("#5f6b7a")
 LIGHT = colors.HexColor("#f4f6fa")
-RAG = {"Green": colors.HexColor("#2e7d32"), "Amber": colors.HexColor("#ed6c02"),
-       "Red": colors.HexColor("#c62828")}
+RAG = {"Pass": colors.HexColor("#2e7d32"), "Fail": colors.HexColor("#c62828"),
+       "Not available": colors.HexColor("#5f6b7a")}
 SEV = {"High": colors.HexColor("#c62828"), "Medium": colors.HexColor("#ed6c02"),
        "Low": colors.HexColor("#607d8b")}
 
@@ -173,15 +173,15 @@ def build_factsheet(model: dict, requests: list[dict], monitoring: list[dict],
 
     latest = {}
     for row in monitoring:
-        if row["metric"] not in latest or row["period"] > latest[row["metric"]]["period"]:
+        if row["metric"] not in latest or row["period_end"] > latest[row["metric"]]["period_end"]:
             latest[row["metric"]] = row
-    m_rows = [[_p("KMPI", st["label"]), _p("Latest", st["label"]), _p("RAG", st["label"])]]
+    m_rows = [[_p("KMPI", st["label"]), _p("Latest", st["label"]), _p("Result", st["label"])]]
     for row in latest.values():
-        value = "—" if row["value"] is None or row["value"] != row["value"] else f"{row['value']:g}"
+        value = row["value"] or "—"
         m_rows.append([_p(f"{row.get('kmpi_id', '')} {row['metric']} ({row['period']})", st["cell"]),
                        _p(value, st["cell"]),
-                       Paragraph(f"<font color='{RAG.get(row['rag'], GREY).hexval()}'><b>"
-                                 f"{escape(row['rag'])}</b></font>", st["cell"])])
+                       Paragraph(f"<font color='{RAG.get(row['result'], GREY).hexval()}'><b>"
+                                 f"{escape(row['result'] or '—')}</b></font>", st["cell"])])
     if len(m_rows) == 1:
         m_rows.append([_p("No KMPIs reported yet", st["cell"]), "", ""])
 

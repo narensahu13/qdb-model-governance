@@ -32,6 +32,8 @@ def _enrich(model: dict, requests: list[dict]) -> dict:
     m["validation_frequency"] = governance.validation_frequency(tier)
     m["approval_body"] = governance.approval_body(tier)
     m.update(governance.derive_validation_dates(tier, requests))
+    if m["status"] == governance.STATUS_RETIRED:
+        m["next_validation_due"] = None
     m["last_review_date"] = m["last_validation"]
     return m
 
@@ -191,22 +193,29 @@ def kmpi_return(model_id: str, period: str) -> dict | None:
                  if r["model_id"] == model_id and r["period"] == period), None)
 
 
-MONITORING_COLUMNS = ["model_id", "kmpi_id", "metric", "period", "value", "rag", "status",
-                      "direction", "amber", "red", "unit"]
+def model_frequency(model: dict) -> str:
+    return model.get("kmpi_frequency") or kmpi_rules.DEFAULT_FREQUENCY
+
+
+def current_period(model: dict, today: date | None = None) -> str:
+    """The period the model is reporting now, by its own frequency."""
+    return kmpi_rules.reporting_period(model_frequency(model), today)
+
+
+MONITORING_COLUMNS = ["model_id", "kmpi_id", "metric", "period", "period_end", "value", "result", "status"]
 
 
 @st.cache_data
 def load_monitoring() -> pd.DataFrame:
-    """Reported KMPI values (submitted or reviewed returns), one row per KMPI per period."""
+    """Reported KMPI results (submitted or reviewed returns), one row per KMPI per period."""
     rows = []
     for r in load_kmpi_returns():
         if r["status"] not in kmpi_rules.DONE:
             continue
         for kid, v in r["values"].items():
-            rows.append({"model_id": r["model_id"], "kmpi_id": kid, "metric": v["name"],
-                         "period": r["period"], "value": v["value"], "rag": v["rag"],
-                         "status": r["status"], "direction": v["direction"], "amber": v["amber"],
-                         "red": v["red"], "unit": v.get("unit")})
+            rows.append({"model_id": r["model_id"], "kmpi_id": kid, "metric": v["name"], "period": r["period"],
+                         "period_end": kmpi_rules.period_end(r["period"]).isoformat(),
+                         "value": v.get("value") or "", "result": v.get("result"), "status": r["status"]})
     return pd.DataFrame(rows, columns=MONITORING_COLUMNS)
 
 
@@ -216,39 +225,44 @@ def needs_kmpi_return(model: dict, period: str) -> bool:
         kmpi_rules.due_kmpis(kmpis_for(model["model_id"]), period))
 
 
-def kmpi_overview(period: str, today: date | None = None) -> list[dict]:
-    """One row per model that reports for the period: status, due date, RAG counts."""
+def kmpi_overview(today: date | None = None) -> list[dict]:
+    """One row per model in use with KMPIs: its current return (by its own frequency)."""
     rows = []
     for m in load_models():
-        if not needs_kmpi_return(m, period):
+        if m["status"] not in governance.IN_USE_STATUSES or not kmpis_for(m["model_id"], active_only=True):
             continue
+        period = current_period(m, today)
+        due = kmpi_rules.due_kmpis(kmpis_for(m["model_id"]), period)
         ret = kmpi_return(m["model_id"], period)
-        status = kmpi_rules.return_status(ret)
-        rags = [v["rag"] for v in (ret or {}).get("values", {}).values()] if status in kmpi_rules.DONE else []
+        status = kmpi_rules.return_status(ret) if due else "Nothing due"
+        c = kmpi_rules.counts((ret or {}).get("values", {})) if status in kmpi_rules.DONE else {}
+        history = sorted([r for r in load_kmpi_returns() if r["model_id"] == m["model_id"]
+                          and r["status"] in kmpi_rules.DONE], key=lambda r: kmpi_rules.period_end(r["period"]))
         rows.append({
             "model_id": m["model_id"], "name": m["name"], "tier": m["tier"], "owner": m["owner"],
-            "validator": m["validator"], "status": status,
-            "due": kmpi_rules.due_date(period).isoformat(),
-            "overdue": kmpi_rules.is_overdue(ret, period, today),
-            "kmpis_due": len(kmpi_rules.due_kmpis(kmpis_for(m["model_id"]), period)),
-            "green": rags.count(kmpi_rules.GREEN), "amber": rags.count(kmpi_rules.AMBER),
-            "red": rags.count(kmpi_rules.RED), "worst": kmpi_rules.worst(rags),
+            "validator": m["validator"], "frequency": model_frequency(m), "period": period, "status": status,
+            "due": kmpi_rules.due_date(period).isoformat() if due else None,
+            "overdue": bool(due) and kmpi_rules.is_overdue(ret, period, today),
+            "kmpis_due": len(due), "pass": c.get(kmpi_rules.PASS, 0), "fail": c.get(kmpi_rules.FAIL, 0),
+            "na": c.get(kmpi_rules.NA, 0),
             "submitted_by": (ret or {}).get("submitted_by"), "reviewed_by": (ret or {}).get("reviewed_by"),
             "finding_id": (ret or {}).get("finding_id"),
+            "trend": "".join("❌" if kmpi_rules.counts(r["values"])[kmpi_rules.FAIL] else
+                             "⚪" if kmpi_rules.counts(r["values"])[kmpi_rules.NA] else "✅"
+                             for r in history[-8:]),
         })
     return rows
 
 
 def latest_kmpi_position(model_id: str) -> dict | None:
-    """The most recent submitted or reviewed return of a model, with its worst RAG."""
+    """The most recent submitted or reviewed return of a model, with its failed KMPIs."""
     done = [r for r in load_kmpi_returns() if r["model_id"] == model_id and r["status"] in kmpi_rules.DONE]
     if not done:
         return None
-    r = max(done, key=lambda x: x["period"])
+    r = max(done, key=lambda x: kmpi_rules.period_end(x["period"]))
     return {"period": r["period"], "status": r["status"],
-            "worst": kmpi_rules.worst(v["rag"] for v in r["values"].values()),
-            "red": [f"{k} {v['name']}" for k, v in r["values"].items() if v["rag"] == kmpi_rules.RED],
-            "amber": [f"{k} {v['name']}" for k, v in r["values"].items() if v["rag"] == kmpi_rules.AMBER]}
+            "fail": [f"{k} {v['name']}" for k, v in r["values"].items() if v["result"] == kmpi_rules.FAIL],
+            "na": [f"{k} {v['name']}" for k, v in r["values"].items() if v["result"] == kmpi_rules.NA]}
 
 
 @st.cache_data
@@ -298,7 +312,8 @@ def models_dataframe() -> pd.DataFrame:
             "Overdue Issues": int((open_issues["status"] == "Overdue").sum()),
             "Doc Completeness (%)": round(100 * sum(docs.values()) / len(docs)) if docs else 0,
             "AI System": bool(m.get("ai_system")),
-            "Latest KMPI": (latest_kmpi_position(m["model_id"]) or {}).get("worst") or "-",
+            "KMPI Fails": len((latest_kmpi_position(m["model_id"]) or {}).get("fail", [])),
+            "Annual Confirmation": governance.confirmation_status(m) or "-",
         })
     return pd.DataFrame(rows)
 
@@ -443,22 +458,20 @@ def tasks_for(user: dict) -> list[dict]:
                 and m["status"] != "In Development":
             tasks.append(_task("Assignment", m, "Assign a validator", m["status"]))
 
-    # ---- KMPI returns for the reporting period (and any earlier one still open)
-    period = kmpi_rules.reporting_period()
-    open_returns = {(r["model_id"], r["period"]) for r in load_kmpi_returns()
-                    if r["status"] != kmpi_rules.REVIEWED}
+    # ---- KMPI returns: the current period of each model, and any earlier one still open
+    open_returns = {(r["model_id"], r["period"]) for r in load_kmpi_returns() if r["status"] != kmpi_rules.REVIEWED}
     for m in models.values():
-        periods = {period} | {p for mid, p in open_returns if mid == m["model_id"]}
-        for p in sorted(periods):
+        periods = {current_period(m)} | {p for mid, p in open_returns if mid == m["model_id"]}
+        for p in sorted(periods, key=kmpi_rules.period_end):
             if not needs_kmpi_return(m, p):
                 continue
             ret = kmpi_return(m["model_id"], p)
             status = kmpi_rules.return_status(ret)
             due = kmpi_rules.due_date(p).isoformat()
             if role == "LOD1" and mine(m) and status in kmpi_rules.EDITABLE:
-                last = (ret or {}).get("history", [{}])[-1] if ret else {}
+                last = ret["history"][-1] if ret and ret.get("history") else {}
                 tasks.append(_task("KMPI return", m,
-                                   f"{'Correct and resubmit' if status == kmpi_rules.RETURNED else 'Enter and submit'} "
+                                   f"{'Correct and resubmit' if status == kmpi_rules.RETURNED else 'Report'} "
                                    f"the {p} KMPIs",
                                    (f"Sent back: {last.get('comment')}" if status == kmpi_rules.RETURNED
                                     else f"{status} — {len(kmpi_rules.due_kmpis(kmpis_for(m['model_id']), p))} KMPIs"),
@@ -466,10 +479,23 @@ def tasks_for(user: dict) -> list[dict]:
             if role == "LOD2" and status == kmpi_rules.SUBMITTED and not mine(m) and (
                     governance.person_name(m.get("validator")) == name
                     or governance.person_name(m.get("validator")) in ("Not yet assigned", "")):
-                rags = [v["rag"] for v in ret["values"].values()]
+                c = kmpi_rules.counts(ret["values"])
                 tasks.append(_task("KMPI review", m, f"Review the {p} KMPI return",
-                                   f"{rags.count('Red')} red, {rags.count('Amber')} amber — "
+                                   f"{c[kmpi_rules.FAIL]} fail, {c[kmpi_rules.NA]} not available — "
                                    f"submitted by {governance.person_name(ret.get('submitted_by'))}", due))
+
+    # ---- annual confirmation and decommissioning
+    for m in models.values():
+        owner = governance.person_name(m["owner"])
+        cstatus = governance.confirmation_status(m)
+        if role == "LOD1" and owner == name and cstatus in ("Due soon", "Overdue"):
+            tasks.append(_task("Annual confirmation", m, "Confirm the model record for the year",
+                               "Three statements to confirm", governance.confirmation_due(m)))
+        d = m.get("decommission") or {}
+        if d.get("status") == "Requested" and role == "SPONSOR" and governance.person_name(m.get("sponsor")) == name:
+            tasks.append(_task("Decommissioning", m, "Approve or reject the decommissioning request",
+                               f"{d['reason']} — requested by {governance.person_name(d['requested_by'])}",
+                               d.get("last_use")))
 
     today = date.today().isoformat()
     for t in tasks:

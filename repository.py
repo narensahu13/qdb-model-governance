@@ -26,7 +26,7 @@ from pathlib import Path
 
 import config
 
-SCHEMA_VERSION = "5"
+SCHEMA_VERSION = "6"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -265,7 +265,8 @@ def _stored_version(conn) -> str:
 def _backup_and_reset(old_version: str) -> Path:
     """A database from an older schema is kept as a backup and rebuilt from seed
     (v3 renumbered the models; v5 replaced monitoring with KMPIs and the CRO
-    approval with owner and sponsor approvals)."""
+    approval with owner and sponsor approvals; v6 simplified KMPIs to pass/fail
+    and added annual confirmation and decommissioning)."""
     path = config.db_path()
     stamp = datetime.now().strftime("%Y%m%d%H%M%S")
     backup = path.with_name(f"{path.stem}.v{old_version}-backup-{stamp}{path.suffix}")

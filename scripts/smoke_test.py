@@ -393,31 +393,27 @@ import kmpi  # noqa: E402
 
 P = kmpi.reporting_period()
 
-# 18. Developer completes and submits the QDB-001 KMPI return
-at = page("views/model_detail.py", DEVELOPER, selected_model_id="QDB-001")
-if at.exception:
-    fail("Open QDB-001 KMPIs as developer", at)
-else:
-    try:
-        for kid, v in (("KMPI-001", 0.62), ("KMPI-002", 1.15), ("KMPI-003", 1.0), ("KMPI-004", 0.08), ("KMPI-005", 1.7)):
-            at.number_input(key=f"kv_QDB-001_{P}_{kid}").set_value(v)
-        at.checkbox(key=f"ka_QDB-001_{P}").check()
-        by_label(at.button, "Submit").click().run()
-        ret = next(r for r in repository.list_kmpi_returns() if r["model_id"] == "QDB-001" and r["period"] == P)
-        if at.exception or ret["status"] != "Submitted":
-            fail("Submit KMPI return", at)
-        else:
-            ok(f"Developer submitted the {P} KMPI return for QDB-001")
-    except Exception as exc:  # widget missing: the seed period may not match today's date
-        fail(f"KMPI entry form ({exc})", at)
+# 18. Owner submits the QDB-006 KMPI draft (results already filled in)
+P6 = kmpi.reporting_period("Quarterly")
+at = page("views/model_detail.py", "Model Owner 2", selected_model_id="QDB-006")
+try:
+    at.checkbox(key=f"ka_QDB-006_{P6}").check()
+    by_label(at.button, "Submit").click().run()
+    ret = next(r for r in repository.list_kmpi_returns() if r["model_id"] == "QDB-006" and r["period"] == P6)
+    if at.exception or ret["status"] != "Submitted":
+        fail("Submit KMPI return", at)
+    else:
+        ok(f"Owner submitted the {P6} KMPI return for QDB-006")
+except Exception as exc:  # widget missing: the sample period may not match today's date
+    fail(f"KMPI entry form ({exc})", at)
 
-# 19. Validator reviews QDB-008 and raises a finding for the amber KMPIs
+# 19. Validator reviews QDB-008 and raises a finding for the failed KMPIs
 at = page("views/model_detail.py", "Model Validator 2", selected_model_id="QDB-008")
 try:
-    at.text_area(key=f"kr_c_QDB-008_{P}").input("SMOKE: agree a segment fix")
-    at.checkbox(key=f"kr_f_QDB-008_{P}").check()
+    at.text_area(key=f"kr_c_QDB-008_{P6}").input("SMOKE: agree a segment fix")
+    at.checkbox(key=f"kr_f_QDB-008_{P6}").check()
     by_label(at.button, "Mark reviewed").click().run()
-    ret = next(r for r in repository.list_kmpi_returns() if r["model_id"] == "QDB-008" and r["period"] == P)
+    ret = next(r for r in repository.list_kmpi_returns() if r["model_id"] == "QDB-008" and r["period"] == P6)
     if at.exception or ret["status"] != "Reviewed" or not ret.get("finding_id"):
         fail("Review KMPI return with finding", at)
     else:
@@ -425,21 +421,38 @@ try:
 except Exception as exc:
     fail(f"KMPI review form ({exc})", at)
 
-# 20. Developer adds a KMPI to the combination module
-at = page("views/model_detail.py", "Model Developer 4", selected_model_id="QDB-013", kmpi_define_toggle=True)
+# 20. Owner gives the annual confirmation for QDB-014 (overdue)
+at = page("views/model_detail.py", "Model Owner 3", selected_model_id="QDB-014")
 try:
-    at.text_input(key="kd_name_new").input("Combined-grade agreement (%)")
-    at.text_input(key="kd_desc_new").input("Agreement between the combined grade and the approved grade")
-    at.text_area(key="kd_def_new").input("Obligors whose approved grade equals the combined grade / obligors rated")
-    at.text_input(key="kd_amb_new").input("80")
-    at.text_input(key="kd_red_new").input("70")
-    by_label(at.button, "Add KMPI").click().run()
-    if at.exception or not any(k["model_id"] == "QDB-013" for k in repository.list_kmpis()):
-        fail("Define a KMPI", at)
+    for i in range(3):
+        at.checkbox(key=f"conf_QDB-014_{i}").check()
+    by_label(at.button, "Confirm").click().run()
+    if at.exception or not repository.get_model("QDB-014")["confirmations"][-1]["on"] == __import__("datetime").date.today().isoformat():
+        fail("Annual confirmation", at)
     else:
-        ok("Developer added a KMPI to QDB-013")
+        ok("Owner gave the annual confirmation for QDB-014")
 except Exception as exc:
-    fail(f"KMPI definition form ({exc})", at)
+    fail(f"Annual confirmation form ({exc})", at)
+
+# 21. Owner requests decommissioning of QDB-016; the sponsor approves
+at = page("views/model_detail.py", "Model Owner 5", selected_model_id="QDB-016")
+at.session_state["decom_toggle_QDB-016"] = True
+at.run()
+try:
+    at.selectbox(key="dr_QDB-016").set_value("No longer used")
+    by_label(at.button, "Send to the sponsor").click().run()
+    if at.exception or (repository.get_model("QDB-016").get("decommission") or {}).get("status") != "Requested":
+        fail("Request decommissioning", at)
+    else:
+        ok("Owner requested decommissioning of QDB-016")
+        at = page("views/model_detail.py", "Model Sponsor 1", selected_model_id="QDB-016")
+        by_label(at.button, "Approve — retire the model").click().run()
+        if at.exception or repository.get_model("QDB-016")["status"] != "Retired":
+            fail("Sponsor approves decommissioning", at)
+        else:
+            ok("Sponsor approved — QDB-016 retired")
+except Exception as exc:
+    fail(f"Decommissioning forms ({exc})", at)
 
 # ---------------------------------------------------------------- audit integrity
 chain_ok, broken = repository.verify_audit_chain()

@@ -167,6 +167,8 @@ def create_request(model_id: str, record: dict) -> str:
 
     with repository.tx() as conn:
         model = _model_or_fail(conn, model_id)
+        if rtype in ("VAL", "MC") and model["status"] == governance.STATUS_RETIRED:
+            raise ValueError(f"{model_id} is retired; no new validation or model change.")
         if rtype == "VAL" and model["status"] == "In Development" and record.get("status") != "Closed":
             raise ValueError("A model in development goes to validation through gate G2 — "
                              "submit it from the Governance & Lifecycle tab.")
@@ -710,6 +712,8 @@ def update_model(model_id: str, changes: dict) -> list[str]:
         m = _model_or_fail(conn, model_id)
         if user["role"] == "LOD1" and not governance.is_owner_or_developer(m, user["name"]):
             raise PermissionError(f"Only the owner or developer of {model_id} can edit its record.")
+        if m["status"] == governance.STATUS_RETIRED and user["role"] != "ADMIN":
+            raise ValueError(f"{model_id} is retired; its record is read-only.")
         before = copy.deepcopy(m)
         changed = []
         for field, value in changes.items():
@@ -1253,94 +1257,120 @@ def verify_implementation(model_id: str, note: str) -> str:
 
 
 # ================================================================ Phase 3 — KMPIs
-KMPI_FIELDS = ["name", "category", "description", "definition", "data_source", "unit",
-               "direction", "amber", "red", "frequency", "active"]
-_KMPI_CONTROL_FIELDS = {"direction", "amber", "red", "frequency", "active"}
-
-
 def _require_first_line(m: dict, user: dict, what: str) -> None:
     if user["role"] == "LOD1" and not governance.is_owner_or_developer(m, user["name"]):
         raise PermissionError(f"Only the owner or developer of {m['model_id']} can {what}.")
-
-
-def save_kmpi(model_id: str, fields: dict, kmpi_id: str | None = None, reason: str = "") -> str:
-    """Add a KMPI to a model's library, or change one. Changing a threshold,
-    the direction, the frequency, or retiring a KMPI needs a reason; every
-    change is kept on the KMPI so the validator sees it at the next review."""
-    auth.require("define_kmpi")
-    user = auth.get_current_user()
-    fields = {k: v for k, v in fields.items() if k in KMPI_FIELDS}
-    for f in ("name", "description", "definition"):
-        if f in fields:
-            fields[f] = str(fields[f] or "").strip()
-    with repository.tx() as conn:
-        m = _model_or_fail(conn, model_id)
-        _require_first_line(m, user, "define its KMPIs")
-        today = date.today().isoformat()
-        if kmpi_id is None:
-            missing = [f for f in ("name", "description", "definition", "direction", "amber", "red")
-                       if fields.get(f) in (None, "")]
-            if missing:
-                raise ValueError(f"Complete: {', '.join(missing)}.")
-            kmpi_id = _next_id(repository.kmpi_ids(conn), "KMPI")
-            k = {"kmpi_id": kmpi_id, "model_id": model_id, "category": "Calibration / back-testing",
-                 "data_source": "", "unit": "ratio", "frequency": "Quarterly", "active": True,
-                 **fields, "defined_by": auth.user_option_label(user), "defined_on": today, "changes": []}
-            before = None
-            details = f"KMPI {kmpi_id} added: {k['name']}"
-        else:
-            k = next((x for x in repository.list_kmpis(conn) if x["kmpi_id"] == kmpi_id), None)
-            if k is None or k["model_id"] != model_id:
-                raise ValueError(f"Unknown KMPI {kmpi_id} for {model_id}.")
-            before = copy.deepcopy(k)
-            changed = {f: v for f, v in fields.items() if v != k.get(f)}
-            if not changed:
-                return kmpi_id
-            if set(changed) & _KMPI_CONTROL_FIELDS and not reason.strip():
-                raise ValueError("Give a reason for changing a threshold, the direction, "
-                                 "the frequency, or retiring a KMPI.")
-            k.update(changed)
-            k.setdefault("changes", []).append({
-                "on": today, "by": auth.user_option_label(user), "reason": reason.strip() or None,
-                "fields": sorted(changed),
-                "before": {f: before.get(f) for f in changed}, "after": changed,
-            })
-            details = f"KMPI {kmpi_id} changed: {', '.join(sorted(changed))}" + \
-                (f" — {reason.strip()[:60]}" if reason.strip() else "")
-        if not k["name"]:
-            raise ValueError("A KMPI needs a name.")
-        if k["direction"] not in kmpi_rules.DIRECTIONS or k["frequency"] not in kmpi_rules.FREQUENCIES:
-            raise ValueError("Choose a direction and a frequency from the lists.")
-        kmpi_rules.check_thresholds(k["direction"], k["amber"], k["red"])
-        repository.put_kmpi(conn, k)
-        log_event(conn, "save_kmpi", "kmpi", kmpi_id, model_id, details, before=before, after=k)
-    _refresh()
-    return kmpi_id
 
 
 def _kmpis_of(conn, model_id: str) -> list[dict]:
     return [k for k in repository.list_kmpis(conn) if k["model_id"] == model_id]
 
 
+def model_frequency(m: dict) -> str:
+    return m.get("kmpi_frequency") or kmpi_rules.DEFAULT_FREQUENCY
+
+
+def set_kmpi_frequency(model_id: str, frequency: str) -> None:
+    """How often the model's KMPIs are reported (monthly, quarterly, semi-annual, annual)."""
+    auth.require("define_kmpi")
+    user = auth.get_current_user()
+    if frequency not in kmpi_rules.FREQUENCIES:
+        raise ValueError(f"Choose one of {', '.join(kmpi_rules.FREQUENCIES)}.")
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        _require_first_line(m, user, "set its KMPI frequency")
+        if model_frequency(m) == frequency:
+            return
+        before = copy.deepcopy(m)
+        m["kmpi_frequency"] = frequency
+        repository.put_model(conn, m)
+        log_event(conn, "set_kmpi_frequency", "model", model_id, model_id,
+                  f"KMPI reporting frequency: {model_frequency(before)} -> {frequency}", before=before, after=m)
+    _refresh()
+
+
+def save_kmpi_library(model_id: str, rows: list[dict]) -> list[str]:
+    """Save a model's KMPI list in one go: rows of {kmpi_id (blank for new), name,
+    description (with the pass/fail criteria), frequency, active}. A KMPI left
+    out of the list is retired, never deleted, so its history stays.
+    Returns the IDs added or changed."""
+    auth.require("define_kmpi")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        _require_first_line(m, user, "define its KMPIs")
+        existing = {k["kmpi_id"]: k for k in _kmpis_of(conn, model_id)}
+        before = copy.deepcopy(list(existing.values()))
+        ids = repository.kmpi_ids(conn)
+        changed, seen = [], set()
+        today = date.today().isoformat()
+        for row in rows:
+            name = str(row.get("name") or "").strip()
+            desc = str(row.get("description") or "").strip()
+            kid = str(row.get("kmpi_id") or "").strip()
+            if not name and not desc and not kid:
+                continue                                    # empty line in the table
+            if not name or not desc:
+                raise ValueError(f"{kid or 'New KMPI'}: give a name and a description with the pass/fail criteria.")
+            freq = row.get("frequency") or kmpi_rules.AS_MODEL
+            if freq not in [kmpi_rules.AS_MODEL] + kmpi_rules.FREQUENCIES:
+                raise ValueError(f"{kid or name}: unknown frequency '{freq}'.")
+            fields = {"name": name, "description": desc, "frequency": freq, "active": bool(row.get("active", True))}
+            if kid in existing:
+                seen.add(kid)
+                k = existing[kid]
+                if any(k.get(f) != v for f, v in fields.items()):
+                    k.update(fields, updated_by=auth.user_option_label(user), updated_on=today)
+                    repository.put_kmpi(conn, k)
+                    changed.append(kid)
+            elif kid:
+                raise ValueError(f"{kid} does not belong to {model_id}; leave the ID blank for a new KMPI.")
+            else:
+                kid = _next_id(ids, "KMPI")
+                ids.append(kid)
+                repository.put_kmpi(conn, {"kmpi_id": kid, "model_id": model_id, **fields,
+                                           "defined_by": auth.user_option_label(user), "defined_on": today})
+                changed.append(kid)
+        for kid, k in existing.items():
+            if kid not in seen and k.get("active", True):
+                k.update(active=False, updated_by=auth.user_option_label(user), updated_on=today)
+                repository.put_kmpi(conn, k)
+                changed.append(kid)
+        if changed:
+            log_event(conn, "save_kmpi_library", "kmpi", ", ".join(changed), model_id,
+                      f"KMPIs added or changed: {', '.join(changed)}",
+                      before=before, after=_kmpis_of(conn, model_id))
+    _refresh()
+    return changed
+
+
 def save_kmpi_return(model_id: str, period: str, entries: dict, submit: bool = False,
                      attest: bool = False, note: str = "") -> str:
-    """The owner or developer enters the period's KMPI values ({kmpi_id: {value,
-    comment}}) and saves a draft, or submits. Submitting needs a value (or a
-    reason it is missing) for every KMPI due, an explanation for every amber or
-    red value, and the attestation. Thresholds are copied into the return, so
-    a later threshold change does not rewrite history. Returns the new status."""
+    """The owner or developer records the period's results — {kmpi_id: {value,
+    result, comment}} typed in or uploaded — as a draft, or submits. Submitting
+    needs a result for every KMPI due, a comment for every Fail or Not available,
+    and the attestation. The KMPI description is copied into the return, so later
+    edits to the criteria do not rewrite history. Returns the new status."""
     auth.require("enter_kmpi")
     user = auth.get_current_user()
     with repository.tx() as conn:
         m = _model_or_fail(conn, model_id)
         _require_first_line(m, user, "report its KMPIs")
+        if m["status"] == governance.STATUS_RETIRED:
+            raise ValueError(f"{model_id} is retired; no more KMPI returns.")
         ret = repository.get_kmpi_return(conn, model_id, period)
         status = kmpi_rules.return_status(ret)
         if status not in kmpi_rules.EDITABLE:
             raise ValueError(f"The {period} return is {status.lower()} and can no longer be changed.")
+        if ret is None and kmpi_rules.frequency_of(period) != model_frequency(m):
+            raise ValueError(f"{model_id} reports {model_frequency(m).lower()}; {period} is not one of its periods.")
         due = kmpi_rules.due_kmpis(_kmpis_of(conn, model_id), period)
         if not due:
             raise ValueError(f"{model_id} has no KMPIs due for {period}.")
+        due_ids = {k["kmpi_id"] for k in due}
+        unknown = sorted(set(entries) - due_ids)
+        if unknown:
+            raise ValueError(f"Not KMPIs of {model_id} due for {period}: {', '.join(unknown)}.")
         before = copy.deepcopy(ret)
         ret = ret or {"model_id": model_id, "period": period, "status": kmpi_rules.DRAFT,
                       "values": {}, "history": []}
@@ -1348,12 +1378,14 @@ def save_kmpi_return(model_id: str, period: str, entries: dict, submit: bool = F
             e = entries.get(k["kmpi_id"])
             if e is None:
                 continue
+            result = e.get("result") or None
+            if result is not None and result not in kmpi_rules.RESULTS:
+                raise ValueError(f"{k['kmpi_id']}: result must be Pass, Fail or Not available.")
             value = e.get("value")
-            value = None if value is None or (isinstance(value, float) and value != value) else float(value)
             ret["values"][k["kmpi_id"]] = {
-                "name": k["name"], "value": value, "comment": (e.get("comment") or "").strip(),
-                "direction": k["direction"], "amber": k["amber"], "red": k["red"], "unit": k.get("unit"),
-                "rag": kmpi_rules.rag(value, k["direction"], k["amber"], k["red"]),
+                "name": k["name"], "description": k["description"],
+                "value": "" if value is None or value != value else str(value).strip(),
+                "result": result, "comment": str(e.get("comment") or "").strip(),
             }
         today = date.today().isoformat()
         ret.update({"entered_by": auth.user_option_label(user), "updated_on": today})
@@ -1362,20 +1394,20 @@ def save_kmpi_return(model_id: str, period: str, entries: dict, submit: bool = F
             if problems:
                 raise ValueError("Cannot submit yet — " + "; ".join(problems) + ".")
             if not attest:
-                raise ValueError("Tick the attestation to submit.")
+                raise ValueError("Tick the confirmation to submit.")
             ret.update({"status": kmpi_rules.SUBMITTED, "submitted_by": auth.user_option_label(user),
                         "submitted_on": today, "attestation": kmpi_rules.ATTESTATION,
                         "note": note.strip() or None})
             action, details = "submit_kmpi_return", f"KMPI return {period} submitted"
         else:
-            ret["status"] = kmpi_rules.DRAFT if status != kmpi_rules.RETURNED else kmpi_rules.RETURNED
+            ret["status"] = kmpi_rules.RETURNED if status == kmpi_rules.RETURNED else kmpi_rules.DRAFT
             action, details = "save_kmpi_return", f"KMPI return {period} saved as draft"
         ret["history"].append({"action": "Submitted" if submit else "Saved", "by": auth.user_option_label(user),
                                "on": today, "comment": note.strip() or None})
-        worst = kmpi_rules.worst(v["rag"] for v in ret["values"].values())
+        c = kmpi_rules.counts(ret["values"])
         repository.put_kmpi_return(conn, ret)
         log_event(conn, action, "kmpi_return", f"{model_id}/{period}", model_id,
-                  details + (f" — worst {worst}" if worst else ""), before=before, after=ret)
+                  f"{details} — {c[kmpi_rules.PASS]} pass, {c[kmpi_rules.FAIL]} fail", before=before, after=ret)
     _refresh()
     return ret["status"]
 
@@ -1383,9 +1415,8 @@ def save_kmpi_return(model_id: str, period: str, entries: dict, submit: bool = F
 def review_kmpi_return(model_id: str, period: str, accept: bool, comment: str = "",
                        raise_finding: bool = False, severity: str = "Medium") -> str | None:
     """The validator reviews a submitted return: marks it reviewed, or sends it
-    back with a reason. On review the validator may raise one finding for the
-    amber and red KMPIs; it is opened through the normal finding workflow.
-    Returns the finding ID if one was raised."""
+    back with a reason. When reviewing, the validator may raise one finding for
+    the failed KMPIs (normal finding workflow). Returns the finding ID, if any."""
     auth.require("review_kmpi")
     user = auth.get_current_user()
     with repository.tx() as conn:
@@ -1396,9 +1427,9 @@ def review_kmpi_return(model_id: str, period: str, accept: bool, comment: str = 
             raise ValueError(f"The {period} return has not been submitted.")
         if not accept and not comment.strip():
             raise ValueError("Say what must be corrected before sending the return back.")
-        breaches = {kid: v for kid, v in ret["values"].items() if v["rag"] in (kmpi_rules.AMBER, kmpi_rules.RED)}
-        if raise_finding and (not accept or not breaches):
-            raise ValueError("A finding can be raised when reviewing a return with amber or red KMPIs.")
+        fails = {kid: v for kid, v in ret["values"].items() if v["result"] != kmpi_rules.PASS}
+        if raise_finding and (not accept or not fails):
+            raise ValueError("A finding can be raised when reviewing a return with failed KMPIs.")
         before = copy.deepcopy(ret)
         today = date.today().isoformat()
         if accept:
@@ -1407,8 +1438,7 @@ def review_kmpi_return(model_id: str, period: str, accept: bool, comment: str = 
         else:
             ret["status"] = kmpi_rules.RETURNED
         ret["history"].append({"action": "Reviewed" if accept else "Returned",
-                               "by": auth.user_option_label(user), "on": today,
-                               "comment": comment.strip() or None})
+                               "by": auth.user_option_label(user), "on": today, "comment": comment.strip() or None})
         repository.put_kmpi_return(conn, ret)
         log_event(conn, "review_kmpi_return" if accept else "return_kmpi_return", "kmpi_return",
                   f"{model_id}/{period}", model_id,
@@ -1417,14 +1447,13 @@ def review_kmpi_return(model_id: str, period: str, accept: bool, comment: str = 
     _refresh()
     if not raise_finding:
         return None
-    lines = [f"{kid} {v['name']}: {v['value'] if v['value'] is not None else 'not reported'} ({v['rag']})"
-             + (f" — owner's explanation: {v['comment']}" if v.get("comment") else "")
-             for kid, v in breaches.items()]
+    lines = [f"{kid} {v['name']}: {v['result']}" + (f" ({v['value']})" if v.get("value") else "")
+             + (f" — owner's comment: {v['comment']}" if v.get("comment") else "") for kid, v in fails.items()]
     fid = create_request(model_id, {
-        "type": "FND", "title": f"KMPI breach {period}: " + ", ".join(v["name"] for v in breaches.values())[:80],
+        "type": "FND", "title": f"KMPI fail {period}: " + ", ".join(v["name"] for v in fails.values())[:80],
         "description": "Raised from the KMPI review.\n" + "\n".join(lines),
         "assigned_to": m["owner"], "severity": severity, "source": "Monitoring",
-        "remediation": comment.strip() or "Investigate the breach and agree corrective action.",
+        "remediation": comment.strip() or "Investigate the failed KMPIs and agree corrective action.",
         "due_date": (date.today() + timedelta(days=90)).isoformat(),
     })
     with repository.tx() as conn:
@@ -1438,13 +1467,124 @@ def review_kmpi_return(model_id: str, period: str, accept: bool, comment: str = 
     return fid
 
 
+# ================================================================ Phase 3 — annual confirmation
+def confirm_model(model_id: str, items: list[bool], comment: str = "") -> None:
+    """The model owner's annual confirmation that the record still holds."""
+    auth.require("confirm_model")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        if governance.person_name(m["owner"]) != user["name"]:
+            raise PermissionError(f"Only the owner of {model_id} confirms it.")
+        if m["status"] not in governance.IN_USE_STATUSES:
+            raise ValueError("Only a model in use is confirmed.")
+        if len(items) != len(governance.CONFIRMATION_ITEMS) or not all(items):
+            raise ValueError("Tick every statement. If one is not true, update the record or record a "
+                             "model change first — or request decommissioning if the model is no longer used.")
+        before = copy.deepcopy(m)
+        m.setdefault("confirmations", []).append({
+            "on": date.today().isoformat(), "by": auth.user_option_label(user),
+            "statements": list(governance.CONFIRMATION_ITEMS), "comment": comment.strip() or None,
+        })
+        repository.put_model(conn, m)
+        log_event(conn, "confirm_model", "confirmation", model_id, model_id,
+                  "Annual confirmation by the owner", before=before, after=m)
+    _refresh()
+
+
+# ================================================================ Phase 3 — decommissioning
+def request_decommission(model_id: str, reason: str, last_use: str, replaced_by: str | None = None,
+                         note: str = "") -> None:
+    """The owner asks to retire a model; the sponsor decides."""
+    auth.require("request_decommission")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        if governance.person_name(m["owner"]) != user["name"]:
+            raise PermissionError(f"Only the owner of {model_id} requests its decommissioning.")
+        if m["status"] == governance.STATUS_RETIRED:
+            raise ValueError(f"{model_id} is already retired.")
+        if (m.get("decommission") or {}).get("status") == "Requested":
+            raise ValueError("A decommissioning request is already waiting for the sponsor.")
+        if reason not in governance.DECOMMISSION_REASONS:
+            raise ValueError("Choose a reason from the list.")
+        if replaced_by == model_id:
+            raise ValueError("A model cannot replace itself.")
+        downstream = [d for d in m["dependencies"]["downstream"]]
+        if downstream and not note.strip():
+            raise ValueError(f"Say how the models fed by this one ({', '.join(downstream)}) will be handled.")
+        if reason == "Other" and not note.strip():
+            raise ValueError("Explain the reason.")
+        before = copy.deepcopy(m)
+        m["decommission"] = {
+            "status": "Requested", "reason": reason, "replaced_by": replaced_by or None, "last_use": last_use,
+            "note": note.strip() or None, "requested_by": auth.user_option_label(user),
+            "requested_on": date.today().isoformat(),
+        }
+        repository.put_model(conn, m)
+        log_event(conn, "request_decommission", "decommission", model_id, model_id,
+                  f"Decommissioning requested: {reason}", before=before, after=m)
+    _refresh()
+
+
+def withdraw_decommission(model_id: str) -> None:
+    auth.require("request_decommission")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        if governance.person_name(m["owner"]) != user["name"]:
+            raise PermissionError(f"Only the owner of {model_id} can withdraw the request.")
+        if (m.get("decommission") or {}).get("status") != "Requested":
+            raise ValueError("There is no decommissioning request to withdraw.")
+        before = copy.deepcopy(m)
+        m.setdefault("decommission_history", []).append({**m.pop("decommission"), "status": "Withdrawn",
+                                                         "decided_on": date.today().isoformat()})
+        repository.put_model(conn, m)
+        log_event(conn, "withdraw_decommission", "decommission", model_id, model_id,
+                  "Decommissioning request withdrawn", before=before, after=m)
+    _refresh()
+
+
+def decide_decommission(model_id: str, approve: bool, comment: str = "") -> None:
+    """The model's sponsor approves (the model becomes Retired) or rejects."""
+    auth.require("approve_decommission")
+    user = auth.get_current_user()
+    with repository.tx() as conn:
+        m = _model_or_fail(conn, model_id)
+        if governance.person_name(m.get("sponsor")) != user["name"]:
+            raise PermissionError(f"Only the sponsor of {model_id} decides on its decommissioning.")
+        d = m.get("decommission") or {}
+        if d.get("status") != "Requested":
+            raise ValueError("There is no decommissioning request to decide.")
+        if not approve and not comment.strip():
+            raise ValueError("Give the reason for rejecting the request.")
+        before = copy.deepcopy(m)
+        today = date.today().isoformat()
+        d.update({"decided_by": auth.user_option_label(user), "decided_on": today,
+                  "decision_comment": comment.strip() or None})
+        if approve:
+            d["status"] = "Approved"
+            m["status_before_retirement"] = m["status"]
+            m["status"] = governance.STATUS_RETIRED
+            m["retired_on"] = d.get("last_use") or today
+            details = f"Retired — decommissioning approved by the sponsor ({d['reason']})"
+        else:
+            d["status"] = "Rejected"
+            m.setdefault("decommission_history", []).append(m.pop("decommission"))
+            details = f"Decommissioning rejected by the sponsor: {comment.strip()[:60]}"
+        repository.put_model(conn, m)
+        log_event(conn, "decide_decommission", "decommission", model_id, model_id, details,
+                  before=before, after=m)
+    _refresh()
+
 
 # ================================================================ Administration
 PERSON_FIELDS = {
     "owner", "developer", "validator", "assigned_to", "initiated_by", "author", "uploaded_by",
     "proposed_by", "confirmed_by", "by", "declared_by", "issued_by", "answered_by",
     "recorded_by", "verified_by", "registered_by", "raised_by", "auditor", "sponsor",
-    "entered_by", "submitted_by", "reviewed_by", "defined_by",
+    "entered_by", "submitted_by", "reviewed_by", "defined_by", "updated_by", "requested_by",
+    "decided_by",
 }
 
 

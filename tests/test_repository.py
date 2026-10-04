@@ -7,7 +7,7 @@ import repository
 
 
 def test_seed_loaded():
-    assert len(repository.list_models()) == 17
+    assert len(repository.list_models()) == 18
     assert repository.verify_audit_chain() == (True, None)
 
 

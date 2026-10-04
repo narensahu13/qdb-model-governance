@@ -38,6 +38,7 @@ VALIDATION_STATUS_COLORS = {
     "Overdue": RED,
     "Never Validated": RED,
     "Pre-implementation": GREY,
+    "Retired": "#9e9e9e",
 }
 
 RATING_COLORS = {

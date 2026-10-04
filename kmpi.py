@@ -1,173 +1,125 @@
-"""Key model performance indicators (KMPIs) — rules as data and pure functions.
+"""Key model performance indicators (KMPIs) — rules as plain functions (no Streamlit).
 
-A KMPI is a measure, defined for one model, that the first line reports every
-period to show the model still performs as validated: discrimination,
-calibration, stability, data quality, overrides, business outcomes.
+Kept deliberately simple:
 
-    KMPI library     one record per KMPI (ID KMPI-001 ...): what it measures, how
-                     it is calculated, the data source, the direction, amber and
-                     red thresholds, and how often it is reported.
-    KMPI return      one per model per period (2026-Q3 ...). The owner or
-                     developer enters the values, explains every amber or red
-                     one, and submits with an attestation; the validator reviews
-                     it, sends it back, or raises a finding.
+    KMPI         an ID (KMPI-001 ...), a short name and a description that states
+                 what is measured and the pass/fail criterion, e.g.
+                 "Gini of 12-month PDs against observed defaults. Pass: Gini >= 0.55."
+    Frequency    set per model (monthly, quarterly, semi-annual, annual); a KMPI
+                 can be reported less often than its model (e.g. an annual KMPI
+                 on a quarterly model).
+    Return       one per model per period. The owner or developer enters each
+                 KMPI's value and result (Pass / Fail / Not available) — typed in
+                 or uploaded from the Excel template — and submits. Fail or Not
+                 available needs a comment. The validator reviews, sends back, or
+                 raises a finding.
 
 Status of a return:  Not started -> Draft -> Submitted -> Reviewed
                                         ^          |
                                         +- Returned+
-
-No Streamlit here, so the rules are unit-tested directly.
 """
 
 from __future__ import annotations
 
-import re
+import io
 from datetime import date, timedelta
 
-# ---------------------------------------------------------------- library
-CATEGORIES = [
-    "Discrimination",
-    "Calibration / back-testing",
-    "Stability",
-    "Data quality",
-    "Overrides and use",
-    "Business outcome",
-    "Fairness (AI)",
-]
-HIGHER, LOWER, RANGE = "Higher is better", "Lower is better", "Within range"
-DIRECTIONS = [HIGHER, LOWER, RANGE]
-FREQUENCIES = ["Quarterly", "Semi-annual", "Annual"]
-UNITS = ["ratio", "%", "pp", "count", "days"]
+# ---------------------------------------------------------------- frequencies and periods
+FREQUENCY_MONTHS = {"Monthly": 1, "Quarterly": 3, "Semi-annual": 6, "Annual": 12}
+FREQUENCIES = list(FREQUENCY_MONTHS)
+AS_MODEL = "As model"                      # a KMPI that follows its model's frequency
+DEFAULT_FREQUENCY = "Quarterly"
+DUE_DAYS = 30                              # a return is due 30 days after period end
 
-# ---------------------------------------------------------------- returns
+PASS, FAIL, NA = "Pass", "Fail", "Not available"
+RESULTS = [PASS, FAIL, NA]
+RESULT_ICON = {PASS: "✅", FAIL: "❌", NA: "⚪", None: ""}
+
 NOT_STARTED, DRAFT, SUBMITTED, RETURNED, REVIEWED = (
     "Not started", "Draft", "Submitted", "Returned", "Reviewed")
-RETURN_STATUSES = [NOT_STARTED, DRAFT, SUBMITTED, RETURNED, REVIEWED]
 EDITABLE = {NOT_STARTED, DRAFT, RETURNED}       # the first line can still change values
-DONE = {SUBMITTED, REVIEWED}                     # counts as reported on time
-DUE_DAYS = 30                                    # a return is due 30 days after period end
+DONE = {SUBMITTED, REVIEWED}                     # counts as reported
 
-GREEN, AMBER, RED, NOT_REPORTED = "Green", "Amber", "Red", "Not reported"
-RAG_ORDER = {RED: 0, AMBER: 1, NOT_REPORTED: 2, GREEN: 3}
-
-ATTESTATION = ("I confirm these values were calculated as defined in the KMPI library, from the "
-               "stated data sources, and that every amber or red value is explained.")
+ATTESTATION = ("I confirm these results follow the pass/fail criteria in each KMPI's description "
+               "and every fail or missing value is explained.")
 
 
-# ---------------------------------------------------------------- thresholds and RAG
-def rag(value, direction: str, amber, red) -> str:
-    """Green / Amber / Red for a value; 'Not reported' when there is no value.
-
-    Higher is better: amber below `amber`, red below `red`.
-    Lower is better:  amber above `amber`, red above `red`.
-    Within range:     `amber` and `red` are [low, high]; green inside amber,
-                      red outside red, amber in between."""
-    if value is None:
-        return NOT_REPORTED
-    v = float(value)
-    if direction == HIGHER:
-        return RED if v < red else AMBER if v < amber else GREEN
-    if direction == LOWER:
-        return RED if v > red else AMBER if v > amber else GREEN
-    if direction == RANGE:
-        if v < red[0] or v > red[1]:
-            return RED
-        if v < amber[0] or v > amber[1]:
-            return AMBER
-        return GREEN
-    raise ValueError(f"Unknown direction {direction}")
+def period_label(year: int, end_month: int, frequency: str) -> str:
+    if frequency == "Monthly":
+        return f"{year}-{end_month:02d}"
+    if frequency == "Quarterly":
+        return f"{year}-Q{end_month // 3}"
+    if frequency == "Semi-annual":
+        return f"{year}-H{end_month // 6}"
+    return str(year)
 
 
-def worst(rags) -> str | None:
-    rags = [r for r in rags if r]
-    return min(rags, key=lambda r: RAG_ORDER[r]) if rags else None
+def _parse(period: str) -> tuple[int, int, str]:
+    """'2026-Q3' -> (2026, 9, 'Quarterly'): year, end month, frequency."""
+    if len(period) == 4:
+        return int(period), 12, "Annual"
+    year, part = int(period[:4]), period[5:]
+    if part.startswith("Q"):
+        return year, 3 * int(part[1]), "Quarterly"
+    if part.startswith("H"):
+        return year, 6 * int(part[1]), "Semi-annual"
+    return year, int(part), "Monthly"
 
 
-def _num(x) -> str:
-    return f"{x:g}"
-
-
-def threshold_text(k: dict) -> str:
-    unit = k.get("unit") or ""
-    u = "" if unit in ("ratio", "count", "") else f" {unit}" if unit != "%" else "%"
-    if k["direction"] == HIGHER:
-        return f"Amber < {_num(k['amber'])}{u} · Red < {_num(k['red'])}{u}"
-    if k["direction"] == LOWER:
-        return f"Amber > {_num(k['amber'])}{u} · Red > {_num(k['red'])}{u}"
-    a, r = k["amber"], k["red"]
-    return f"Green {_num(a[0])}–{_num(a[1])}{u} · Red outside {_num(r[0])}–{_num(r[1])}{u}"
-
-
-def parse_threshold(text, direction: str):
-    """'0.5' -> 0.5; for a range '0.8-1.2' or '0.8 – 1.2' -> [0.8, 1.2]."""
-    text = str(text).strip()
-    num = r"(-?\d+(?:\.\d+)?)"
-    if direction == RANGE:
-        match = re.fullmatch(num + r"\s*(?:-|–|to)\s*" + num, text)
-        if not match or float(match[1]) >= float(match[2]):
-            raise ValueError("For a range, enter low and high, e.g. 0.8-1.2.")
-        return [float(match[1]), float(match[2])]
-    if not re.fullmatch(num, text):
-        raise ValueError(f"Enter one number for the threshold (got '{text}').")
-    return float(text)
-
-
-def check_thresholds(direction: str, amber, red) -> None:
-    """Red must be beyond amber, or the RAG never turns amber."""
-    if direction == HIGHER and not red < amber:
-        raise ValueError("Higher is better: the red threshold must be below the amber threshold.")
-    if direction == LOWER and not red > amber:
-        raise ValueError("Lower is better: the red threshold must be above the amber threshold.")
-    if direction == RANGE and not (red[0] <= amber[0] and amber[1] <= red[1]):
-        raise ValueError("Within range: the green range must sit inside the red limits.")
-
-
-# ---------------------------------------------------------------- periods
-def period_of(d: date) -> str:
-    return f"{d.year}-Q{(d.month - 1) // 3 + 1}"
+def frequency_of(period: str) -> str:
+    return _parse(period)[2]
 
 
 def period_end(period: str) -> date:
-    year, q = int(period[:4]), int(period[-1])
-    month = 3 * q
+    year, month, _ = _parse(period)
     nxt = date(year + (month == 12), month % 12 + 1, 1)
     return nxt - timedelta(days=1)
 
 
 def previous_period(period: str) -> str:
-    year, q = int(period[:4]), int(period[-1])
-    return f"{year - 1}-Q4" if q == 1 else f"{year}-Q{q - 1}"
+    year, month, freq = _parse(period)
+    month -= FREQUENCY_MONTHS[freq]
+    if month <= 0:
+        year, month = year - 1, month + 12
+    return period_label(year, month, freq)
 
 
-def reporting_period(today: date | None = None) -> str:
-    """The period being reported now: the last quarter that has ended."""
+def reporting_period(frequency: str = DEFAULT_FREQUENCY, today: date | None = None) -> str:
+    """The period being reported now: the last one that has ended."""
     today = today or date.today()
-    return previous_period(period_of(today))
+    step = FREQUENCY_MONTHS[frequency]
+    end_month = (today.month - 1) // step * step         # last completed period end month
+    year = today.year
+    if end_month == 0:
+        year, end_month = year - 1, 12
+    return period_label(year, end_month, frequency)
 
 
-def recent_periods(n: int, today: date | None = None) -> list[str]:
-    """The last n reporting periods, oldest first."""
-    p = reporting_period(today)
-    out = [p]
+def recent_periods(frequency: str, n: int, today: date | None = None) -> list[str]:
+    """The last n reporting periods, newest first."""
+    out = [reporting_period(frequency, today)]
     for _ in range(n - 1):
         out.append(previous_period(out[-1]))
-    return list(reversed(out))
+    return out
 
 
 def due_date(period: str) -> date:
     return period_end(period) + timedelta(days=DUE_DAYS)
 
 
-def is_due(k: dict, period: str) -> bool:
-    """Is this KMPI reported in this period (by frequency)?"""
-    q = int(period[-1])
-    freq = k.get("frequency", "Quarterly")
-    return (freq == "Quarterly" or (freq == "Semi-annual" and q in (2, 4))
-            or (freq == "Annual" and q == 4))
+def kmpi_frequency(k: dict, model_frequency: str) -> str:
+    """A KMPI's own frequency, never more often than its model's."""
+    own = k.get("frequency") or AS_MODEL
+    if own == AS_MODEL or FREQUENCY_MONTHS[own] < FREQUENCY_MONTHS[model_frequency]:
+        return model_frequency
+    return own
 
 
 def due_kmpis(kmpis: list[dict], period: str) -> list[dict]:
-    return [k for k in kmpis if k.get("active", True) and is_due(k, period)]
+    """Active KMPIs reported in this period (the period carries the model's frequency)."""
+    _, month, model_freq = _parse(period)
+    return [k for k in kmpis if k.get("active", True)
+            and month % FREQUENCY_MONTHS[kmpi_frequency(k, model_freq)] == 0]
 
 
 def return_status(ret: dict | None) -> str:
@@ -175,8 +127,7 @@ def return_status(ret: dict | None) -> str:
 
 
 def is_overdue(ret: dict | None, period: str, today: date | None = None) -> bool:
-    today = today or date.today()
-    return return_status(ret) not in DONE and today > due_date(period)
+    return return_status(ret) not in DONE and (today or date.today()) > due_date(period)
 
 
 def submission_problems(due: list[dict], values: dict) -> list[str]:
@@ -184,11 +135,66 @@ def submission_problems(due: list[dict], values: dict) -> list[str]:
     problems = []
     for k in due:
         e = values.get(k["kmpi_id"]) or {}
-        comment = (e.get("comment") or "").strip()
-        if e.get("value") is None:
-            if not comment:
-                problems.append(f"{k['kmpi_id']}: enter a value, or say why it is not available")
-            continue
-        if rag(e["value"], k["direction"], k["amber"], k["red"]) in (AMBER, RED) and not comment:
-            problems.append(f"{k['kmpi_id']}: explain the {rag(e['value'], k['direction'], k['amber'], k['red']).lower()} value and the action taken")
+        if e.get("result") not in RESULTS:
+            problems.append(f"{k['kmpi_id']}: choose Pass, Fail or Not available")
+        elif e["result"] != PASS and not (e.get("comment") or "").strip():
+            problems.append(f"{k['kmpi_id']}: say why it is '{e['result']}' and what is being done")
     return problems
+
+
+def counts(values: dict) -> dict:
+    results = [v.get("result") for v in values.values()]
+    return {r: results.count(r) for r in RESULTS}
+
+
+# ---------------------------------------------------------------- template upload
+TEMPLATE_COLUMNS = ["KMPI ID", "KMPI", "Description (pass/fail criteria)", "Value", "Result", "Comment"]
+
+
+def template_rows(due: list[dict], values: dict | None = None) -> list[dict]:
+    values = values or {}
+    return [{"KMPI ID": k["kmpi_id"], "KMPI": k["name"], "Description (pass/fail criteria)": k["description"],
+             "Value": (values.get(k["kmpi_id"]) or {}).get("value") or "",
+             "Result": (values.get(k["kmpi_id"]) or {}).get("result") or "",
+             "Comment": (values.get(k["kmpi_id"]) or {}).get("comment") or ""} for k in due]
+
+
+def template_xlsx(due: list[dict], values: dict | None = None) -> bytes:
+    import pandas as pd
+
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as xw:
+        pd.DataFrame(template_rows(due, values), columns=TEMPLATE_COLUMNS).to_excel(xw, index=False, sheet_name="KMPIs")
+        ws = xw.sheets["KMPIs"]
+        for col, width in zip("ABCDEF", (11, 34, 70, 12, 14, 50)):
+            ws.column_dimensions[col].width = width
+    return buf.getvalue()
+
+
+def parse_upload(data: bytes, filename: str) -> dict:
+    """Excel or CSV in the template layout -> {kmpi_id: {value, result, comment}}."""
+    import pandas as pd
+
+    if filename.lower().endswith((".xlsx", ".xls")):
+        df = pd.read_excel(io.BytesIO(data), dtype=str)
+    elif filename.lower().endswith(".csv"):
+        df = pd.read_csv(io.BytesIO(data), dtype=str)
+    else:
+        raise ValueError("Upload the Excel template (.xlsx) or a CSV with the same columns.")
+    df.columns = [str(c).strip() for c in df.columns]
+    if "KMPI ID" not in df.columns or "Result" not in df.columns:
+        raise ValueError("The file needs the template columns, at least 'KMPI ID' and 'Result'.")
+    out = {}
+    lookup = {r.lower(): r for r in RESULTS}
+    for _, row in df.fillna("").iterrows():
+        kid = str(row["KMPI ID"]).strip()
+        if not kid:
+            continue
+        result = str(row.get("Result", "")).strip()
+        if result and result.lower() not in lookup:
+            raise ValueError(f"{kid}: result must be Pass, Fail or Not available (got '{result}').")
+        out[kid] = {"value": str(row.get("Value", "")).strip(), "result": lookup.get(result.lower()),
+                    "comment": str(row.get("Comment", "")).strip()}
+    if not out:
+        raise ValueError("No KMPI rows found in the file.")
+    return out
