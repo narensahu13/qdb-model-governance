@@ -25,6 +25,14 @@ Governance set-up (decided 30 September 2026):
 - Benchmarks: Federal Reserve **SR 26-2** (April 2026, replaced SR 11-7), PRA SS1/23, and the
   **QCB Artificial Intelligence Guideline** (2024), which applies to QDB as a QCB-licensed bank.
 
+## Look and feel
+
+The app uses the same frame as the IFRS 9 ECL app (nsahuqdb/ifrs9_app_py): the QDB logo and
+the menu on one bar across the top, who is acting at its right, a title row on every page
+(Model detail has its model picker there, as the IFRS 9 app has its run picker), white cards on
+a tinted page, and QDB plum. The stylesheet is copied into `theme.py` and the theme into
+`.streamlit/config.toml`; keep them in step with the IFRS 9 app.
+
 ## Running the app
 
 ```bash
@@ -134,7 +142,9 @@ data_loader.py      Read side, with derived fields
 data_store.py       Write side: one transaction per change, audit before/after, rule checks
 factsheet.py        One-page PDF model factsheet
 auth.py             Roles and permissions (single place to plug in SSO)
-utils.py            Branding and display helpers
+utils.py            Page frame (logo, top menu, title row) and display helpers
+theme.py            Stylesheet shared with the IFRS 9 ECL app
+assets/             QDB logo and icon
 data/seed/          Seed data for the pilot inventory
 scripts/            Reset, seed generator, smoke test
 tests/              Unit tests

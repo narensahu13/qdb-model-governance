@@ -967,12 +967,21 @@ if "_invalid_model_qp" in st.session_state:
     bad = st.session_state.pop("_invalid_model_qp")
     st.warning(f"Unknown model ID in the link: **{bad}**. Showing the first model instead.")
 
-default_id = st.session_state.get("selected_model_id", model_ids[0])
-if default_id not in model_ids:
-    default_id = model_ids[0]
-opts = [labels[i] for i in model_ids]
-selected = model_ids[opts.index(st.selectbox("Select model", opts, index=model_ids.index(default_id)))]
+selected = st.session_state.get("selected_model_id", model_ids[0])
+if selected not in model_ids:
+    selected = model_ids[0]
 st.session_state["selected_model_id"] = selected
+
+
+def _set_model():
+    st.session_state["selected_model_id"] = st.session_state["_pick_model"]
+
+
+def _model_picker():
+    """The model on screen, chosen in the title row (as the IFRS 9 app picks its run)."""
+    st.session_state["_pick_model"] = selected
+    st.selectbox("Model", model_ids, key="_pick_model", on_change=_set_model,
+                 format_func=lambda i: labels[i], label_visibility="collapsed")
 
 prev = st.session_state.get("_md_req_model")
 if prev is None:
@@ -994,12 +1003,11 @@ model_requests = requests_for_model(selected)
 evidence_all = load_evidence()
 model_evidence = [e for e in evidence_all if e["model_id"] == selected]
 
-if "_flash" in st.session_state:
-    st.success(st.session_state.pop("_flash"))
-
 # ---------------------------------------------------------------- header
-utils.header(f"{m['model_id']} — {m['name']}", m["business_line"])
-hb1, hb2 = st.columns([5, 1.2])
+utils.header(f"{m['model_id']} — {m['name']}", m["business_line"], right=_model_picker)
+if "_flash" in st.session_state:
+    st.success(st.session_state.pop("_flash"), icon="✅")
+hb1, hb2 = st.columns([5, 1.2], vertical_alignment="center")
 hb1.markdown(
     utils.tier_badge(m["tier"])
     + utils.status_badge(m["status"])

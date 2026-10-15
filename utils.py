@@ -1,22 +1,34 @@
-"""Shared branding, styling and small HTML badge helpers."""
+"""Shared frame and small HTML helpers, in the IFRS 9 ECL app's look (see theme.py):
+logo and menu on one top bar, a title row per page, white cards on a tinted page."""
+
+import html
+from pathlib import Path
 
 import streamlit as st
 
 import auth
+import theme
 
-NAVY = "#14284b"
-GOLD = "#b8933d"
-GREEN = "#2e7d32"
-AMBER = "#ed6c02"
-RED = "#c62828"
-GREY = "#607d8b"
+ASSETS = Path(__file__).parent / "assets"
+
+# QDB plum, as in the IFRS 9 app; status tones are its err / warn / ok / muted text colours.
+PLUM = "#5b1f6e"
+PLUM_LIGHT = "#8e5aa3"
+TEAL = "#0d9488"
+NAVY = PLUM            # older name, kept for existing calls
+GOLD = PLUM_LIGHT      # older name, kept for existing calls
+GREEN = "#067647"
+AMBER = "#b54708"
+RED = "#b42318"
+GREY = "#475467"
+BLUE = "#175cd3"
 
 RISK_TYPE_COLORS = {
-    "IFRS 9 / Provisioning": "#9467bd",
-    "Credit Rating & Scoring": "#1f77b4",
-    "Pricing": "#8c564b",
-    "Market & Liquidity Risk": "#2ca02c",
-    "Operational & Non-Financial Risk": "#d62728",
+    "IFRS 9 / Provisioning": PLUM,
+    "Credit Rating & Scoring": PLUM_LIGHT,
+    "Pricing": "#d97706",
+    "Market & Liquidity Risk": TEAL,
+    "Operational & Non-Financial Risk": "#8a94a6",
 }
 
 STATUS_COLORS = {
@@ -104,75 +116,51 @@ def drop_request_query_param() -> None:
 
 
 def page_setup(title: str):
+    """Once per run, from app.py: page config, logo, stylesheet, who is acting."""
     st.set_page_config(
-        page_title=f"{title} | QDB Model Governance",
-        page_icon="🏛️",
+        page_title=title,
+        page_icon=str(ASSETS / "favicon.png"),
         layout="wide",
-        initial_sidebar_state="expanded",
+        initial_sidebar_state="collapsed",
     )
+    st.logo(str(ASSETS / "logo.png"), size="large")
+    st.html(theme.CSS + theme.EXTRA_CSS)
+    user = auth.get_current_user()  # self-init default user on a fresh session
+    ini = (user["name"].strip()[:1] or "?").upper()
     st.markdown(
-        f"""
-        <style>
-        .block-container {{ padding-top: 2.2rem; }}
-        h1, h2, h3 {{ color: {NAVY}; }}
-        [data-testid="stSidebar"] {{
-            background: linear-gradient(180deg, {NAVY} 0%, #1d3a6b 100%);
-        }}
-        [data-testid="stSidebar"] * {{ color: #f5f5f5 !important; }}
-        [data-testid="stSidebar"] a:hover {{ color: {GOLD} !important; }}
-        [data-testid="stMetric"] {{
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-left: 4px solid {GOLD};
-            border-radius: 8px;
-            padding: 12px 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        }}
-        .qdb-badge {{
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 12px;
-            color: white;
-            font-size: 0.78rem;
-            font-weight: 600;
-            margin-right: 6px;
-            white-space: nowrap;
-        }}
-        .qdb-header {{
-            border-bottom: 3px solid {GOLD};
-            padding-bottom: 8px;
-            margin-bottom: 16px;
-        }}
-        </style>
-        """,
+        f'<div class="hdr-user"><span class="av">{esc(ini)}</span><span><b>{esc(user["name"])}</b>'
+        f'<small>{esc(auth.ROLE_LABELS[user["role"]])} · Model Risk Management</small></span></div>',
         unsafe_allow_html=True,
     )
-    with st.sidebar:
-        st.markdown(
-            f"""
-            <div style="padding: 4px 0 12px 0;">
-              <div style="font-size: 1.25rem; font-weight: 700;">Qatar Development Bank</div>
-              <div style="font-size: 0.9rem; color: {GOLD} !important; font-weight: 600;">
-                Model Risk Management
-              </div>
-              <div style="font-size: 0.75rem; opacity: 0.7; margin-top: 4px;">
-                Proof of concept — pilot models, mock details
-              </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        auth.get_current_user()  # self-init default user on a fresh session
+
+
+def mark_section(i: int | None) -> None:
+    """Highlight the top menu holding the page on screen (as in the IFRS 9 app)."""
+    if i is None:
+        return
+    st.html(f"""<style>
+  [data-testid="stToolbar"] div:nth-child({i + 1}) >
+      button[data-testid="stTopNavSection"] {{
+      background: rgba(165, 142, 210, .25); color: var(--plum);}}
+</style>""")
+
+
+def esc(text) -> str:
+    return html.escape(str(text if text is not None else ""), quote=True)
+
+
+def header(title: str, subtitle: str = "", right=None):
+    """The page's title row: title and subtitle on the left; on the right an optional
+    picker (``right`` draws it, e.g. the model picker) and the "Switch user" control."""
+    sub = f'<div class="pg-sub">{subtitle}</div>' if subtitle else ""
+    head = f'<div class="pg-head"><div class="pg-title">{esc(title)}</div>{sub}</div>'
+    cols = st.columns([8, 4.2, 1.7] if right else [12, 1.7], vertical_alignment="center", gap="small")
+    cols[0].markdown(head, unsafe_allow_html=True)
+    if right:
+        with cols[1]:
+            right()
+    with cols[-1]:
         auth.user_selector()
-        st.divider()
-
-
-def header(title: str, subtitle: str = ""):
-    sub = f'<div style="color:#666; font-size:0.95rem; margin-top:2px;">{subtitle}</div>' if subtitle else ""
-    st.markdown(
-        f'<div class="qdb-header"><h1 style="margin-bottom:0;">{title}</h1>{sub}</div>',
-        unsafe_allow_html=True,
-    )
 
 
 def fmt_date(iso: str | None, empty: str = "—") -> str:
@@ -186,32 +174,40 @@ def fmt_date(iso: str | None, empty: str = "—") -> str:
         return str(iso)
 
 
-def kpi_cards(items: list[tuple[str, str, str | None]]) -> None:
-    """A row of small cards that wrap instead of truncating (st.metric cuts
-    long values such as dates). items: (label, value, optional note)."""
+def kpi_cards(items) -> None:
+    """KPI tiles (the IFRS 9 app's): items are (label, value, note) or (label, value,
+    note, tone) with tone err / warn / ok / info / plum. Values wrap rather than truncate."""
     cells = []
-    for label, value, note in items:
-        note_html = (
-            f'<div style="font-size:0.78rem; color:#666; margin-top:2px;">{note}</div>'
-            if note else ""
-        )
-        cells.append(
-            f'<div style="flex:1 1 130px; min-width:120px; background:#fff; '
-            f'border:1px solid #e0e0e0; border-left:4px solid {GOLD}; border-radius:8px; '
-            f'padding:10px 14px;">'
-            f'<div style="font-size:0.8rem; color:#555;">{label}</div>'
-            f'<div style="font-size:1.3rem; font-weight:600; color:#1a1a2e; '
-            f'line-height:1.3; overflow-wrap:anywhere;">{value}</div>{note_html}</div>'
-        )
-    st.markdown(
-        '<div style="display:flex; flex-wrap:wrap; gap:12px; margin:4px 0 12px 0;">'
-        + "".join(cells) + "</div>",
-        unsafe_allow_html=True,
-    )
+    for it in items:
+        label, value, note = it[0], it[1], it[2] if len(it) > 2 else None
+        tone = it[3] if len(it) > 3 and it[3] else ("err" if note and RED in str(note) else "plum")
+        cells.append(f'<div class="kpi {tone}"><div class="l">{esc(label)}</div>'
+                     f'<div class="v">{esc(value)}</div>'
+                     + (f'<div class="n">{note}</div>' if note else "") + "</div>")
+    st.markdown('<div class="kpis">' + "".join(cells) + "</div>", unsafe_allow_html=True)
+
+
+def callout(tone: str, text: str, title: str | None = None) -> None:
+    """A one-line verdict, coloured by tone: err, warn, info, ok, muted, plum."""
+    icon = {"err": "!", "warn": "!", "info": "i", "ok": "✓", "muted": "•", "plum": "›"}.get(tone, "•")
+    head = f"<b>{esc(title)}</b> " if title else ""
+    st.markdown(f'<div class="callout {tone}"><span class="ic {tone}">{icon}</span>'
+                f'<div>{head}{text}</div></div>', unsafe_allow_html=True)
+
+
+def card_header(title: str, num=None, state: str = "", right: str = "") -> None:
+    """A card's title row: an optional numbered dot (green when done), title, right pill."""
+    n = (f'<span class="num {esc(state)}">{"✓" if state == "done" else esc(num)}</span>'
+         if num is not None else "")
+    r = f'<span class="r">{right}</span>' if right else ""
+    st.markdown(f'<div class="card-h">{n}<span class="t">{esc(title)}</span>{r}</div>',
+                unsafe_allow_html=True)
 
 
 def badge(text: str, color: str) -> str:
-    return f'<span class="qdb-badge" style="background:{color};">{text}</span>'
+    """A pill tinted with ``color`` (text in the colour, a faint fill and border)."""
+    return (f'<span class="qdb-badge" style="color:{color}; background:{color}14; '
+            f'border-color:{color}40;">{esc(text)}</span>')
 
 
 def tier_badge(tier: int) -> str:

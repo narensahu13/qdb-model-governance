@@ -19,8 +19,8 @@ from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 
-NAVY = colors.HexColor("#14284b")
-GOLD = colors.HexColor("#b8933d")
+NAVY = colors.HexColor("#5b1f6e")   # QDB plum, as in the IFRS 9 app
+GOLD = colors.HexColor("#8e5aa3")
 GREY = colors.HexColor("#5f6b7a")
 LIGHT = colors.HexColor("#f4f6fa")
 RAG = {"Pass": colors.HexColor("#2e7d32"), "Fail": colors.HexColor("#c62828"),
@@ -86,10 +86,25 @@ def build_factsheet(model: dict, requests: list[dict], monitoring: list[dict],
     story = []
 
     # ------------------------------------------------ header
-    story.append(_p(f"{model['model_id']} — {model['name']}", st["title"]))
-    story.append(_p(
-        f"Model factsheet · {model['risk_type']} · {model['business_line']} · "
-        f"version {model['version']} · generated {_d(date.today().isoformat())}", st["sub"]))
+    from pathlib import Path
+
+    from reportlab.platypus import Image
+
+    logo_path = Path(__file__).parent / "assets" / "logo.png"
+    title_cell = [_p(f"{model['model_id']} — {model['name']}", st["title"]),
+                  _p(f"Model factsheet · {model['risk_type']} · {model['business_line']} · "
+                     f"version {model['version']} · generated {_d(date.today().isoformat())}", st["sub"])]
+    if logo_path.exists():
+        from reportlab.lib.utils import ImageReader
+
+        lw, lh = ImageReader(str(logo_path)).getSize()
+        logo = Image(str(logo_path), width=44 * mm, height=44 * mm * lh / lw)
+        head = Table([[title_cell, logo]], colWidths=[W - 48 * mm, 48 * mm])
+        head.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"), ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+                                  ("LEFTPADDING", (0, 0), (-1, -1), 0), ("RIGHTPADDING", (0, 0), (-1, -1), 0)]))
+        story.append(head)
+    else:
+        story.extend(title_cell)
     story.append(Spacer(1, 3))
     bar = Table([[""]], colWidths=[W], rowHeights=[1.6])
     bar.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), GOLD)]))

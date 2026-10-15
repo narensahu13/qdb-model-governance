@@ -23,8 +23,8 @@ ROLE_LABELS = {
 
 ROLE_COLORS = {
     "LOD1": "#1f77b4",
-    "LOD2": "#14284b",
-    "LOD3": "#b8933d",
+    "LOD2": "#5b1f6e",
+    "LOD3": "#8e5aa3",
     "ADMIN": "#607d8b",
     "SPONSOR": "#6a1b9a",
     "VIEWER": "#90a4ae",
@@ -261,23 +261,25 @@ def permission_denied(action: str):
     )
 
 
+def _set_user():
+    st.session_state[_SESSION_KEY] = st.session_state["_acting_as"]
+
+
 def user_selector():
-    """Sidebar 'Acting as' selector. Rendered once from utils.page_setup."""
+    """"Switch user" in each page's title row (PoC role simulation; single sign-on
+    replaces it in production). The acting user lives in a plain session key, and the
+    widget is re-seeded from it on every page, so it survives pages that stop early."""
     users = load_users()
     names = [u["name"] for u in users]
     labels = {u["name"]: f"{u['name']} — {ROLE_LABELS[u['role']]}" for u in users}
-    if _SESSION_KEY not in st.session_state:
-        st.session_state[_SESSION_KEY] = _DEFAULT_USER
-    st.selectbox(
-        "Acting as",
-        names,
-        key=_SESSION_KEY,
-        format_func=lambda n: labels.get(n, n),
-    )
-    u = get_current_user()
-    role_label = ROLE_LABELS[u["role"]]
-    st.caption(u["title"] if u["title"] == role_label else f"{u['title']} · {role_label}")
-    st.caption("PoC: role simulation — replaced by single sign-on if the platform goes to production")
+    current = get_current_user()["name"]
+    st.session_state["_acting_as"] = current if current in names else names[0]
+    with st.popover("Switch user", icon=":material/switch_account:", width="stretch"):
+        st.selectbox("Acting as", names, key="_acting_as", on_change=_set_user,
+                     format_func=lambda n: labels.get(n, n))
+        u = get_current_user()
+        st.caption(f"{u['title']} · {ROLE_LABELS[u['role']]}")
+        st.caption("PoC: role simulation — replaced by single sign-on in production.")
 
 
 def role_badge_html(role: str) -> str:
