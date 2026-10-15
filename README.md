@@ -4,8 +4,8 @@ A model risk management (MRM) platform for **Qatar Development Bank**: one inven
 model, with validation, findings, model changes, monitoring, documents and an audit trail an
 auditor can rely on.
 
-The inventory holds QDB's **pilot models** — the IFRS 9 suite (PD, LGD, EAD, staging, scenario
-weights, ECL engine), the CreditLens obligor rating models, the pricing model, the scoring models
+The inventory holds QDB's **pilot models** — the IFRS 9 suite (PD for the lending portfolio and a
+macro point-in-time PD for the investment portfolio, LGD, EAD, staging, scenario weights, ECL engine), the CreditLens obligor rating models, the pricing model, the scoring models
 in development (transaction, credit bureau individual and corporate, combination module) and
 placeholder models for liquidity, market, operational and non-financial risk. **Model names and
 relationships are real; dates, exposures, metrics and findings are mock data** to be edited.
@@ -83,7 +83,7 @@ fingerprint recorded at upload and re-checked on every download. Point the platf
 | Lifecycle gates G1–G5 | Tier confirmed → submitted with required documents → validation signed off → approved by the owner, then the sponsor → implementation verified (at least one KMPI defined); a model cannot reach use without all five |
 | Validation engagement | Scope and independence declaration, information requests answered with evidence, draft with proposed rating, owner's factual-accuracy review (7 days), sign-off; validations close only through sign-off |
 | Approvals and conditions | The owner signs, then the sponsor; either can add conditions or reject (with a reason). Conditions are marked met by the owner and verified by a validator |
-| KMPIs | Each model has KMPIs with an ID (KMPI-001 …), a name and a description that states the pass/fail criterion. The owner sets how often the model reports (monthly, quarterly, semi-annual, annual); a KMPI can be reported less often. Each return is due 30 days after period end: the owner or developer enters Value, Result (Pass / Fail / Not available) and Comment — in the table or by uploading the Excel template — explains every fail, and submits; the validator reviews, sends back, or raises a finding. The description is copied into each return |
+| KMPIs | Each model has KMPIs with an ID such as KMPI_QDB-001_01 (model ID and number), a name and a description that states the pass/fail criterion. The owner sets how often the model reports (monthly, quarterly, semi-annual, annual); a KMPI can be reported less often. Each return is due 30 days after period end: the owner or developer enters Value, Result (Pass / Fail / Not available) and Comment — in the table or by uploading the Excel template — explains every fail, and submits; the validator reviews, sends back, or raises a finding. The description is copied into each return |
 | Annual confirmation | Once a year the owner ticks three statements (record accurate, used as approved, limitations and KMPIs still fit); overdue confirmations show on My Tasks, the dashboard and the inventory |
 | Decommissioning | The owner requests it (reason, replacement, last day of use, plan for models it feeds); the sponsor approves; the model becomes Retired and its record read-only |
 
@@ -100,7 +100,7 @@ tab). The seed files below only define the starting data; edit them and run
 | `data/seed/users.json` | Users and roles for the "Acting as" selector, including the model sponsors (replaced by single sign-on in production) |
 | `data/seed/tools.json` | EUC tools, AI tools and "not a model" decisions |
 | `data/seed/evidence.json` + `data/seed/evidence/` | Seed evidence files |
-| `data/seed/kmpis.json` | 44 KMPIs across the pilot models, each with its pass/fail criterion |
+| `data/seed/kmpis.json` | 47 KMPIs across the pilot models (IDs like KMPI_QDB-001_01), each with its pass/fail criterion |
 | `data/seed/kmpi_returns.json` | KMPI returns since 2024 at each model's frequency (most quarterly; liquidity monthly, pricing semi-annual, op risk annual) |
 | `data/seed/audit_log.json` | Historical audit events |
 
@@ -111,7 +111,7 @@ you want to discard edits to the seed.
 
 ```bash
 pip install -r requirements-dev.txt
-python -m pytest tests          # rules, repository, workflows, inventory, validation workflow, KMPIs (78 tests)
+python -m pytest tests          # rules, repository, workflows, inventory, validation workflow, KMPIs (79 tests)
 python scripts/smoke_test.py    # every page and form through Streamlit AppTest
 ```
 

@@ -176,7 +176,7 @@ CREDIT_REG = ["QCB credit risk instructions", "IFRS 9 (feeds PD)", "SR 26-2 (ben
 MODELS = [
     # ------------------------------------------------------------ IFRS 9
     model(
-        "QDB-001", "IFRS 9 PD Model (point-in-time term structure)",
+        "QDB-001", "IFRS 9 PD Model — Lending Portfolio (point-in-time term structure)",
         version="2.1", risk_type="IFRS 9 / Provisioning", category="Parameter estimation",
         business_line="Finance & Risk — IFRS 9", source="In-house",
         methodology="Through-the-cycle rating-to-PD mapping with macro-linked point-in-time adjustment and lifetime term structure",
@@ -254,7 +254,7 @@ MODELS = [
         scores={"materiality": "High", "complexity": "Low", "regulatory_impact": "High"},
         tier_rationale="Stage allocation decides 12-month vs lifetime ECL for the whole book.",
         status="In Production", approval_date="2023-12-18",
-        regulatory_mapping=IFRS9_REG, upstream=["QDB-001"],
+        regulatory_mapping=IFRS9_REG, upstream=["QDB-001", "QDB-019"],
         docs_done=["Model Development Document", "Methodology Document", "Data Quality Assessment", "Validation Report", "Ongoing Monitoring Plan"],
         monitoring_metrics=["Stage 2 Ratio (%)", "Staging Override Rate (%)"],
         data_sources=["Core banking DPD", "CreditLens ratings", "Watch-list register"],
@@ -301,7 +301,7 @@ MODELS = [
         scores={"materiality": "High", "complexity": "Medium", "regulatory_impact": "High"},
         tier_rationale="Produces the reported ECL figure.",
         status="Approved with Conditions", approval_date="2023-12-18",
-        regulatory_mapping=IFRS9_REG + ["QCB outsourcing instructions"], upstream=["QDB-001", "QDB-002", "QDB-003", "QDB-004", "QDB-005"],
+        regulatory_mapping=IFRS9_REG + ["QCB outsourcing instructions"], upstream=["QDB-001", "QDB-019", "QDB-002", "QDB-003", "QDB-004", "QDB-005"],
         docs_done=["User Guide / Operating Manual", "Validation Report"],
         monitoring_metrics=["Unexplained ECL Movement (%)"],
         data_sources=["ETL consolidated data template"],
@@ -572,10 +572,44 @@ MODELS = [
         change_log=[chg("2019-03-01", "3.2", "Last recalibration of weights.", "Model Developer 3", "Material",
                         "Annual review.")],
     ),
+    model(
+        "QDB-019", "IFRS 9 PD Model — Investment Portfolio (macro point-in-time PD)",
+        version="1.1", risk_type="IFRS 9 / Provisioning", category="Parameter estimation",
+        business_line="Treasury — Investment Portfolio", source="In-house",
+        methodology="External-rating TTC PDs (agency default studies) converted to point-in-time PDs with a "
+                    "single-factor (Vasicek) credit-cycle index driven by the macro scenarios; lifetime term structure",
+        description="12-month and lifetime point-in-time PDs for the bond and sukuk investment portfolio, from issuer "
+                    "external ratings adjusted for the scenario-weighted macroeconomic outlook.",
+        owner="Model Owner 3", developer="Model Developer 2", validator=HASSAN,
+        sponsor="", area="treasury",
+        scores={"materiality": "High", "complexity": "Medium", "regulatory_impact": "High"},
+        tier_rationale="Drives ECL on the whole investment portfolio; output feeds the financial statements.",
+        status="In Production", approval_date="2024-12-20",
+        regulatory_mapping=IFRS9_REG, upstream=["QDB-005"],
+        docs_done=["Model Development Document", "Methodology Document", "Data Quality Assessment",
+                   "Validation Report", "Ongoing Monitoring Plan"],
+        monitoring_metrics=[],
+        data_sources=["Treasury securities holdings", "S&P / Moody's / Fitch issuer ratings",
+                      "Agency annual default studies", "Macroeconomic scenarios (QDB-005)"],
+        platform="Python (Risk Analytics) feeding the ECL engine", usage="Monthly batch",
+        users=["Risk Analytics", "Treasury", "Financial Control"],
+        assumptions=["Agency TTC default rates represent issuers in the portfolio",
+                     "One systematic credit-cycle factor explains PiT movements (asset correlation per Basel)"],
+        limitations=["Very few defaults among investment-grade issuers: calibration relies on agency data",
+                     "Unrated holdings take a conservative fallback rating"],
+        exposure=6200,
+        change_log=[
+            chg("2024-11-01", "1.0", "First version for the investment portfolio.", "Model Developer 2", "Material", "New model."),
+            chg("2026-03-15", "1.1", "Agency default tables updated to the 2025 studies.", "Model Developer 2",
+                "Non-material", "Data refresh within the approved methodology."),
+        ],
+    ),
 ]
 
 # ---------------------------------------------------------------- uses (mock)
 USES = {
+    "QDB-019": [("Stage 1 and 2 ECL — investments", "Finance & Risk", "12-month and lifetime PD for bonds and sukuk"),
+                ("Investment limits", "Treasury / ALCO", "PD-based expected loss in issuer limit reviews")],
     "QDB-001": [("Stage 1 and 2 ECL", "Finance & Risk", "12-month and lifetime PD in the monthly ECL run"),
                    ("Risk-based pricing", "SME & Corporate Lending", "Expected-loss component of the profit rate")],
     "QDB-002": [("Stage 1–3 ECL", "Finance & Risk", "LGD in the monthly ECL run (planned)")],
@@ -856,6 +890,10 @@ for v, rating, on, rev in ((v_cbi, "Fit with Conditions", "2026-09-20", "2026-09
         signed={"rating": rating, "by": HASSAN, "on": on},
     )
 
+closed_val("QDB-019", "2024-12-05", "Initial", "Fit for Purpose", HASSAN, T_PD,
+           "Initial validation of the investment-portfolio PD model.")
+closed_val("QDB-019", "2025-12-10", "Periodic", "Fit for Purpose", HASSAN, T_PD,
+           "Annual validation: PiT conversion reasonable; agency tables current.")
 REQ_BY_ID = {r["request_id"]: r for r in REQUESTS}
 
 # ---------------------------------------------------------------- approvals and implementation (mock)
@@ -863,7 +901,7 @@ from datetime import date as _date, timedelta as _td  # noqa: E402
 
 # Sponsor of each model (who approves it after its owner).
 SPONSOR_BY_MODEL = {
-    **{f"QDB-{i:03d}": "Model Sponsor 1" for i in (1, 2, 3, 4, 5, 7, 8, 16, 18)},   # CRO
+    **{f"QDB-{i:03d}": "Model Sponsor 1" for i in (1, 2, 3, 4, 5, 7, 8, 16, 18, 19)},   # CRO
     **{f"QDB-{i:03d}": "Model Sponsor 2" for i in (6, 14, 15)},                 # CFO
     **{f"QDB-{i:03d}": "Model Sponsor 3" for i in (9, 10, 11, 12, 13)},         # business
     "QDB-017": "Model Sponsor 4",                                               # compliance
@@ -982,6 +1020,19 @@ LIBRARY = [
      "Exposure that gets no model PD because the obligor has no valid current rating.",
      "Exposure of obligors without a valid current rating, given the fallback PD ÷ total exposure in scope.",
      "ECL input file; CreditLens rating dates", 1.2, 1.6, None),
+    # QDB-019 IFRS 9 PD — investment portfolio
+    ("QDB-019", "Externally rated exposure (%)", "Data quality", "%", H, 98.0, 95.0, "Quarterly",
+     "Holdings without an agency rating get a conservative fallback PD.",
+     "Exposure with a current S&P, Moody's or Fitch issuer rating ÷ total investment-portfolio exposure.",
+     "Treasury holdings; rating feed", 99.2, 98.6, None),
+    ("QDB-019", "Rank correlation with market-implied PDs", "Discrimination", "ratio", H, 0.60, 0.45, "Quarterly",
+     "Whether the model ranks issuers the way bond and CDS markets do.",
+     "Spearman rank correlation between model 12-month PiT PDs and PDs implied by bond spreads or CDS, issuers with market data.",
+     "Model output; market spread data", 0.72, 0.66, None),
+    ("QDB-019", "Age of the agency default tables (days)", "Data quality", "days", L, 400, 550, "Quarterly",
+     "TTC PDs must come from the latest agency default studies.",
+     "Days between period end and the publication date of the agency default study used.",
+     "Agency default studies", 300, 200, None),
     # QDB-002 IFRS 9 LGD (in development — KMPIs planned)
     ("QDB-002", "LGD back-test (realised ÷ predicted)", "Calibration / back-testing", "ratio", R, [0.85, 1.15], [0.70, 1.30], "Quarterly",
      "Whether predicted losses match the losses realised on closed workouts.",
@@ -1193,7 +1244,8 @@ def _passes(v, direction, amber):
 
 KMPIS, SERIES = [], {}
 for i, (mid, name, cat, unit, direction, amber, red, freq, desc, definition, source, start, end, note) in enumerate(LIBRARY, 1):
-    kid = f"KMPI-{i:03d}"
+    _n = sum(1 for k in KMPIS if k["model_id"] == mid) + 1
+    kid = _k.kmpi_id(mid, _n)
     KMPIS.append({
         "kmpi_id": kid, "model_id": mid, "name": name,
         "description": f"{_criterion(direction, amber, unit)} {definition}",
@@ -1278,7 +1330,7 @@ for m in MODELS:
 LAST_CONFIRMED = {"QDB-001": "2026-02-10", "QDB-003": "2026-02-10", "QDB-004": "2026-02-10",
                   "QDB-005": "2026-02-10", "QDB-006": "2026-03-05", "QDB-007": "2026-01-20",
                   "QDB-008": "2026-01-20", "QDB-009": "2025-11-10", "QDB-014": "2025-09-20",
-                  "QDB-015": "2026-03-15", "QDB-016": "2026-04-02"}          # QDB-017: never confirmed
+                  "QDB-015": "2026-03-15", "QDB-016": "2026-04-02", "QDB-019": "2026-01-15"}          # QDB-017: never confirmed
 CONFIRMATION_STATEMENTS = [
     "The record is accurate: purpose, uses, users, data sources and platform",
     "The model is used as approved, with no unrecorded changes",

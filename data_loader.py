@@ -312,6 +312,10 @@ def models_dataframe() -> pd.DataFrame:
             "Overdue Issues": int((open_issues["status"] == "Overdue").sum()),
             "Doc Completeness (%)": round(100 * sum(docs.values()) / len(docs)) if docs else 0,
             "AI System": bool(m.get("ai_system")),
+            "Upstream": ", ".join(m["dependencies"]["upstream"]),
+            "Downstream": ", ".join(m["dependencies"]["downstream"]),
+            "Model Users": ", ".join(m.get("model_users") or []),
+            "Uses": len(m.get("uses") or []),
             "KMPI Fails": len((latest_kmpi_position(m["model_id"]) or {}).get("fail", [])),
             "Annual Confirmation": governance.confirmation_status(m) or "-",
         })
@@ -350,6 +354,7 @@ def factsheet_pdf(model_id: str) -> bytes:
     mon = mon[mon["model_id"] == model_id].to_dict("records")
     return factsheet.build_factsheet(
         m, requests_for_model(model_id), mon, documentation_status(m), validation_status(m),
+        model_names={x["model_id"]: x["name"] for x in load_models()},
     )
 
 

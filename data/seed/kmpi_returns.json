@@ -4,35 +4,35 @@
     "period": "2024-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-001": {
+      "KMPI_QDB-001_01": {
         "name": "Gini — 12-month PD rank ordering",
         "description": "Pass if ≥ 0.55, otherwise Fail. Gini = 2 × AUC − 1, using each obligor's 12-month PD at the start of the window and defaults observed over the following 12 months (performing SME and corporate obligors).",
         "value": "0.66",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-002": {
+      "KMPI_QDB-001_02": {
         "name": "Default-rate back-test (observed ÷ predicted)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Observed 12-month default rate of the cohort performing 12 months before period end ÷ the cohort's exposure-weighted average predicted 12-month PD.",
         "value": "1.01",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-003": {
+      "KMPI_QDB-001_03": {
         "name": "Rating grades failing the binomial test",
         "description": "Pass if ≤ 1, otherwise Fail. Number of rating grades whose observed default count exceeds the 99% one-sided binomial bound implied by the grade PD.",
         "value": "0",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-004": {
+      "KMPI_QDB-001_04": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI = Σ (actual% − expected%) × ln(actual% ÷ expected%) over rating grades, current portfolio against the development sample.",
         "value": "0.04",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-005": {
+      "KMPI_QDB-001_05": {
         "name": "Exposure on fallback PD (%)",
         "description": "Pass if ≤ 2.0%, otherwise Fail. Exposure of obligors without a valid current rating, given the fallback PD ÷ total exposure in scope.",
         "value": "1.2%",
@@ -74,28 +74,28 @@
     "period": "2025-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-001": {
+      "KMPI_QDB-001_01": {
         "name": "Gini — 12-month PD rank ordering",
         "description": "Pass if ≥ 0.55, otherwise Fail. Gini = 2 × AUC − 1, using each obligor's 12-month PD at the start of the window and defaults observed over the following 12 months (performing SME and corporate obligors).",
         "value": "0.65",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-002": {
+      "KMPI_QDB-001_02": {
         "name": "Default-rate back-test (observed ÷ predicted)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Observed 12-month default rate of the cohort performing 12 months before period end ÷ the cohort's exposure-weighted average predicted 12-month PD.",
         "value": "1.03",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-004": {
+      "KMPI_QDB-001_04": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI = Σ (actual% − expected%) × ln(actual% ÷ expected%) over rating grades, current portfolio against the development sample.",
         "value": "0.05",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-005": {
+      "KMPI_QDB-001_05": {
         "name": "Exposure on fallback PD (%)",
         "description": "Pass if ≤ 2.0%, otherwise Fail. Exposure of obligors without a valid current rating, given the fallback PD ÷ total exposure in scope.",
         "value": "1.2%",
@@ -137,28 +137,28 @@
     "period": "2025-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-001": {
+      "KMPI_QDB-001_01": {
         "name": "Gini — 12-month PD rank ordering",
         "description": "Pass if ≥ 0.55, otherwise Fail. Gini = 2 × AUC − 1, using each obligor's 12-month PD at the start of the window and defaults observed over the following 12 months (performing SME and corporate obligors).",
         "value": "0.65",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-002": {
+      "KMPI_QDB-001_02": {
         "name": "Default-rate back-test (observed ÷ predicted)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Observed 12-month default rate of the cohort performing 12 months before period end ÷ the cohort's exposure-weighted average predicted 12-month PD.",
         "value": "1.05",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-004": {
+      "KMPI_QDB-001_04": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI = Σ (actual% − expected%) × ln(actual% ÷ expected%) over rating grades, current portfolio against the development sample.",
         "value": "0.05",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-005": {
+      "KMPI_QDB-001_05": {
         "name": "Exposure on fallback PD (%)",
         "description": "Pass if ≤ 2.0%, otherwise Fail. Exposure of obligors without a valid current rating, given the fallback PD ÷ total exposure in scope.",
         "value": "1.3%",
@@ -200,28 +200,28 @@
     "period": "2025-Q3",
     "status": "Reviewed",
     "values": {
-      "KMPI-001": {
+      "KMPI_QDB-001_01": {
         "name": "Gini — 12-month PD rank ordering",
         "description": "Pass if ≥ 0.55, otherwise Fail. Gini = 2 × AUC − 1, using each obligor's 12-month PD at the start of the window and defaults observed over the following 12 months (performing SME and corporate obligors).",
         "value": "0.64",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-002": {
+      "KMPI_QDB-001_02": {
         "name": "Default-rate back-test (observed ÷ predicted)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Observed 12-month default rate of the cohort performing 12 months before period end ÷ the cohort's exposure-weighted average predicted 12-month PD.",
         "value": "1.07",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-004": {
+      "KMPI_QDB-001_04": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI = Σ (actual% − expected%) × ln(actual% ÷ expected%) over rating grades, current portfolio against the development sample.",
         "value": "0.06",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-005": {
+      "KMPI_QDB-001_05": {
         "name": "Exposure on fallback PD (%)",
         "description": "Pass if ≤ 2.0%, otherwise Fail. Exposure of obligors without a valid current rating, given the fallback PD ÷ total exposure in scope.",
         "value": "1.4%",
@@ -263,35 +263,35 @@
     "period": "2025-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-001": {
+      "KMPI_QDB-001_01": {
         "name": "Gini — 12-month PD rank ordering",
         "description": "Pass if ≥ 0.55, otherwise Fail. Gini = 2 × AUC − 1, using each obligor's 12-month PD at the start of the window and defaults observed over the following 12 months (performing SME and corporate obligors).",
         "value": "0.64",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-002": {
+      "KMPI_QDB-001_02": {
         "name": "Default-rate back-test (observed ÷ predicted)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Observed 12-month default rate of the cohort performing 12 months before period end ÷ the cohort's exposure-weighted average predicted 12-month PD.",
         "value": "1.10",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-003": {
+      "KMPI_QDB-001_03": {
         "name": "Rating grades failing the binomial test",
         "description": "Pass if ≤ 1, otherwise Fail. Number of rating grades whose observed default count exceeds the 99% one-sided binomial bound implied by the grade PD.",
         "value": "1",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-004": {
+      "KMPI_QDB-001_04": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI = Σ (actual% − expected%) × ln(actual% ÷ expected%) over rating grades, current portfolio against the development sample.",
         "value": "0.07",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-005": {
+      "KMPI_QDB-001_05": {
         "name": "Exposure on fallback PD (%)",
         "description": "Pass if ≤ 2.0%, otherwise Fail. Exposure of obligors without a valid current rating, given the fallback PD ÷ total exposure in scope.",
         "value": "1.4%",
@@ -333,28 +333,28 @@
     "period": "2026-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-001": {
+      "KMPI_QDB-001_01": {
         "name": "Gini — 12-month PD rank ordering",
         "description": "Pass if ≥ 0.55, otherwise Fail. Gini = 2 × AUC − 1, using each obligor's 12-month PD at the start of the window and defaults observed over the following 12 months (performing SME and corporate obligors).",
         "value": "0.63",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-002": {
+      "KMPI_QDB-001_02": {
         "name": "Default-rate back-test (observed ÷ predicted)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Observed 12-month default rate of the cohort performing 12 months before period end ÷ the cohort's exposure-weighted average predicted 12-month PD.",
         "value": "1.11",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-004": {
+      "KMPI_QDB-001_04": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI = Σ (actual% − expected%) × ln(actual% ÷ expected%) over rating grades, current portfolio against the development sample.",
         "value": "0.07",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-005": {
+      "KMPI_QDB-001_05": {
         "name": "Exposure on fallback PD (%)",
         "description": "Pass if ≤ 2.0%, otherwise Fail. Exposure of obligors without a valid current rating, given the fallback PD ÷ total exposure in scope.",
         "value": "1.5%",
@@ -396,28 +396,28 @@
     "period": "2026-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-001": {
+      "KMPI_QDB-001_01": {
         "name": "Gini — 12-month PD rank ordering",
         "description": "Pass if ≥ 0.55, otherwise Fail. Gini = 2 × AUC − 1, using each obligor's 12-month PD at the start of the window and defaults observed over the following 12 months (performing SME and corporate obligors).",
         "value": "0.63",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-002": {
+      "KMPI_QDB-001_02": {
         "name": "Default-rate back-test (observed ÷ predicted)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Observed 12-month default rate of the cohort performing 12 months before period end ÷ the cohort's exposure-weighted average predicted 12-month PD.",
         "value": "1.13",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-004": {
+      "KMPI_QDB-001_04": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI = Σ (actual% − expected%) × ln(actual% ÷ expected%) over rating grades, current portfolio against the development sample.",
         "value": "0.07",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-005": {
+      "KMPI_QDB-001_05": {
         "name": "Exposure on fallback PD (%)",
         "description": "Pass if ≤ 2.0%, otherwise Fail. Exposure of obligors without a valid current rating, given the fallback PD ÷ total exposure in scope.",
         "value": "1.5%",
@@ -459,28 +459,28 @@
     "period": "2026-Q3",
     "status": "Draft",
     "values": {
-      "KMPI-001": {
+      "KMPI_QDB-001_01": {
         "name": "Gini — 12-month PD rank ordering",
         "description": "Pass if ≥ 0.55, otherwise Fail. Gini = 2 × AUC − 1, using each obligor's 12-month PD at the start of the window and defaults observed over the following 12 months (performing SME and corporate obligors).",
         "value": "0.62",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-002": {
+      "KMPI_QDB-001_02": {
         "name": "Default-rate back-test (observed ÷ predicted)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Observed 12-month default rate of the cohort performing 12 months before period end ÷ the cohort's exposure-weighted average predicted 12-month PD.",
         "value": "1.15",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-004": {
+      "KMPI_QDB-001_04": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI = Σ (actual% − expected%) × ln(actual% ÷ expected%) over rating grades, current portfolio against the development sample.",
         "value": "",
         "result": null,
         "comment": ""
       },
-      "KMPI-005": {
+      "KMPI_QDB-001_05": {
         "name": "Exposure on fallback PD (%)",
         "description": "Pass if ≤ 2.0%, otherwise Fail. Exposure of obligors without a valid current rating, given the fallback PD ÷ total exposure in scope.",
         "value": "",
@@ -504,14 +504,14 @@
     "period": "2024-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-008": {
+      "KMPI_QDB-003_01": {
         "name": "CCF back-test (realised ÷ predicted EAD)",
         "description": "Pass if between 0.90 and 1.10, otherwise Fail. Realised exposure at default ÷ EAD predicted 12 months before default, facilities that defaulted in the last 12 months.",
         "value": "0.93",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-009": {
+      "KMPI_QDB-003_02": {
         "name": "Defaults drawn above the approved limit (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Defaulted facilities whose drawn balance at default exceeded the approved limit ÷ defaulted facilities in the last 12 months.",
         "value": "2.1%",
@@ -553,14 +553,14 @@
     "period": "2025-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-008": {
+      "KMPI_QDB-003_01": {
         "name": "CCF back-test (realised ÷ predicted EAD)",
         "description": "Pass if between 0.90 and 1.10, otherwise Fail. Realised exposure at default ÷ EAD predicted 12 months before default, facilities that defaulted in the last 12 months.",
         "value": "0.93",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-009": {
+      "KMPI_QDB-003_02": {
         "name": "Defaults drawn above the approved limit (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Defaulted facilities whose drawn balance at default exceeded the approved limit ÷ defaulted facilities in the last 12 months.",
         "value": "2.2%",
@@ -602,14 +602,14 @@
     "period": "2025-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-008": {
+      "KMPI_QDB-003_01": {
         "name": "CCF back-test (realised ÷ predicted EAD)",
         "description": "Pass if between 0.90 and 1.10, otherwise Fail. Realised exposure at default ÷ EAD predicted 12 months before default, facilities that defaulted in the last 12 months.",
         "value": "0.94",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-009": {
+      "KMPI_QDB-003_02": {
         "name": "Defaults drawn above the approved limit (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Defaulted facilities whose drawn balance at default exceeded the approved limit ÷ defaulted facilities in the last 12 months.",
         "value": "2.3%",
@@ -651,14 +651,14 @@
     "period": "2025-Q3",
     "status": "Reviewed",
     "values": {
-      "KMPI-008": {
+      "KMPI_QDB-003_01": {
         "name": "CCF back-test (realised ÷ predicted EAD)",
         "description": "Pass if between 0.90 and 1.10, otherwise Fail. Realised exposure at default ÷ EAD predicted 12 months before default, facilities that defaulted in the last 12 months.",
         "value": "0.94",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-009": {
+      "KMPI_QDB-003_02": {
         "name": "Defaults drawn above the approved limit (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Defaulted facilities whose drawn balance at default exceeded the approved limit ÷ defaulted facilities in the last 12 months.",
         "value": "2.4%",
@@ -700,14 +700,14 @@
     "period": "2025-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-008": {
+      "KMPI_QDB-003_01": {
         "name": "CCF back-test (realised ÷ predicted EAD)",
         "description": "Pass if between 0.90 and 1.10, otherwise Fail. Realised exposure at default ÷ EAD predicted 12 months before default, facilities that defaulted in the last 12 months.",
         "value": "0.95",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-009": {
+      "KMPI_QDB-003_02": {
         "name": "Defaults drawn above the approved limit (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Defaulted facilities whose drawn balance at default exceeded the approved limit ÷ defaulted facilities in the last 12 months.",
         "value": "2.5%",
@@ -749,14 +749,14 @@
     "period": "2026-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-008": {
+      "KMPI_QDB-003_01": {
         "name": "CCF back-test (realised ÷ predicted EAD)",
         "description": "Pass if between 0.90 and 1.10, otherwise Fail. Realised exposure at default ÷ EAD predicted 12 months before default, facilities that defaulted in the last 12 months.",
         "value": "0.95",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-009": {
+      "KMPI_QDB-003_02": {
         "name": "Defaults drawn above the approved limit (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Defaulted facilities whose drawn balance at default exceeded the approved limit ÷ defaulted facilities in the last 12 months.",
         "value": "2.7%",
@@ -798,14 +798,14 @@
     "period": "2026-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-008": {
+      "KMPI_QDB-003_01": {
         "name": "CCF back-test (realised ÷ predicted EAD)",
         "description": "Pass if between 0.90 and 1.10, otherwise Fail. Realised exposure at default ÷ EAD predicted 12 months before default, facilities that defaulted in the last 12 months.",
         "value": "0.96",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-009": {
+      "KMPI_QDB-003_02": {
         "name": "Defaults drawn above the approved limit (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Defaulted facilities whose drawn balance at default exceeded the approved limit ÷ defaulted facilities in the last 12 months.",
         "value": "2.9%",
@@ -847,14 +847,14 @@
     "period": "2026-Q3",
     "status": "Submitted",
     "values": {
-      "KMPI-008": {
+      "KMPI_QDB-003_01": {
         "name": "CCF back-test (realised ÷ predicted EAD)",
         "description": "Pass if between 0.90 and 1.10, otherwise Fail. Realised exposure at default ÷ EAD predicted 12 months before default, facilities that defaulted in the last 12 months.",
         "value": "0.96",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-009": {
+      "KMPI_QDB-003_02": {
         "name": "Defaults drawn above the approved limit (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Defaulted facilities whose drawn balance at default exceeded the approved limit ÷ defaulted facilities in the last 12 months.",
         "value": "3.0%",
@@ -887,28 +887,28 @@
     "period": "2024-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-010": {
+      "KMPI_QDB-004_01": {
         "name": "Defaults not in Stage 2 twelve months before (%)",
         "description": "Pass if ≤ 30.0%, otherwise Fail. Obligors that defaulted in the last 12 months and were in Stage 1 twelve months before default ÷ all defaults in the last 12 months.",
         "value": "21.9%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-011": {
+      "KMPI_QDB-004_02": {
         "name": "Stage 2 share of performing exposure (%)",
         "description": "Pass if between 6.0% and 14.0%, otherwise Fail. Stage 2 exposure ÷ (Stage 1 + Stage 2) exposure at period end.",
         "value": "8.5%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-012": {
+      "KMPI_QDB-004_03": {
         "name": "Stage 2 triggered only by the 30-day backstop (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Stage 2 exposure where the only SICR trigger met is 30+ days past due ÷ total Stage 2 exposure.",
         "value": "12.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-013": {
+      "KMPI_QDB-004_04": {
         "name": "Manual staging overrides (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. Exposure whose stage was changed manually from the rule-based stage ÷ total exposure in scope.",
         "value": "3.5%",
@@ -950,28 +950,28 @@
     "period": "2025-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-010": {
+      "KMPI_QDB-004_01": {
         "name": "Defaults not in Stage 2 twelve months before (%)",
         "description": "Pass if ≤ 30.0%, otherwise Fail. Obligors that defaulted in the last 12 months and were in Stage 1 twelve months before default ÷ all defaults in the last 12 months.",
         "value": "22.9%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-011": {
+      "KMPI_QDB-004_02": {
         "name": "Stage 2 share of performing exposure (%)",
         "description": "Pass if between 6.0% and 14.0%, otherwise Fail. Stage 2 exposure ÷ (Stage 1 + Stage 2) exposure at period end.",
         "value": "8.9%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-012": {
+      "KMPI_QDB-004_03": {
         "name": "Stage 2 triggered only by the 30-day backstop (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Stage 2 exposure where the only SICR trigger met is 30+ days past due ÷ total Stage 2 exposure.",
         "value": "12.4%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-013": {
+      "KMPI_QDB-004_04": {
         "name": "Manual staging overrides (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. Exposure whose stage was changed manually from the rule-based stage ÷ total exposure in scope.",
         "value": "3.7%",
@@ -1013,28 +1013,28 @@
     "period": "2025-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-010": {
+      "KMPI_QDB-004_01": {
         "name": "Defaults not in Stage 2 twelve months before (%)",
         "description": "Pass if ≤ 30.0%, otherwise Fail. Obligors that defaulted in the last 12 months and were in Stage 1 twelve months before default ÷ all defaults in the last 12 months.",
         "value": "23.4%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-011": {
+      "KMPI_QDB-004_02": {
         "name": "Stage 2 share of performing exposure (%)",
         "description": "Pass if between 6.0% and 14.0%, otherwise Fail. Stage 2 exposure ÷ (Stage 1 + Stage 2) exposure at period end.",
         "value": "9.4%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-012": {
+      "KMPI_QDB-004_03": {
         "name": "Stage 2 triggered only by the 30-day backstop (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Stage 2 exposure where the only SICR trigger met is 30+ days past due ÷ total Stage 2 exposure.",
         "value": "13.3%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-013": {
+      "KMPI_QDB-004_04": {
         "name": "Manual staging overrides (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. Exposure whose stage was changed manually from the rule-based stage ÷ total exposure in scope.",
         "value": "3.8%",
@@ -1076,28 +1076,28 @@
     "period": "2025-Q3",
     "status": "Reviewed",
     "values": {
-      "KMPI-010": {
+      "KMPI_QDB-004_01": {
         "name": "Defaults not in Stage 2 twelve months before (%)",
         "description": "Pass if ≤ 30.0%, otherwise Fail. Obligors that defaulted in the last 12 months and were in Stage 1 twelve months before default ÷ all defaults in the last 12 months.",
         "value": "24.5%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-011": {
+      "KMPI_QDB-004_02": {
         "name": "Stage 2 share of performing exposure (%)",
         "description": "Pass if between 6.0% and 14.0%, otherwise Fail. Stage 2 exposure ÷ (Stage 1 + Stage 2) exposure at period end.",
         "value": "9.4%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-012": {
+      "KMPI_QDB-004_03": {
         "name": "Stage 2 triggered only by the 30-day backstop (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Stage 2 exposure where the only SICR trigger met is 30+ days past due ÷ total Stage 2 exposure.",
         "value": "13.7%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-013": {
+      "KMPI_QDB-004_04": {
         "name": "Manual staging overrides (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. Exposure whose stage was changed manually from the rule-based stage ÷ total exposure in scope.",
         "value": "4.0%",
@@ -1139,28 +1139,28 @@
     "period": "2025-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-010": {
+      "KMPI_QDB-004_01": {
         "name": "Defaults not in Stage 2 twelve months before (%)",
         "description": "Pass if ≤ 30.0%, otherwise Fail. Obligors that defaulted in the last 12 months and were in Stage 1 twelve months before default ÷ all defaults in the last 12 months.",
         "value": "24.6%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-011": {
+      "KMPI_QDB-004_02": {
         "name": "Stage 2 share of performing exposure (%)",
         "description": "Pass if between 6.0% and 14.0%, otherwise Fail. Stage 2 exposure ÷ (Stage 1 + Stage 2) exposure at period end.",
         "value": "9.9%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-012": {
+      "KMPI_QDB-004_03": {
         "name": "Stage 2 triggered only by the 30-day backstop (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Stage 2 exposure where the only SICR trigger met is 30+ days past due ÷ total Stage 2 exposure.",
         "value": "14.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-013": {
+      "KMPI_QDB-004_04": {
         "name": "Manual staging overrides (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. Exposure whose stage was changed manually from the rule-based stage ÷ total exposure in scope.",
         "value": "4.1%",
@@ -1202,28 +1202,28 @@
     "period": "2026-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-010": {
+      "KMPI_QDB-004_01": {
         "name": "Defaults not in Stage 2 twelve months before (%)",
         "description": "Pass if ≤ 30.0%, otherwise Fail. Obligors that defaulted in the last 12 months and were in Stage 1 twelve months before default ÷ all defaults in the last 12 months.",
         "value": "25.8%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-011": {
+      "KMPI_QDB-004_02": {
         "name": "Stage 2 share of performing exposure (%)",
         "description": "Pass if between 6.0% and 14.0%, otherwise Fail. Stage 2 exposure ÷ (Stage 1 + Stage 2) exposure at period end.",
         "value": "10.3%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-012": {
+      "KMPI_QDB-004_03": {
         "name": "Stage 2 triggered only by the 30-day backstop (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Stage 2 exposure where the only SICR trigger met is 30+ days past due ÷ total Stage 2 exposure.",
         "value": "15.1%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-013": {
+      "KMPI_QDB-004_04": {
         "name": "Manual staging overrides (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. Exposure whose stage was changed manually from the rule-based stage ÷ total exposure in scope.",
         "value": "4.2%",
@@ -1265,28 +1265,28 @@
     "period": "2026-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-010": {
+      "KMPI_QDB-004_01": {
         "name": "Defaults not in Stage 2 twelve months before (%)",
         "description": "Pass if ≤ 30.0%, otherwise Fail. Obligors that defaulted in the last 12 months and were in Stage 1 twelve months before default ÷ all defaults in the last 12 months.",
         "value": "26.3%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-011": {
+      "KMPI_QDB-004_02": {
         "name": "Stage 2 share of performing exposure (%)",
         "description": "Pass if between 6.0% and 14.0%, otherwise Fail. Stage 2 exposure ÷ (Stage 1 + Stage 2) exposure at period end.",
         "value": "10.6%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-012": {
+      "KMPI_QDB-004_03": {
         "name": "Stage 2 triggered only by the 30-day backstop (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Stage 2 exposure where the only SICR trigger met is 30+ days past due ÷ total Stage 2 exposure.",
         "value": "15.4%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-013": {
+      "KMPI_QDB-004_04": {
         "name": "Manual staging overrides (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. Exposure whose stage was changed manually from the rule-based stage ÷ total exposure in scope.",
         "value": "4.4%",
@@ -1328,28 +1328,28 @@
     "period": "2026-Q3",
     "status": "Returned",
     "values": {
-      "KMPI-010": {
+      "KMPI_QDB-004_01": {
         "name": "Defaults not in Stage 2 twelve months before (%)",
         "description": "Pass if ≤ 30.0%, otherwise Fail. Obligors that defaulted in the last 12 months and were in Stage 1 twelve months before default ÷ all defaults in the last 12 months.",
         "value": "27.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-011": {
+      "KMPI_QDB-004_02": {
         "name": "Stage 2 share of performing exposure (%)",
         "description": "Pass if between 6.0% and 14.0%, otherwise Fail. Stage 2 exposure ÷ (Stage 1 + Stage 2) exposure at period end.",
         "value": "11.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-012": {
+      "KMPI_QDB-004_03": {
         "name": "Stage 2 triggered only by the 30-day backstop (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Stage 2 exposure where the only SICR trigger met is 30+ days past due ÷ total Stage 2 exposure.",
         "value": "16.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-013": {
+      "KMPI_QDB-004_04": {
         "name": "Manual staging overrides (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. Exposure whose stage was changed manually from the rule-based stage ÷ total exposure in scope.",
         "value": "4.5%",
@@ -1388,21 +1388,21 @@
     "period": "2024-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-014": {
+      "KMPI_QDB-005_01": {
         "name": "Base-case GDP forecast error (pp)",
         "description": "Pass if ≤ 1.5 pp, otherwise Fail. |Base-scenario forecast of Qatar real non-hydrocarbon GDP growth − published outturn (PSA)|, percentage points, for the quarter four quarters back.",
         "value": "0.6 pp",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-015": {
+      "KMPI_QDB-005_02": {
         "name": "Days since scenarios were last refreshed",
         "description": "Pass if ≤ 100 days, otherwise Fail. Calendar days between period end and the approval date of the scenario set used in that period's ECL.",
         "value": "60 days",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-016": {
+      "KMPI_QDB-005_03": {
         "name": "Weighted-to-base ECL uplift (%)",
         "description": "Pass if between 2.0% and 15.0%, otherwise Fail. (Probability-weighted ECL − base-scenario ECL) ÷ base-scenario ECL.",
         "value": "6.0%",
@@ -1444,21 +1444,21 @@
     "period": "2025-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-014": {
+      "KMPI_QDB-005_01": {
         "name": "Base-case GDP forecast error (pp)",
         "description": "Pass if ≤ 1.5 pp, otherwise Fail. |Base-scenario forecast of Qatar real non-hydrocarbon GDP growth − published outturn (PSA)|, percentage points, for the quarter four quarters back.",
         "value": "0.8 pp",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-015": {
+      "KMPI_QDB-005_02": {
         "name": "Days since scenarios were last refreshed",
         "description": "Pass if ≤ 100 days, otherwise Fail. Calendar days between period end and the approval date of the scenario set used in that period's ECL.",
         "value": "65 days",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-016": {
+      "KMPI_QDB-005_03": {
         "name": "Weighted-to-base ECL uplift (%)",
         "description": "Pass if between 2.0% and 15.0%, otherwise Fail. (Probability-weighted ECL − base-scenario ECL) ÷ base-scenario ECL.",
         "value": "6.4%",
@@ -1500,21 +1500,21 @@
     "period": "2025-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-014": {
+      "KMPI_QDB-005_01": {
         "name": "Base-case GDP forecast error (pp)",
         "description": "Pass if ≤ 1.5 pp, otherwise Fail. |Base-scenario forecast of Qatar real non-hydrocarbon GDP growth − published outturn (PSA)|, percentage points, for the quarter four quarters back.",
         "value": "1.0 pp",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-015": {
+      "KMPI_QDB-005_02": {
         "name": "Days since scenarios were last refreshed",
         "description": "Pass if ≤ 100 days, otherwise Fail. Calendar days between period end and the approval date of the scenario set used in that period's ECL.",
         "value": "68 days",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-016": {
+      "KMPI_QDB-005_03": {
         "name": "Weighted-to-base ECL uplift (%)",
         "description": "Pass if between 2.0% and 15.0%, otherwise Fail. (Probability-weighted ECL − base-scenario ECL) ÷ base-scenario ECL.",
         "value": "6.4%",
@@ -1556,21 +1556,21 @@
     "period": "2025-Q3",
     "status": "Reviewed",
     "values": {
-      "KMPI-014": {
+      "KMPI_QDB-005_01": {
         "name": "Base-case GDP forecast error (pp)",
         "description": "Pass if ≤ 1.5 pp, otherwise Fail. |Base-scenario forecast of Qatar real non-hydrocarbon GDP growth − published outturn (PSA)|, percentage points, for the quarter four quarters back.",
         "value": "1.2 pp",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-015": {
+      "KMPI_QDB-005_02": {
         "name": "Days since scenarios were last refreshed",
         "description": "Pass if ≤ 100 days, otherwise Fail. Calendar days between period end and the approval date of the scenario set used in that period's ECL.",
         "value": "71 days",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-016": {
+      "KMPI_QDB-005_03": {
         "name": "Weighted-to-base ECL uplift (%)",
         "description": "Pass if between 2.0% and 15.0%, otherwise Fail. (Probability-weighted ECL − base-scenario ECL) ÷ base-scenario ECL.",
         "value": "7.0%",
@@ -1612,21 +1612,21 @@
     "period": "2025-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-014": {
+      "KMPI_QDB-005_01": {
         "name": "Base-case GDP forecast error (pp)",
         "description": "Pass if ≤ 1.5 pp, otherwise Fail. |Base-scenario forecast of Qatar real non-hydrocarbon GDP growth − published outturn (PSA)|, percentage points, for the quarter four quarters back.",
         "value": "1.4 pp",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-015": {
+      "KMPI_QDB-005_02": {
         "name": "Days since scenarios were last refreshed",
         "description": "Pass if ≤ 100 days, otherwise Fail. Calendar days between period end and the approval date of the scenario set used in that period's ECL.",
         "value": "73 days",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-016": {
+      "KMPI_QDB-005_03": {
         "name": "Weighted-to-base ECL uplift (%)",
         "description": "Pass if between 2.0% and 15.0%, otherwise Fail. (Probability-weighted ECL − base-scenario ECL) ÷ base-scenario ECL.",
         "value": "7.1%",
@@ -1668,21 +1668,21 @@
     "period": "2026-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-014": {
+      "KMPI_QDB-005_01": {
         "name": "Base-case GDP forecast error (pp)",
         "description": "Pass if ≤ 1.5 pp, otherwise Fail. |Base-scenario forecast of Qatar real non-hydrocarbon GDP growth − published outturn (PSA)|, percentage points, for the quarter four quarters back.",
         "value": "1.6 pp",
         "result": "Fail",
         "comment": "Base case missed the 2025 construction slowdown; scenario anchors to be refreshed at the Q4 update."
       },
-      "KMPI-015": {
+      "KMPI_QDB-005_02": {
         "name": "Days since scenarios were last refreshed",
         "description": "Pass if ≤ 100 days, otherwise Fail. Calendar days between period end and the approval date of the scenario set used in that period's ECL.",
         "value": "76 days",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-016": {
+      "KMPI_QDB-005_03": {
         "name": "Weighted-to-base ECL uplift (%)",
         "description": "Pass if between 2.0% and 15.0%, otherwise Fail. (Probability-weighted ECL − base-scenario ECL) ÷ base-scenario ECL.",
         "value": "7.4%",
@@ -1724,21 +1724,21 @@
     "period": "2026-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-014": {
+      "KMPI_QDB-005_01": {
         "name": "Base-case GDP forecast error (pp)",
         "description": "Pass if ≤ 1.5 pp, otherwise Fail. |Base-scenario forecast of Qatar real non-hydrocarbon GDP growth − published outturn (PSA)|, percentage points, for the quarter four quarters back.",
         "value": "1.7 pp",
         "result": "Fail",
         "comment": "Base case missed the 2025 construction slowdown; scenario anchors to be refreshed at the Q4 update."
       },
-      "KMPI-015": {
+      "KMPI_QDB-005_02": {
         "name": "Days since scenarios were last refreshed",
         "description": "Pass if ≤ 100 days, otherwise Fail. Calendar days between period end and the approval date of the scenario set used in that period's ECL.",
         "value": "81 days",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-016": {
+      "KMPI_QDB-005_03": {
         "name": "Weighted-to-base ECL uplift (%)",
         "description": "Pass if between 2.0% and 15.0%, otherwise Fail. (Probability-weighted ECL − base-scenario ECL) ÷ base-scenario ECL.",
         "value": "7.7%",
@@ -1780,21 +1780,21 @@
     "period": "2024-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-017": {
+      "KMPI_QDB-006_01": {
         "name": "Unexplained ECL movement (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. ECL movement not attributed to a driver (new business, repayments, stage transfers, risk parameters, macro, overlays) ÷ opening ECL.",
         "value": "1.9%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-018": {
+      "KMPI_QDB-006_02": {
         "name": "Exposure reconciliation break to the ledger (%)",
         "description": "Pass if ≤ 0.5%, otherwise Fail. |Exposure in the ECL engine − general-ledger exposure| ÷ general-ledger exposure, in-scope portfolios at period end.",
         "value": "0.1%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-019": {
+      "KMPI_QDB-006_03": {
         "name": "Post-model adjustments (% of ECL)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Management overlays and post-model adjustments ÷ total reported ECL.",
         "value": "6.6%",
@@ -1836,21 +1836,21 @@
     "period": "2025-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-017": {
+      "KMPI_QDB-006_01": {
         "name": "Unexplained ECL movement (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. ECL movement not attributed to a driver (new business, repayments, stage transfers, risk parameters, macro, overlays) ÷ opening ECL.",
         "value": "2.4%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-018": {
+      "KMPI_QDB-006_02": {
         "name": "Exposure reconciliation break to the ledger (%)",
         "description": "Pass if ≤ 0.5%, otherwise Fail. |Exposure in the ECL engine − general-ledger exposure| ÷ general-ledger exposure, in-scope portfolios at period end.",
         "value": "0.1%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-019": {
+      "KMPI_QDB-006_03": {
         "name": "Post-model adjustments (% of ECL)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Management overlays and post-model adjustments ÷ total reported ECL.",
         "value": "7.5%",
@@ -1892,21 +1892,21 @@
     "period": "2025-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-017": {
+      "KMPI_QDB-006_01": {
         "name": "Unexplained ECL movement (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. ECL movement not attributed to a driver (new business, repayments, stage transfers, risk parameters, macro, overlays) ÷ opening ECL.",
         "value": "2.5%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-018": {
+      "KMPI_QDB-006_02": {
         "name": "Exposure reconciliation break to the ledger (%)",
         "description": "Pass if ≤ 0.5%, otherwise Fail. |Exposure in the ECL engine − general-ledger exposure| ÷ general-ledger exposure, in-scope portfolios at period end.",
         "value": "0.2%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-019": {
+      "KMPI_QDB-006_03": {
         "name": "Post-model adjustments (% of ECL)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Management overlays and post-model adjustments ÷ total reported ECL.",
         "value": "8.1%",
@@ -1948,21 +1948,21 @@
     "period": "2025-Q3",
     "status": "Reviewed",
     "values": {
-      "KMPI-017": {
+      "KMPI_QDB-006_01": {
         "name": "Unexplained ECL movement (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. ECL movement not attributed to a driver (new business, repayments, stage transfers, risk parameters, macro, overlays) ÷ opening ECL.",
         "value": "2.8%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-018": {
+      "KMPI_QDB-006_02": {
         "name": "Exposure reconciliation break to the ledger (%)",
         "description": "Pass if ≤ 0.5%, otherwise Fail. |Exposure in the ECL engine − general-ledger exposure| ÷ general-ledger exposure, in-scope portfolios at period end.",
         "value": "0.2%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-019": {
+      "KMPI_QDB-006_03": {
         "name": "Post-model adjustments (% of ECL)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Management overlays and post-model adjustments ÷ total reported ECL.",
         "value": "9.4%",
@@ -2004,21 +2004,21 @@
     "period": "2025-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-017": {
+      "KMPI_QDB-006_01": {
         "name": "Unexplained ECL movement (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. ECL movement not attributed to a driver (new business, repayments, stage transfers, risk parameters, macro, overlays) ÷ opening ECL.",
         "value": "3.2%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-018": {
+      "KMPI_QDB-006_02": {
         "name": "Exposure reconciliation break to the ledger (%)",
         "description": "Pass if ≤ 0.5%, otherwise Fail. |Exposure in the ECL engine − general-ledger exposure| ÷ general-ledger exposure, in-scope portfolios at period end.",
         "value": "0.2%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-019": {
+      "KMPI_QDB-006_03": {
         "name": "Post-model adjustments (% of ECL)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Management overlays and post-model adjustments ÷ total reported ECL.",
         "value": "9.7%",
@@ -2060,21 +2060,21 @@
     "period": "2026-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-017": {
+      "KMPI_QDB-006_01": {
         "name": "Unexplained ECL movement (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. ECL movement not attributed to a driver (new business, repayments, stage transfers, risk parameters, macro, overlays) ÷ opening ECL.",
         "value": "3.4%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-018": {
+      "KMPI_QDB-006_02": {
         "name": "Exposure reconciliation break to the ledger (%)",
         "description": "Pass if ≤ 0.5%, otherwise Fail. |Exposure in the ECL engine − general-ledger exposure| ÷ general-ledger exposure, in-scope portfolios at period end.",
         "value": "0.2%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-019": {
+      "KMPI_QDB-006_03": {
         "name": "Post-model adjustments (% of ECL)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Management overlays and post-model adjustments ÷ total reported ECL.",
         "value": "10.9%",
@@ -2116,21 +2116,21 @@
     "period": "2026-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-017": {
+      "KMPI_QDB-006_01": {
         "name": "Unexplained ECL movement (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. ECL movement not attributed to a driver (new business, repayments, stage transfers, risk parameters, macro, overlays) ÷ opening ECL.",
         "value": "3.7%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-018": {
+      "KMPI_QDB-006_02": {
         "name": "Exposure reconciliation break to the ledger (%)",
         "description": "Pass if ≤ 0.5%, otherwise Fail. |Exposure in the ECL engine − general-ledger exposure| ÷ general-ledger exposure, in-scope portfolios at period end.",
         "value": "0.3%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-019": {
+      "KMPI_QDB-006_03": {
         "name": "Post-model adjustments (% of ECL)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Management overlays and post-model adjustments ÷ total reported ECL.",
         "value": "11.3%",
@@ -2172,21 +2172,21 @@
     "period": "2026-Q3",
     "status": "Draft",
     "values": {
-      "KMPI-017": {
+      "KMPI_QDB-006_01": {
         "name": "Unexplained ECL movement (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. ECL movement not attributed to a driver (new business, repayments, stage transfers, risk parameters, macro, overlays) ÷ opening ECL.",
         "value": "4.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-018": {
+      "KMPI_QDB-006_02": {
         "name": "Exposure reconciliation break to the ledger (%)",
         "description": "Pass if ≤ 0.5%, otherwise Fail. |Exposure in the ECL engine − general-ledger exposure| ÷ general-ledger exposure, in-scope portfolios at period end.",
         "value": "0.3%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-019": {
+      "KMPI_QDB-006_03": {
         "name": "Post-model adjustments (% of ECL)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Management overlays and post-model adjustments ÷ total reported ECL.",
         "value": "12.0%",
@@ -2210,21 +2210,21 @@
     "period": "2025-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-020": {
+      "KMPI_QDB-007_01": {
         "name": "Gini — rating rank ordering",
         "description": "Pass if ≥ 0.50, otherwise Fail. Gini = 2 × AUC − 1 of the model grade against defaults over the following 12 months.",
         "value": "0.56",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-021": {
+      "KMPI_QDB-007_02": {
         "name": "Rating overrides (%)",
         "description": "Pass if ≤ 15.0%, otherwise Fail. Obligors whose approved grade differs from the model grade by one notch or more ÷ obligors rated in the period.",
         "value": "17.7%",
         "result": "Fail",
         "comment": "Override rate above policy — FND-004 open; override reasons being analysed with Credit."
       },
-      "KMPI-022": {
+      "KMPI_QDB-007_03": {
         "name": "Ratings older than 12 months (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Obligors in scope whose last approved rating is more than 12 months old at period end ÷ obligors in scope.",
         "value": "2.9%",
@@ -2266,21 +2266,21 @@
     "period": "2026-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-020": {
+      "KMPI_QDB-007_01": {
         "name": "Gini — rating rank ordering",
         "description": "Pass if ≥ 0.50, otherwise Fail. Gini = 2 × AUC − 1 of the model grade against defaults over the following 12 months.",
         "value": "0.55",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-021": {
+      "KMPI_QDB-007_02": {
         "name": "Rating overrides (%)",
         "description": "Pass if ≤ 15.0%, otherwise Fail. Obligors whose approved grade differs from the model grade by one notch or more ÷ obligors rated in the period.",
         "value": "19.7%",
         "result": "Fail",
         "comment": "Override rate above policy — FND-004 open; override reasons being analysed with Credit."
       },
-      "KMPI-022": {
+      "KMPI_QDB-007_03": {
         "name": "Ratings older than 12 months (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Obligors in scope whose last approved rating is more than 12 months old at period end ÷ obligors in scope.",
         "value": "3.3%",
@@ -2322,21 +2322,21 @@
     "period": "2026-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-020": {
+      "KMPI_QDB-007_01": {
         "name": "Gini — rating rank ordering",
         "description": "Pass if ≥ 0.50, otherwise Fail. Gini = 2 × AUC − 1 of the model grade against defaults over the following 12 months.",
         "value": "0.54",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-021": {
+      "KMPI_QDB-007_02": {
         "name": "Rating overrides (%)",
         "description": "Pass if ≤ 15.0%, otherwise Fail. Obligors whose approved grade differs from the model grade by one notch or more ÷ obligors rated in the period.",
         "value": "22.0%",
         "result": "Fail",
         "comment": "Override rate above policy — FND-004 open; override reasons being analysed with Credit."
       },
-      "KMPI-022": {
+      "KMPI_QDB-007_03": {
         "name": "Ratings older than 12 months (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Obligors in scope whose last approved rating is more than 12 months old at period end ÷ obligors in scope.",
         "value": "3.7%",
@@ -2379,21 +2379,21 @@
     "period": "2025-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-023": {
+      "KMPI_QDB-008_01": {
         "name": "Gini — rating rank ordering",
         "description": "Pass if ≥ 0.50, otherwise Fail. Gini = 2 × AUC − 1 of the model grade against defaults over the following 12 months.",
         "value": "0.57",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-024": {
+      "KMPI_QDB-008_02": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI over rating grades, current portfolio against the development sample.",
         "value": "0.05",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-025": {
+      "KMPI_QDB-008_03": {
         "name": "Rating overrides (%)",
         "description": "Pass if ≤ 15.0%, otherwise Fail. Obligors whose approved grade differs from the model grade by one notch or more ÷ obligors rated in the period.",
         "value": "9.8%",
@@ -2435,21 +2435,21 @@
     "period": "2026-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-023": {
+      "KMPI_QDB-008_01": {
         "name": "Gini — rating rank ordering",
         "description": "Pass if ≥ 0.50, otherwise Fail. Gini = 2 × AUC − 1 of the model grade against defaults over the following 12 months.",
         "value": "0.54",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-024": {
+      "KMPI_QDB-008_02": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI over rating grades, current portfolio against the development sample.",
         "value": "0.07",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-025": {
+      "KMPI_QDB-008_03": {
         "name": "Rating overrides (%)",
         "description": "Pass if ≤ 15.0%, otherwise Fail. Obligors whose approved grade differs from the model grade by one notch or more ÷ obligors rated in the period.",
         "value": "10.7%",
@@ -2491,21 +2491,21 @@
     "period": "2026-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-023": {
+      "KMPI_QDB-008_01": {
         "name": "Gini — rating rank ordering",
         "description": "Pass if ≥ 0.50, otherwise Fail. Gini = 2 × AUC − 1 of the model grade against defaults over the following 12 months.",
         "value": "0.51",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-024": {
+      "KMPI_QDB-008_02": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI over rating grades, current portfolio against the development sample.",
         "value": "0.10",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-025": {
+      "KMPI_QDB-008_03": {
         "name": "Rating overrides (%)",
         "description": "Pass if ≤ 15.0%, otherwise Fail. Obligors whose approved grade differs from the model grade by one notch or more ÷ obligors rated in the period.",
         "value": "11.3%",
@@ -2547,21 +2547,21 @@
     "period": "2026-Q3",
     "status": "Submitted",
     "values": {
-      "KMPI-023": {
+      "KMPI_QDB-008_01": {
         "name": "Gini — rating rank ordering",
         "description": "Pass if ≥ 0.50, otherwise Fail. Gini = 2 × AUC − 1 of the model grade against defaults over the following 12 months.",
         "value": "0.48",
         "result": "Fail",
         "comment": "Decline concentrated in hospitality obligors onboarded since 2025; segment analysis under way."
       },
-      "KMPI-024": {
+      "KMPI_QDB-008_02": {
         "name": "Rating distribution stability (PSI)",
         "description": "Pass if ≤ 0.10, otherwise Fail. PSI over rating grades, current portfolio against the development sample.",
         "value": "0.12",
         "result": "Fail",
         "comment": "Shift towards hospitality and education obligors after the 2025 programme launch."
       },
-      "KMPI-025": {
+      "KMPI_QDB-008_03": {
         "name": "Rating overrides (%)",
         "description": "Pass if ≤ 15.0%, otherwise Fail. Obligors whose approved grade differs from the model grade by one notch or more ÷ obligors rated in the period.",
         "value": "12.0%",
@@ -2594,14 +2594,14 @@
     "period": "2024-H1",
     "status": "Reviewed",
     "values": {
-      "KMPI-026": {
+      "KMPI_QDB-009_01": {
         "name": "Realised vs priced margin variance (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. |Realised net interest margin − margin priced by the model| ÷ priced margin, loans disbursed in the last 12 months.",
         "value": "4.1%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-027": {
+      "KMPI_QDB-009_02": {
         "name": "Deals priced below the model floor (%)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Loans disbursed in the period at a rate below the model's floor rate (approved exceptions) ÷ loans disbursed.",
         "value": "6.1%",
@@ -2643,14 +2643,14 @@
     "period": "2024-H2",
     "status": "Reviewed",
     "values": {
-      "KMPI-026": {
+      "KMPI_QDB-009_01": {
         "name": "Realised vs priced margin variance (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. |Realised net interest margin − margin priced by the model| ÷ priced margin, loans disbursed in the last 12 months.",
         "value": "4.5%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-027": {
+      "KMPI_QDB-009_02": {
         "name": "Deals priced below the model floor (%)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Loans disbursed in the period at a rate below the model's floor rate (approved exceptions) ÷ loans disbursed.",
         "value": "6.8%",
@@ -2692,14 +2692,14 @@
     "period": "2025-H1",
     "status": "Reviewed",
     "values": {
-      "KMPI-026": {
+      "KMPI_QDB-009_01": {
         "name": "Realised vs priced margin variance (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. |Realised net interest margin − margin priced by the model| ÷ priced margin, loans disbursed in the last 12 months.",
         "value": "5.1%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-027": {
+      "KMPI_QDB-009_02": {
         "name": "Deals priced below the model floor (%)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Loans disbursed in the period at a rate below the model's floor rate (approved exceptions) ÷ loans disbursed.",
         "value": "7.3%",
@@ -2741,14 +2741,14 @@
     "period": "2025-H2",
     "status": "Reviewed",
     "values": {
-      "KMPI-026": {
+      "KMPI_QDB-009_01": {
         "name": "Realised vs priced margin variance (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. |Realised net interest margin − margin priced by the model| ÷ priced margin, loans disbursed in the last 12 months.",
         "value": "5.5%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-027": {
+      "KMPI_QDB-009_02": {
         "name": "Deals priced below the model floor (%)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Loans disbursed in the period at a rate below the model's floor rate (approved exceptions) ÷ loans disbursed.",
         "value": "8.2%",
@@ -2790,14 +2790,14 @@
     "period": "2026-H1",
     "status": "Reviewed",
     "values": {
-      "KMPI-026": {
+      "KMPI_QDB-009_01": {
         "name": "Realised vs priced margin variance (%)",
         "description": "Pass if ≤ 8.0%, otherwise Fail. |Realised net interest margin − margin priced by the model| ÷ priced margin, loans disbursed in the last 12 months.",
         "value": "6.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-027": {
+      "KMPI_QDB-009_02": {
         "name": "Deals priced below the model floor (%)",
         "description": "Pass if ≤ 10.0%, otherwise Fail. Loans disbursed in the period at a rate below the model's floor rate (approved exceptions) ÷ loans disbursed.",
         "value": "9.0%",
@@ -2839,14 +2839,14 @@
     "period": "2025-10",
     "status": "Reviewed",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "46.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "2.6 pp",
@@ -2888,14 +2888,14 @@
     "period": "2025-11",
     "status": "Reviewed",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "47.3%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "2.8 pp",
@@ -2937,14 +2937,14 @@
     "period": "2025-12",
     "status": "Reviewed",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "47.5%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "2.8 pp",
@@ -2986,14 +2986,14 @@
     "period": "2026-01",
     "status": "Reviewed",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "48.1%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "3.1 pp",
@@ -3035,14 +3035,14 @@
     "period": "2026-02",
     "status": "Reviewed",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "49.4%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "3.1 pp",
@@ -3084,14 +3084,14 @@
     "period": "2026-03",
     "status": "Reviewed",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "51.1%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "3.3 pp",
@@ -3133,14 +3133,14 @@
     "period": "2026-04",
     "status": "Reviewed",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "52.8%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "3.4 pp",
@@ -3182,14 +3182,14 @@
     "period": "2026-05",
     "status": "Reviewed",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "53.3%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "3.7 pp",
@@ -3231,14 +3231,14 @@
     "period": "2026-06",
     "status": "Reviewed",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "55.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "3.9 pp",
@@ -3280,14 +3280,14 @@
     "period": "2026-07",
     "status": "Reviewed",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "56.1%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "4.3 pp",
@@ -3329,14 +3329,14 @@
     "period": "2026-08",
     "status": "Reviewed",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "58.6%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "4.3 pp",
@@ -3378,14 +3378,14 @@
     "period": "2026-09",
     "status": "Submitted",
     "values": {
-      "KMPI-036": {
+      "KMPI_QDB-014_01": {
         "name": "Actual ÷ modelled stressed outflow (%)",
         "description": "Pass if ≤ 80.0%, otherwise Fail. Largest actual 30-day net cash outflow in the period ÷ modelled 30-day stressed net outflow.",
         "value": "60.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-037": {
+      "KMPI_QDB-014_02": {
         "name": "LCR forecast error (pp)",
         "description": "Pass if ≤ 5.0 pp, otherwise Fail. |Forecast LCR − actual LCR| at period end, forecast made one quarter earlier.",
         "value": "4.5 pp",
@@ -3418,14 +3418,14 @@
     "period": "2024-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-038": {
+      "KMPI_QDB-015_01": {
         "name": "NII forecast error (%)",
         "description": "Pass if ≤ 6.0%, otherwise Fail. |Forecast NII − actual NII| ÷ actual NII for the quarter, forecast made one quarter earlier.",
         "value": "3.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-039": {
+      "KMPI_QDB-015_02": {
         "name": "Deposit run-off back-test (actual ÷ assumed)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Actual run-off of non-maturity deposits in the last 12 months ÷ run-off assumed by the model.",
         "value": "0.94",
@@ -3467,14 +3467,14 @@
     "period": "2025-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-038": {
+      "KMPI_QDB-015_01": {
         "name": "NII forecast error (%)",
         "description": "Pass if ≤ 6.0%, otherwise Fail. |Forecast NII − actual NII| ÷ actual NII for the quarter, forecast made one quarter earlier.",
         "value": "3.1%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-039": {
+      "KMPI_QDB-015_02": {
         "name": "Deposit run-off back-test (actual ÷ assumed)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Actual run-off of non-maturity deposits in the last 12 months ÷ run-off assumed by the model.",
         "value": "0.97",
@@ -3516,14 +3516,14 @@
     "period": "2025-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-038": {
+      "KMPI_QDB-015_01": {
         "name": "NII forecast error (%)",
         "description": "Pass if ≤ 6.0%, otherwise Fail. |Forecast NII − actual NII| ÷ actual NII for the quarter, forecast made one quarter earlier.",
         "value": "3.3%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-039": {
+      "KMPI_QDB-015_02": {
         "name": "Deposit run-off back-test (actual ÷ assumed)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Actual run-off of non-maturity deposits in the last 12 months ÷ run-off assumed by the model.",
         "value": "0.98",
@@ -3565,14 +3565,14 @@
     "period": "2025-Q3",
     "status": "Reviewed",
     "values": {
-      "KMPI-038": {
+      "KMPI_QDB-015_01": {
         "name": "NII forecast error (%)",
         "description": "Pass if ≤ 6.0%, otherwise Fail. |Forecast NII − actual NII| ÷ actual NII for the quarter, forecast made one quarter earlier.",
         "value": "3.5%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-039": {
+      "KMPI_QDB-015_02": {
         "name": "Deposit run-off back-test (actual ÷ assumed)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Actual run-off of non-maturity deposits in the last 12 months ÷ run-off assumed by the model.",
         "value": "1.03",
@@ -3614,14 +3614,14 @@
     "period": "2025-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-038": {
+      "KMPI_QDB-015_01": {
         "name": "NII forecast error (%)",
         "description": "Pass if ≤ 6.0%, otherwise Fail. |Forecast NII − actual NII| ÷ actual NII for the quarter, forecast made one quarter earlier.",
         "value": "3.6%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-039": {
+      "KMPI_QDB-015_02": {
         "name": "Deposit run-off back-test (actual ÷ assumed)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Actual run-off of non-maturity deposits in the last 12 months ÷ run-off assumed by the model.",
         "value": "1.04",
@@ -3663,14 +3663,14 @@
     "period": "2026-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-038": {
+      "KMPI_QDB-015_01": {
         "name": "NII forecast error (%)",
         "description": "Pass if ≤ 6.0%, otherwise Fail. |Forecast NII − actual NII| ÷ actual NII for the quarter, forecast made one quarter earlier.",
         "value": "3.6%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-039": {
+      "KMPI_QDB-015_02": {
         "name": "Deposit run-off back-test (actual ÷ assumed)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Actual run-off of non-maturity deposits in the last 12 months ÷ run-off assumed by the model.",
         "value": "1.05",
@@ -3712,14 +3712,14 @@
     "period": "2026-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-038": {
+      "KMPI_QDB-015_01": {
         "name": "NII forecast error (%)",
         "description": "Pass if ≤ 6.0%, otherwise Fail. |Forecast NII − actual NII| ÷ actual NII for the quarter, forecast made one quarter earlier.",
         "value": "3.9%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-039": {
+      "KMPI_QDB-015_02": {
         "name": "Deposit run-off back-test (actual ÷ assumed)",
         "description": "Pass if between 0.80 and 1.20, otherwise Fail. Actual run-off of non-maturity deposits in the last 12 months ÷ run-off assumed by the model.",
         "value": "1.08",
@@ -3761,14 +3761,14 @@
     "period": "2024",
     "status": "Reviewed",
     "values": {
-      "KMPI-040": {
+      "KMPI_QDB-016_01": {
         "name": "Losses exceeding scenario severity (count)",
         "description": "Pass if ≤ 0, otherwise Fail. Internal and relevant external loss events in the last 12 months larger than the severe loss of the matching scenario.",
         "value": "0",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-041": {
+      "KMPI_QDB-016_02": {
         "name": "Scenarios reviewed in the last 12 months (%)",
         "description": "Pass if ≥ 90.0%, otherwise Fail. Scenarios with a business review dated in the last 12 months ÷ scenarios in the register.",
         "value": "100.0%",
@@ -3810,14 +3810,14 @@
     "period": "2025",
     "status": "Reviewed",
     "values": {
-      "KMPI-040": {
+      "KMPI_QDB-016_01": {
         "name": "Losses exceeding scenario severity (count)",
         "description": "Pass if ≤ 0, otherwise Fail. Internal and relevant external loss events in the last 12 months larger than the severe loss of the matching scenario.",
         "value": "0",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-041": {
+      "KMPI_QDB-016_02": {
         "name": "Scenarios reviewed in the last 12 months (%)",
         "description": "Pass if ≥ 90.0%, otherwise Fail. Scenarios with a business review dated in the last 12 months ÷ scenarios in the register.",
         "value": "92.0%",
@@ -3859,21 +3859,21 @@
     "period": "2024-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-042": {
+      "KMPI_QDB-017_01": {
         "name": "High-risk customer share (%)",
         "description": "Pass if between 5.0% and 12.0%, otherwise Fail. Customers rated High risk ÷ active customers at period end.",
         "value": "8.8%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-043": {
+      "KMPI_QDB-017_02": {
         "name": "Suspicious activity reports on low-risk customers (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Suspicious activity reports filed in the last 12 months on customers rated Low risk at the time ÷ all reports filed.",
         "value": "14.9%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-044": {
+      "KMPI_QDB-017_03": {
         "name": "Customer risk reviews overdue (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Customers whose periodic risk review is past due ÷ active customers.",
         "value": "3.2%",
@@ -3915,21 +3915,21 @@
     "period": "2025-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-042": {
+      "KMPI_QDB-017_01": {
         "name": "High-risk customer share (%)",
         "description": "Pass if between 5.0% and 12.0%, otherwise Fail. Customers rated High risk ÷ active customers at period end.",
         "value": "9.7%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-043": {
+      "KMPI_QDB-017_02": {
         "name": "Suspicious activity reports on low-risk customers (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Suspicious activity reports filed in the last 12 months on customers rated Low risk at the time ÷ all reports filed.",
         "value": "15.2%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-044": {
+      "KMPI_QDB-017_03": {
         "name": "Customer risk reviews overdue (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Customers whose periodic risk review is past due ÷ active customers.",
         "value": "3.6%",
@@ -3971,21 +3971,21 @@
     "period": "2025-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-042": {
+      "KMPI_QDB-017_01": {
         "name": "High-risk customer share (%)",
         "description": "Pass if between 5.0% and 12.0%, otherwise Fail. Customers rated High risk ÷ active customers at period end.",
         "value": "11.2%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-043": {
+      "KMPI_QDB-017_02": {
         "name": "Suspicious activity reports on low-risk customers (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Suspicious activity reports filed in the last 12 months on customers rated Low risk at the time ÷ all reports filed.",
         "value": "15.7%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-044": {
+      "KMPI_QDB-017_03": {
         "name": "Customer risk reviews overdue (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Customers whose periodic risk review is past due ÷ active customers.",
         "value": "3.9%",
@@ -4027,21 +4027,21 @@
     "period": "2025-Q3",
     "status": "Reviewed",
     "values": {
-      "KMPI-042": {
+      "KMPI_QDB-017_01": {
         "name": "High-risk customer share (%)",
         "description": "Pass if between 5.0% and 12.0%, otherwise Fail. Customers rated High risk ÷ active customers at period end.",
         "value": "11.6%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-043": {
+      "KMPI_QDB-017_02": {
         "name": "Suspicious activity reports on low-risk customers (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Suspicious activity reports filed in the last 12 months on customers rated Low risk at the time ÷ all reports filed.",
         "value": "16.3%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-044": {
+      "KMPI_QDB-017_03": {
         "name": "Customer risk reviews overdue (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Customers whose periodic risk review is past due ÷ active customers.",
         "value": "4.5%",
@@ -4083,21 +4083,21 @@
     "period": "2025-Q4",
     "status": "Reviewed",
     "values": {
-      "KMPI-042": {
+      "KMPI_QDB-017_01": {
         "name": "High-risk customer share (%)",
         "description": "Pass if between 5.0% and 12.0%, otherwise Fail. Customers rated High risk ÷ active customers at period end.",
         "value": "13.7%",
         "result": "Fail",
         "comment": "Driven by the uncalibrated nationality and sector weights — FND-006 open; recalibration in progress."
       },
-      "KMPI-043": {
+      "KMPI_QDB-017_02": {
         "name": "Suspicious activity reports on low-risk customers (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Suspicious activity reports filed in the last 12 months on customers rated Low risk at the time ÷ all reports filed.",
         "value": "16.8%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-044": {
+      "KMPI_QDB-017_03": {
         "name": "Customer risk reviews overdue (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Customers whose periodic risk review is past due ÷ active customers.",
         "value": "4.6%",
@@ -4139,21 +4139,21 @@
     "period": "2026-Q1",
     "status": "Reviewed",
     "values": {
-      "KMPI-042": {
+      "KMPI_QDB-017_01": {
         "name": "High-risk customer share (%)",
         "description": "Pass if between 5.0% and 12.0%, otherwise Fail. Customers rated High risk ÷ active customers at period end.",
         "value": "14.2%",
         "result": "Fail",
         "comment": "Driven by the uncalibrated nationality and sector weights — FND-006 open; recalibration in progress."
       },
-      "KMPI-043": {
+      "KMPI_QDB-017_02": {
         "name": "Suspicious activity reports on low-risk customers (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Suspicious activity reports filed in the last 12 months on customers rated Low risk at the time ÷ all reports filed.",
         "value": "17.0%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-044": {
+      "KMPI_QDB-017_03": {
         "name": "Customer risk reviews overdue (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Customers whose periodic risk review is past due ÷ active customers.",
         "value": "5.3%",
@@ -4195,21 +4195,21 @@
     "period": "2026-Q2",
     "status": "Reviewed",
     "values": {
-      "KMPI-042": {
+      "KMPI_QDB-017_01": {
         "name": "High-risk customer share (%)",
         "description": "Pass if between 5.0% and 12.0%, otherwise Fail. Customers rated High risk ÷ active customers at period end.",
         "value": "15.4%",
         "result": "Fail",
         "comment": "Driven by the uncalibrated nationality and sector weights — FND-006 open; recalibration in progress."
       },
-      "KMPI-043": {
+      "KMPI_QDB-017_02": {
         "name": "Suspicious activity reports on low-risk customers (%)",
         "description": "Pass if ≤ 20.0%, otherwise Fail. Suspicious activity reports filed in the last 12 months on customers rated Low risk at the time ÷ all reports filed.",
         "value": "17.6%",
         "result": "Pass",
         "comment": ""
       },
-      "KMPI-044": {
+      "KMPI_QDB-017_03": {
         "name": "Customer risk reviews overdue (%)",
         "description": "Pass if ≤ 5.0%, otherwise Fail. Customers whose periodic risk review is past due ÷ active customers.",
         "value": "5.6%",
@@ -4246,5 +4246,397 @@
     "reviewed_on": "2026-07-27",
     "review_comment": "Reviewed. Fail tracked in FND-006.",
     "finding_id": "FND-006"
+  },
+  {
+    "model_id": "QDB-019",
+    "period": "2024-Q4",
+    "status": "Reviewed",
+    "values": {
+      "KMPI_QDB-019_01": {
+        "name": "Externally rated exposure (%)",
+        "description": "Pass if ≥ 98.0%, otherwise Fail. Exposure with a current S&P, Moody's or Fitch issuer rating ÷ total investment-portfolio exposure.",
+        "value": "99.2%",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_02": {
+        "name": "Rank correlation with market-implied PDs",
+        "description": "Pass if ≥ 0.60, otherwise Fail. Spearman rank correlation between model 12-month PiT PDs and PDs implied by bond spreads or CDS, issuers with market data.",
+        "value": "0.72",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_03": {
+        "name": "Age of the agency default tables (days)",
+        "description": "Pass if ≤ 400 days, otherwise Fail. Days between period end and the publication date of the agency default study used.",
+        "value": "297 days",
+        "result": "Pass",
+        "comment": ""
+      }
+    },
+    "history": [
+      {
+        "action": "Saved",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2025-01-10",
+        "comment": null
+      },
+      {
+        "action": "Submitted",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2025-01-20",
+        "comment": null
+      },
+      {
+        "action": "Reviewed",
+        "by": "Model Validator 1 (QDB validator)",
+        "on": "2025-01-27",
+        "comment": "Reviewed; results agree to the monitoring pack."
+      }
+    ],
+    "entered_by": "Model Developer 2 (Risk Analytics)",
+    "updated_on": "2025-01-10",
+    "submitted_by": "Model Developer 2 (Risk Analytics)",
+    "submitted_on": "2025-01-20",
+    "attestation": "I confirm these results follow the pass/fail criteria in each KMPI's description and every fail or missing value is explained.",
+    "reviewed_by": "Model Validator 1 (QDB validator)",
+    "reviewed_on": "2025-01-27",
+    "review_comment": "Reviewed; results agree to the monitoring pack."
+  },
+  {
+    "model_id": "QDB-019",
+    "period": "2025-Q1",
+    "status": "Reviewed",
+    "values": {
+      "KMPI_QDB-019_01": {
+        "name": "Externally rated exposure (%)",
+        "description": "Pass if ≥ 98.0%, otherwise Fail. Exposure with a current S&P, Moody's or Fitch issuer rating ÷ total investment-portfolio exposure.",
+        "value": "99.1%",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_02": {
+        "name": "Rank correlation with market-implied PDs",
+        "description": "Pass if ≥ 0.60, otherwise Fail. Spearman rank correlation between model 12-month PiT PDs and PDs implied by bond spreads or CDS, issuers with market data.",
+        "value": "0.71",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_03": {
+        "name": "Age of the agency default tables (days)",
+        "description": "Pass if ≤ 400 days, otherwise Fail. Days between period end and the publication date of the agency default study used.",
+        "value": "293 days",
+        "result": "Pass",
+        "comment": ""
+      }
+    },
+    "history": [
+      {
+        "action": "Saved",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2025-04-10",
+        "comment": null
+      },
+      {
+        "action": "Submitted",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2025-04-20",
+        "comment": null
+      },
+      {
+        "action": "Reviewed",
+        "by": "Model Validator 1 (QDB validator)",
+        "on": "2025-04-27",
+        "comment": "Reviewed; results agree to the monitoring pack."
+      }
+    ],
+    "entered_by": "Model Developer 2 (Risk Analytics)",
+    "updated_on": "2025-04-10",
+    "submitted_by": "Model Developer 2 (Risk Analytics)",
+    "submitted_on": "2025-04-20",
+    "attestation": "I confirm these results follow the pass/fail criteria in each KMPI's description and every fail or missing value is explained.",
+    "reviewed_by": "Model Validator 1 (QDB validator)",
+    "reviewed_on": "2025-04-27",
+    "review_comment": "Reviewed; results agree to the monitoring pack."
+  },
+  {
+    "model_id": "QDB-019",
+    "period": "2025-Q2",
+    "status": "Reviewed",
+    "values": {
+      "KMPI_QDB-019_01": {
+        "name": "Externally rated exposure (%)",
+        "description": "Pass if ≥ 98.0%, otherwise Fail. Exposure with a current S&P, Moody's or Fitch issuer rating ÷ total investment-portfolio exposure.",
+        "value": "99.1%",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_02": {
+        "name": "Rank correlation with market-implied PDs",
+        "description": "Pass if ≥ 0.60, otherwise Fail. Spearman rank correlation between model 12-month PiT PDs and PDs implied by bond spreads or CDS, issuers with market data.",
+        "value": "0.71",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_03": {
+        "name": "Age of the agency default tables (days)",
+        "description": "Pass if ≤ 400 days, otherwise Fail. Days between period end and the publication date of the agency default study used.",
+        "value": "277 days",
+        "result": "Pass",
+        "comment": ""
+      }
+    },
+    "history": [
+      {
+        "action": "Saved",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2025-07-10",
+        "comment": null
+      },
+      {
+        "action": "Submitted",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2025-07-20",
+        "comment": null
+      },
+      {
+        "action": "Reviewed",
+        "by": "Model Validator 1 (QDB validator)",
+        "on": "2025-07-27",
+        "comment": "Reviewed; results agree to the monitoring pack."
+      }
+    ],
+    "entered_by": "Model Developer 2 (Risk Analytics)",
+    "updated_on": "2025-07-10",
+    "submitted_by": "Model Developer 2 (Risk Analytics)",
+    "submitted_on": "2025-07-20",
+    "attestation": "I confirm these results follow the pass/fail criteria in each KMPI's description and every fail or missing value is explained.",
+    "reviewed_by": "Model Validator 1 (QDB validator)",
+    "reviewed_on": "2025-07-27",
+    "review_comment": "Reviewed; results agree to the monitoring pack."
+  },
+  {
+    "model_id": "QDB-019",
+    "period": "2025-Q3",
+    "status": "Reviewed",
+    "values": {
+      "KMPI_QDB-019_01": {
+        "name": "Externally rated exposure (%)",
+        "description": "Pass if ≥ 98.0%, otherwise Fail. Exposure with a current S&P, Moody's or Fitch issuer rating ÷ total investment-portfolio exposure.",
+        "value": "99.0%",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_02": {
+        "name": "Rank correlation with market-implied PDs",
+        "description": "Pass if ≥ 0.60, otherwise Fail. Spearman rank correlation between model 12-month PiT PDs and PDs implied by bond spreads or CDS, issuers with market data.",
+        "value": "0.69",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_03": {
+        "name": "Age of the agency default tables (days)",
+        "description": "Pass if ≤ 400 days, otherwise Fail. Days between period end and the publication date of the agency default study used.",
+        "value": "257 days",
+        "result": "Pass",
+        "comment": ""
+      }
+    },
+    "history": [
+      {
+        "action": "Saved",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2025-10-10",
+        "comment": null
+      },
+      {
+        "action": "Submitted",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2025-10-20",
+        "comment": null
+      },
+      {
+        "action": "Reviewed",
+        "by": "Model Validator 1 (QDB validator)",
+        "on": "2025-10-27",
+        "comment": "Reviewed; results agree to the monitoring pack."
+      }
+    ],
+    "entered_by": "Model Developer 2 (Risk Analytics)",
+    "updated_on": "2025-10-10",
+    "submitted_by": "Model Developer 2 (Risk Analytics)",
+    "submitted_on": "2025-10-20",
+    "attestation": "I confirm these results follow the pass/fail criteria in each KMPI's description and every fail or missing value is explained.",
+    "reviewed_by": "Model Validator 1 (QDB validator)",
+    "reviewed_on": "2025-10-27",
+    "review_comment": "Reviewed; results agree to the monitoring pack."
+  },
+  {
+    "model_id": "QDB-019",
+    "period": "2025-Q4",
+    "status": "Reviewed",
+    "values": {
+      "KMPI_QDB-019_01": {
+        "name": "Externally rated exposure (%)",
+        "description": "Pass if ≥ 98.0%, otherwise Fail. Exposure with a current S&P, Moody's or Fitch issuer rating ÷ total investment-portfolio exposure.",
+        "value": "98.8%",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_02": {
+        "name": "Rank correlation with market-implied PDs",
+        "description": "Pass if ≥ 0.60, otherwise Fail. Spearman rank correlation between model 12-month PiT PDs and PDs implied by bond spreads or CDS, issuers with market data.",
+        "value": "0.68",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_03": {
+        "name": "Age of the agency default tables (days)",
+        "description": "Pass if ≤ 400 days, otherwise Fail. Days between period end and the publication date of the agency default study used.",
+        "value": "235 days",
+        "result": "Pass",
+        "comment": ""
+      }
+    },
+    "history": [
+      {
+        "action": "Saved",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2026-01-10",
+        "comment": null
+      },
+      {
+        "action": "Submitted",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2026-01-20",
+        "comment": null
+      },
+      {
+        "action": "Reviewed",
+        "by": "Model Validator 1 (QDB validator)",
+        "on": "2026-01-27",
+        "comment": "Reviewed; results agree to the monitoring pack."
+      }
+    ],
+    "entered_by": "Model Developer 2 (Risk Analytics)",
+    "updated_on": "2026-01-10",
+    "submitted_by": "Model Developer 2 (Risk Analytics)",
+    "submitted_on": "2026-01-20",
+    "attestation": "I confirm these results follow the pass/fail criteria in each KMPI's description and every fail or missing value is explained.",
+    "reviewed_by": "Model Validator 1 (QDB validator)",
+    "reviewed_on": "2026-01-27",
+    "review_comment": "Reviewed; results agree to the monitoring pack."
+  },
+  {
+    "model_id": "QDB-019",
+    "period": "2026-Q1",
+    "status": "Reviewed",
+    "values": {
+      "KMPI_QDB-019_01": {
+        "name": "Externally rated exposure (%)",
+        "description": "Pass if ≥ 98.0%, otherwise Fail. Exposure with a current S&P, Moody's or Fitch issuer rating ÷ total investment-portfolio exposure.",
+        "value": "98.8%",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_02": {
+        "name": "Rank correlation with market-implied PDs",
+        "description": "Pass if ≥ 0.60, otherwise Fail. Spearman rank correlation between model 12-month PiT PDs and PDs implied by bond spreads or CDS, issuers with market data.",
+        "value": "0.67",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_03": {
+        "name": "Age of the agency default tables (days)",
+        "description": "Pass if ≤ 400 days, otherwise Fail. Days between period end and the publication date of the agency default study used.",
+        "value": "232 days",
+        "result": "Pass",
+        "comment": ""
+      }
+    },
+    "history": [
+      {
+        "action": "Saved",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2026-04-10",
+        "comment": null
+      },
+      {
+        "action": "Submitted",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2026-04-20",
+        "comment": null
+      },
+      {
+        "action": "Reviewed",
+        "by": "Model Validator 1 (QDB validator)",
+        "on": "2026-04-27",
+        "comment": "Reviewed; results agree to the monitoring pack."
+      }
+    ],
+    "entered_by": "Model Developer 2 (Risk Analytics)",
+    "updated_on": "2026-04-10",
+    "submitted_by": "Model Developer 2 (Risk Analytics)",
+    "submitted_on": "2026-04-20",
+    "attestation": "I confirm these results follow the pass/fail criteria in each KMPI's description and every fail or missing value is explained.",
+    "reviewed_by": "Model Validator 1 (QDB validator)",
+    "reviewed_on": "2026-04-27",
+    "review_comment": "Reviewed; results agree to the monitoring pack."
+  },
+  {
+    "model_id": "QDB-019",
+    "period": "2026-Q2",
+    "status": "Reviewed",
+    "values": {
+      "KMPI_QDB-019_01": {
+        "name": "Externally rated exposure (%)",
+        "description": "Pass if ≥ 98.0%, otherwise Fail. Exposure with a current S&P, Moody's or Fitch issuer rating ÷ total investment-portfolio exposure.",
+        "value": "98.7%",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_02": {
+        "name": "Rank correlation with market-implied PDs",
+        "description": "Pass if ≥ 0.60, otherwise Fail. Spearman rank correlation between model 12-month PiT PDs and PDs implied by bond spreads or CDS, issuers with market data.",
+        "value": "0.67",
+        "result": "Pass",
+        "comment": ""
+      },
+      "KMPI_QDB-019_03": {
+        "name": "Age of the agency default tables (days)",
+        "description": "Pass if ≤ 400 days, otherwise Fail. Days between period end and the publication date of the agency default study used.",
+        "value": "214 days",
+        "result": "Pass",
+        "comment": ""
+      }
+    },
+    "history": [
+      {
+        "action": "Saved",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2026-07-10",
+        "comment": null
+      },
+      {
+        "action": "Submitted",
+        "by": "Model Developer 2 (Risk Analytics)",
+        "on": "2026-07-20",
+        "comment": null
+      },
+      {
+        "action": "Reviewed",
+        "by": "Model Validator 1 (QDB validator)",
+        "on": "2026-07-27",
+        "comment": "Reviewed; results agree to the monitoring pack."
+      }
+    ],
+    "entered_by": "Model Developer 2 (Risk Analytics)",
+    "updated_on": "2026-07-10",
+    "submitted_by": "Model Developer 2 (Risk Analytics)",
+    "submitted_on": "2026-07-20",
+    "attestation": "I confirm these results follow the pass/fail criteria in each KMPI's description and every fail or missing value is explained.",
+    "reviewed_by": "Model Validator 1 (QDB validator)",
+    "reviewed_on": "2026-07-27",
+    "review_comment": "Reviewed; results agree to the monitoring pack."
   }
 ]

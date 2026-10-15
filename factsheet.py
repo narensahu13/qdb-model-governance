@@ -75,7 +75,7 @@ def _grid(rows, widths, st, header=False):
 
 
 def build_factsheet(model: dict, requests: list[dict], monitoring: list[dict],
-                    documentation: dict, validation_status: str) -> bytes:
+                    documentation: dict, validation_status: str, model_names: dict | None = None) -> bytes:
     """Return the factsheet PDF as bytes."""
     st = _styles()
     buf = BytesIO()
@@ -106,7 +106,7 @@ def build_factsheet(model: dict, requests: list[dict], monitoring: list[dict],
         ("Validation rating", model.get("last_rating") or "Not validated",
          f"last {_d(model.get('last_validation'), 'never')}"),
         ("Next validation", _d(model.get("next_validation_due")), validation_status),
-        ("Exposure covered", f"QAR {model['exposure_covered_qar_mn']:,} mn", model["approval_body"]),
+        ("Exposure covered", f"QAR {model['exposure_covered_qar_mn']:,} mn", "by the model's outputs"),
     ]
     tile_cells = [[Paragraph(f"<font color='#5f6b7a' size='7'>{escape(a)}</font><br/>"
                              f"<b>{escape(str(b))}</b><br/>"
@@ -127,7 +127,7 @@ def build_factsheet(model: dict, requests: list[dict], monitoring: list[dict],
     story.append(_p(model["description"], st["b"]))
     uses = model.get("uses") or []
     if uses:
-        story.append(_p("Uses", st["h"]))
+        story.append(_p("Model uses", st["h"]))
         rows = [[_p("Use", st["label"]), _p("Business area", st["label"]),
                  _p("Decision supported", st["label"]), _p("Status", st["label"])]]
         for u in uses:
@@ -147,13 +147,54 @@ def build_factsheet(model: dict, requests: list[dict], monitoring: list[dict],
         ("Platform / frequency", f"{model['implementation_platform']} · {model['usage_frequency']}"),
         ("AI system (QCB)", ("Yes — high-risk" if model.get("qcb_ai_high_risk") else "Yes")
          if model.get("ai_system") else "No"),
-        ("Tier rationale", model.get("tier_rationale")),
+        ("Data sources", ", ".join(model.get("data_sources") or []) or "—"),
     ]
     kv = []
     for (a, b), (c, d) in zip(left, right):
         kv.append([_p(a, st["label"]), _p(b, st["cell"]), _p(c, st["label"]), _p(d, st["cell"])])
     story.append(_p("Accountability and design", st["h"]))
     story.append(_grid(kv, [W * 0.13, W * 0.33, W * 0.16, W * 0.38], st))
+
+    # ------------------------------------------------ tiering matrix and connections side by side
+    from tiering import DIMENSION_LABELS, LEVEL_POINTS, compute_tier
+
+    scores = model["tier_scores"]
+    calc = compute_tier(**scores)
+    half = (W - 6 * mm) / 2
+    t_rows = [[_p("Dimension", st["label"]), _p("Rating", st["label"]), _p("Points", st["label"])]]
+    for dim in ("materiality", "complexity", "regulatory_impact"):
+        t_rows.append([_p(DIMENSION_LABELS[dim], st["cell"]), _p(scores[dim], st["cell"]),
+                       _p(str(LEVEL_POINTS[scores[dim]]), st["cell"])])
+    t_rows.append([Paragraph("<b>Composite score</b>", st["cell"]), "",
+                   Paragraph(f"<b>{calc['composite']}</b> of 9", st["cell"])])
+    t_rows.append([Paragraph("<b>Tier</b>", st["cell"]),
+                   Paragraph(f"<b>Tier {model['tier']}</b>"
+                             + (f" (override of rule-based Tier {calc['tier']})" if model.get("tier_override") else ""),
+                             st["cell"]), ""])
+    tiering_block = [
+        _p("Tiering", st["h"]),
+        _grid(t_rows, [half * 0.50, half * 0.28, half * 0.22], st, header=True),
+        _p(f"Rule: {calc['explanation']}", st["small"]),
+        _p(f"Rationale: {model.get('tier_rationale') or '—'}", st["small"]),
+    ]
+
+    names = model_names or {}
+    deps = model["dependencies"]
+
+    def _models(ids):
+        return "<br/>".join(f"{escape(i)} — {escape(names.get(i, ''))}" for i in ids) or "none"
+
+    c_rows = [
+        [_p("Upstream (feeds this model)", st["label"]), Paragraph(_models(deps["upstream"]), st["cell"])],
+        [_p("Downstream (fed by this model)", st["label"]), Paragraph(_models(deps["downstream"]), st["cell"])],
+        [_p("Model users", st["label"]), _p(", ".join(model.get("model_users") or []) or "—", st["cell"])],
+    ]
+    conn_block = [_p("Connections and users", st["h"]), _grid(c_rows, [half * 0.30, half * 0.70], st)]
+    pair = Table([[tiering_block, conn_block]], colWidths=[half + 3 * mm, half + 3 * mm])
+    pair.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "TOP"),
+                              ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                              ("RIGHTPADDING", (0, 0), (0, 0), 6 * mm)]))
+    story.append(pair)
 
     # ------------------------------------------------ findings and monitoring side by side
     open_f = [r for r in requests if r["type"] == "FND" and r["status"] != "Closed"]
@@ -201,12 +242,6 @@ def build_factsheet(model: dict, requests: list[dict], monitoring: list[dict],
     story.append(_p("Key limitations", st["h"]))
     lims = model.get("known_limitations") or ["None recorded"]
     story.append(Paragraph("<br/>".join("• " + escape(x) for x in lims), st["b"]))
-
-    deps = model["dependencies"]
-    story.append(_p("Dependencies", st["h"]))
-    story.append(_p(
-        f"Upstream: {', '.join(deps['upstream']) or 'none'}   ·   "
-        f"Downstream: {', '.join(deps['downstream']) or 'none'}", st["b"]))
 
     done = sum(documentation.values())
     missing = [k for k, v in documentation.items() if not v]

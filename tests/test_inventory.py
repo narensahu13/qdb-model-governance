@@ -51,13 +51,23 @@ def test_identification(answers, expected):
 def test_register_model_creates_proposed_tier_and_mirrors_dependencies(act_as):
     act_as(OWNER)
     mid = data_store.register_model(new_model_record(), MODEL_ANSWERS)
-    assert mid == "QDB-019"
+    assert mid == "QDB-020"
     m = data_loader.get_model(mid)
     assert m["tier"] == 2 and not m["tier_confirmed"]
     assert m["tier_assessment"]["proposed_by"] == OWNER
     assert mid in repository.get_model("QDB-007")["dependencies"]["downstream"]
     assert data_loader.validation_status(m) == "Pre-implementation"
     assert repository.list_audit()[-1]["action"] == "register_model"
+
+
+def test_register_and_edit_downstream_links_both_ways(act_as):
+    act_as(OWNER)
+    mid = data_store.register_model(new_model_record(downstream=["QDB-013"]), MODEL_ANSWERS)
+    assert mid in repository.get_model("QDB-013")["dependencies"]["upstream"]
+    with pytest.raises(ValueError, match="both feed"):
+        data_store.update_model(mid, {"downstream": ["QDB-007"]})     # QDB-007 already feeds it
+    data_store.update_model(mid, {"downstream": []})
+    assert mid not in repository.get_model("QDB-013")["dependencies"]["upstream"]
 
 
 def test_register_rejects_non_model_and_tools_reject_models(act_as):

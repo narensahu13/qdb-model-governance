@@ -2,7 +2,7 @@
 
 Kept deliberately simple:
 
-    KMPI         an ID (KMPI-001 ...), a short name and a description that states
+    KMPI         an ID KMPI_<model ID>_<number> (KMPI_QDB-001_01 ...), a short name and a description that states
                  what is measured and the pass/fail criterion, e.g.
                  "Gini of 12-month PDs against observed defaults. Pass: Gini >= 0.55."
     Frequency    set per model (monthly, quarterly, semi-annual, annual); a KMPI
@@ -23,6 +23,18 @@ from __future__ import annotations
 
 import io
 from datetime import date, timedelta
+
+# ---------------------------------------------------------------- IDs
+def kmpi_id(model_id: str, n: int) -> str:
+    """KMPI_QDB-001_01: the model's ID and a running number within the model."""
+    return f"KMPI_{model_id}_{n:02d}"
+
+
+def next_kmpi_id(model_id: str, existing_ids: list[str]) -> str:
+    prefix = f"KMPI_{model_id}_"
+    nums = [int(i[len(prefix):]) for i in existing_ids if i.startswith(prefix) and i[len(prefix):].isdigit()]
+    return kmpi_id(model_id, max(nums, default=0) + 1)
+
 
 # ---------------------------------------------------------------- frequencies and periods
 FREQUENCY_MONTHS = {"Monthly": 1, "Quarterly": 3, "Semi-annual": 6, "Annual": 12}

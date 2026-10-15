@@ -51,7 +51,8 @@ st.caption(f"{len(filtered)} of {len(df)} models shown")
 display_cols = [
     "Model ID", "Model Name", "Risk Type", "Tier", "Tier Confirmed", "Status", "Last Rating",
     "Validation Status", "Next Validation Due", "Open Issues",
-    "High Open Issues", "KMPI Fails", "Annual Confirmation", "Doc Completeness (%)", "Owner", "Source", "AI System",
+    "High Open Issues", "KMPI Fails", "Annual Confirmation", "Upstream", "Downstream", "Model Users", "Uses",
+    "Doc Completeness (%)", "Owner", "Source", "AI System",
 ]
 
 # Render Model ID as an in-app link to the Model Detail page (?model=<id> is
@@ -80,6 +81,10 @@ event = st.dataframe(
         "KMPI Fails": st.column_config.NumberColumn("KMPI fails", width="small",
                                                     help="KMPIs failed in the latest submitted return"),
         "Annual Confirmation": st.column_config.TextColumn("Confirmation", width="small"),
+        "Upstream": st.column_config.TextColumn("Feeds from", help="Upstream models that feed this model"),
+        "Downstream": st.column_config.TextColumn("Feeds into", help="Downstream models this model feeds"),
+        "Model Users": st.column_config.TextColumn("Users"),
+        "Uses": st.column_config.NumberColumn("Uses", width="small", help="Number of recorded business uses"),
         "AI System": st.column_config.CheckboxColumn(
             "AI", width="small", help="AI system under the QCB AI Guideline",
         ),

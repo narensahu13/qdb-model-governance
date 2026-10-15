@@ -541,6 +541,22 @@ def _sync_downstream(conn, model_id: str, old_up: list[str], new_up: list[str]) 
             repository.put_model(conn, other)
 
 
+def _sync_upstream(conn, model_id: str, old_down: list[str], new_down: list[str]) -> None:
+    """Mirror of _sync_downstream: models this one feeds list it as upstream."""
+    for mid in set(old_down) - set(new_down):
+        other = repository.get_model(mid, conn)
+        if other and model_id in other["dependencies"]["upstream"]:
+            other["dependencies"]["upstream"].remove(model_id)
+            repository.put_model(conn, other)
+    for mid in set(new_down) - set(old_down):
+        other = repository.get_model(mid, conn)
+        if other is None:
+            raise ValueError(f"Unknown downstream model {mid}")
+        if model_id not in other["dependencies"]["upstream"]:
+            other["dependencies"]["upstream"].append(model_id)
+            repository.put_model(conn, other)
+
+
 def _clean_list(values) -> list[str]:
     if isinstance(values, str):
         values = values.splitlines()
@@ -577,11 +593,12 @@ def register_model(record: dict, answers: dict) -> str:
     user = auth.get_current_user()
     today = date.today().isoformat()
     upstream = _clean_list(record.get("upstream"))
+    downstream = _clean_list(record.get("downstream"))
+    if set(upstream) & set(downstream):
+        raise ValueError("A model cannot both feed and be fed by the same model.")
 
     with repository.tx() as conn:
         model_id = next_model_id(conn)
-        if upstream and model_id in upstream:
-            raise ValueError("A model cannot depend on itself.")
         ai = bool(result["ai_system"] or record.get("ai_system"))
         m = {
             "model_id": model_id,
@@ -616,7 +633,7 @@ def register_model(record: dict, answers: dict) -> str:
             "status": record.get("status") or "In Development",
             "approval_date": record.get("approval_date") or None,
             "regulatory_mapping": _clean_list(record.get("regulatory_mapping")),
-            "dependencies": {"upstream": upstream, "downstream": []},
+            "dependencies": {"upstream": upstream, "downstream": downstream},
             "documentation": _checklist_for(tier),
             "change_log": [],
             "audit_reviews": [],
@@ -642,6 +659,7 @@ def register_model(record: dict, answers: dict) -> str:
         }
         repository.put_model(conn, m)
         _sync_downstream(conn, model_id, [], upstream)
+        _sync_upstream(conn, model_id, [], downstream)
         log_event(conn, "register_model", "model", model_id, model_id,
                   f"Model registered: {m['name']} (tier {tier} proposed)", after=m)
     _refresh()
@@ -722,23 +740,27 @@ def update_model(model_id: str, changes: dict) -> list[str]:
                 value = _clean_list(value)
             if field == "exposure_covered_qar_mn":
                 value = int(value or 0)
-            current = m["dependencies"]["upstream"] if field == "upstream" else m.get(field)
-            if field == "upstream":
+            links = field in ("upstream", "downstream")
+            current = m["dependencies"][field] if links else m.get(field)
+            if links:
                 value = _clean_list(value)
             if value == current:
                 continue
             if field in governance.ASSIGNMENT_FIELDS:
                 auth.require("assign_accountability")
             changed.append(field)
-            if field == "upstream":
+            if links:
                 if model_id in value:
                     raise ValueError("A model cannot depend on itself.")
-                _sync_downstream(conn, model_id, m["dependencies"]["upstream"], value)
-                m["dependencies"]["upstream"] = value
+                sync = _sync_downstream if field == "upstream" else _sync_upstream
+                sync(conn, model_id, m["dependencies"][field], value)
+                m["dependencies"][field] = value
             else:
                 m[field] = value
         if not changed:
             return []
+        if set(m["dependencies"]["upstream"]) & set(m["dependencies"]["downstream"]):
+            raise ValueError("A model cannot both feed and be fed by the same model.")
         if "validator" in changed and m["validator"] != "Not yet assigned":
             _check_independence(m, m["validator"], "VAL")
         sponsor = governance.person_name(m.get("sponsor"))
@@ -1326,7 +1348,7 @@ def save_kmpi_library(model_id: str, rows: list[dict]) -> list[str]:
             elif kid:
                 raise ValueError(f"{kid} does not belong to {model_id}; leave the ID blank for a new KMPI.")
             else:
-                kid = _next_id(ids, "KMPI")
+                kid = kmpi_rules.next_kmpi_id(model_id, ids)
                 ids.append(kid)
                 repository.put_kmpi(conn, {"kmpi_id": kid, "model_id": model_id, **fields,
                                            "defined_by": auth.user_option_label(user), "defined_on": today})

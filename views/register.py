@@ -124,15 +124,23 @@ if result["classification"] == governance.CLASS_MODEL:
         platform = st.text_input("Implementation platform", key="rm_plat")
         usage = st.text_input("Usage frequency", placeholder="e.g. Monthly batch", key="rm_usage")
         data_sources = st.text_area("Data sources (one per line)", key="rm_data")
-        users_txt = st.text_area("Model users (one per line)", key="rm_users")
     with c4:
         assumptions = st.text_area("Key assumptions (one per line)", key="rm_ass")
         limitations = st.text_area("Known limitations (one per line)", key="rm_lim")
         regulatory = st.text_area("Regulatory mapping (one per line)", key="rm_reg")
-        upstream = st.multiselect("Upstream models (feed this model)", list(model_labels),
-                                  format_func=lambda i: model_labels[i], key="rm_up")
 
-    st.markdown("**Uses** — each business use of the model and the decision it supports")
+    st.subheader("3 · Connections and use")
+    st.caption("Which models feed this one and which it feeds, who uses its output, and for what. "
+               "The other models' records are updated to match.")
+    k1, k2 = st.columns(2)
+    upstream = k1.multiselect("Upstream — models that feed this model", list(model_labels),
+                              format_func=lambda i: model_labels[i], key="rm_up")
+    downstream = k2.multiselect("Downstream — models this model feeds", list(model_labels),
+                                format_func=lambda i: model_labels[i], key="rm_down")
+    users_txt = st.text_area("Model users — teams or roles that use the output (one per line)", key="rm_users",
+                             height=80)
+
+    st.markdown("**Model uses** — each business use and the decision it supports")
     uses_df = st.data_editor(
         pd.DataFrame([{"use": "", "business_area": "", "decision": "", "status": "Planned"}]),
         num_rows="dynamic", width="stretch", key="rm_uses",
@@ -144,7 +152,7 @@ if result["classification"] == governance.CLASS_MODEL:
 
     ai_rec = _ai_fields("rm") if result["ai_system"] else {}
 
-    st.subheader("3 · Proposed tier")
+    st.subheader("4 · Proposed tier")
     t1, t2, t3 = st.columns(3)
     with t1:
         mat = st.selectbox("Materiality", tiering.LEVELS, index=1, key="rm_mat")
@@ -181,7 +189,7 @@ if result["classification"] == governance.CLASS_MODEL:
                 "description": description, "implementation_platform": platform,
                 "usage_frequency": usage, "data_sources": data_sources, "model_users": users_txt,
                 "key_assumptions": assumptions, "known_limitations": limitations,
-                "regulatory_mapping": regulatory, "upstream": upstream, "uses": uses,
+                "regulatory_mapping": regulatory, "upstream": upstream, "downstream": downstream, "uses": uses,
                 "tier_scores": {"materiality": mat, "complexity": comp, "regulatory_impact": reg},
                 "tier_rationale": rationale.strip(), **ai_rec,
             }, answers)

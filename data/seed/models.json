@@ -1,7 +1,7 @@
 [
   {
     "model_id": "QDB-001",
-    "name": "IFRS 9 PD Model (point-in-time term structure)",
+    "name": "IFRS 9 PD Model — Lending Portfolio (point-in-time term structure)",
     "version": "2.1",
     "risk_type": "IFRS 9 / Provisioning",
     "category": "Parameter estimation",
@@ -509,7 +509,8 @@
     ],
     "dependencies": {
       "upstream": [
-        "QDB-001"
+        "QDB-001",
+        "QDB-019"
       ],
       "downstream": [
         "QDB-006"
@@ -674,7 +675,8 @@
       "upstream": [],
       "downstream": [
         "QDB-001",
-        "QDB-006"
+        "QDB-006",
+        "QDB-019"
       ]
     },
     "documentation": {
@@ -858,6 +860,7 @@
     "dependencies": {
       "upstream": [
         "QDB-001",
+        "QDB-019",
         "QDB-002",
         "QDB-003",
         "QDB-004",
@@ -1134,7 +1137,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-012",
+        "approval_id": "APR-013",
         "date": "2025-12-10",
         "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
@@ -1315,7 +1318,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-013",
+        "approval_id": "APR-014",
         "date": "2025-12-10",
         "body": "Model owner and model sponsor",
         "decision": "Approved",
@@ -1874,7 +1877,7 @@
     "tier_history": [],
     "approvals": [
       {
-        "approval_id": "APR-014",
+        "approval_id": "APR-015",
         "date": "2026-09-25",
         "body": "Model owner and model sponsor",
         "decision": "Approved with conditions",
@@ -2804,5 +2807,187 @@
       "decided_on": "2025-11-30",
       "decision_comment": "All SME obligors re-rated in CreditLens."
     }
+  },
+  {
+    "model_id": "QDB-019",
+    "name": "IFRS 9 PD Model — Investment Portfolio (macro point-in-time PD)",
+    "version": "1.1",
+    "risk_type": "IFRS 9 / Provisioning",
+    "category": "Parameter estimation",
+    "business_line": "Treasury — Investment Portfolio",
+    "methodology": "External-rating TTC PDs (agency default studies) converted to point-in-time PDs with a single-factor (Vasicek) credit-cycle index driven by the macro scenarios; lifetime term structure",
+    "source": "In-house",
+    "vendor": null,
+    "description": "12-month and lifetime point-in-time PDs for the bond and sukuk investment portfolio, from issuer external ratings adjusted for the scenario-weighted macroeconomic outlook.",
+    "owner": "Model Owner 3 (Head of Market & Liquidity Risk)",
+    "developer": "Model Developer 2 (Risk Analytics)",
+    "validator": "Model Validator 1 (QDB validator)",
+    "sponsor": "Model Sponsor 1 (Chief Risk Officer)",
+    "lod_mapping": {
+      "first_line": "Market & Liquidity Risk / Treasury (development, use, monitoring)",
+      "second_line": "Model validator — QDB validator or external consultant (independent validation)",
+      "third_line": "Internal Audit (periodic review of the model governance framework)"
+    },
+    "tier_scores": {
+      "materiality": "High",
+      "complexity": "Medium",
+      "regulatory_impact": "High"
+    },
+    "tier_rationale": "Drives ECL on the whole investment portfolio; output feeds the financial statements.",
+    "status": "In Production",
+    "approval_date": "2024-12-20",
+    "regulatory_mapping": [
+      "IFRS 9 Financial Instruments",
+      "QCB IFRS 9 implementation instructions",
+      "SR 26-2 (benchmark)"
+    ],
+    "dependencies": {
+      "upstream": [
+        "QDB-005"
+      ],
+      "downstream": [
+        "QDB-004",
+        "QDB-006"
+      ]
+    },
+    "documentation": {
+      "Model Development Document": true,
+      "Methodology Document": true,
+      "Data Quality Assessment": true,
+      "User Guide / Operating Manual": false,
+      "Validation Report": true,
+      "Ongoing Monitoring Plan": true
+    },
+    "change_log": [
+      {
+        "date": "2024-11-01",
+        "version": "1.0",
+        "description": "First version for the investment portfolio.",
+        "author": "Model Developer 2",
+        "classification": "Material",
+        "justification": "New model.",
+        "change_id": "CHG-023"
+      },
+      {
+        "date": "2026-03-15",
+        "version": "1.1",
+        "description": "Agency default tables updated to the 2025 studies.",
+        "author": "Model Developer 2",
+        "classification": "Non-material",
+        "justification": "Data refresh within the approved methodology.",
+        "change_id": "CHG-024"
+      }
+    ],
+    "audit_reviews": [],
+    "data_sources": [
+      "Treasury securities holdings",
+      "S&P / Moody's / Fitch issuer ratings",
+      "Agency annual default studies",
+      "Macroeconomic scenarios (QDB-005)"
+    ],
+    "implementation_platform": "Python (Risk Analytics) feeding the ECL engine",
+    "usage_frequency": "Monthly batch",
+    "model_users": [
+      "Risk Analytics",
+      "Treasury",
+      "Financial Control"
+    ],
+    "key_assumptions": [
+      "Agency TTC default rates represent issuers in the portfolio",
+      "One systematic credit-cycle factor explains PiT movements (asset correlation per Basel)"
+    ],
+    "known_limitations": [
+      "Very few defaults among investment-grade issuers: calibration relies on agency data",
+      "Unrated holdings take a conservative fallback rating"
+    ],
+    "exposure_covered_qar_mn": 6200,
+    "ai_system": false,
+    "qcb_ai_high_risk": null,
+    "ai_functional_category": null,
+    "ai_provider_role": null,
+    "ai_autonomy": null,
+    "qcb_approval_status": null,
+    "placeholder": false,
+    "pending_revalidation": false,
+    "uses": [
+      {
+        "use": "Stage 1 and 2 ECL — investments",
+        "business_area": "Finance & Risk",
+        "decision": "12-month and lifetime PD for bonds and sukuk",
+        "status": "Active"
+      },
+      {
+        "use": "Investment limits",
+        "business_area": "Treasury / ALCO",
+        "decision": "PD-based expected loss in issuer limit reviews",
+        "status": "Active"
+      }
+    ],
+    "tier_override": null,
+    "tier_assessment": {
+      "scores": {
+        "materiality": "High",
+        "complexity": "Medium",
+        "regulatory_impact": "High"
+      },
+      "rationale": "Drives ECL on the whole investment portfolio; output feeds the financial statements.",
+      "proposed_by": "Model Owner 3",
+      "proposed_on": "2024-12-20",
+      "status": "Confirmed",
+      "confirmed_by": "MRM Administrator 1",
+      "confirmed_on": "2024-12-20",
+      "override_tier": null,
+      "override_reason": null
+    },
+    "tier_history": [],
+    "approvals": [
+      {
+        "approval_id": "APR-012",
+        "date": "2024-12-20",
+        "body": "Model owner and model sponsor",
+        "decision": "Approved",
+        "conditions": [],
+        "version": "1.1",
+        "signatures": [
+          {
+            "as": "Model owner",
+            "by": "Model Owner 3 (Head of Market & Liquidity Risk)",
+            "on": "2024-12-20",
+            "decision": "Approved",
+            "comment": null
+          },
+          {
+            "as": "Model sponsor",
+            "by": "Model Sponsor 1 (Chief Risk Officer)",
+            "on": "2024-12-20",
+            "decision": "Approved",
+            "comment": null
+          }
+        ],
+        "recorded_by": "Model Sponsor 1 (Chief Risk Officer)",
+        "comment": null
+      }
+    ],
+    "implementation": [
+      {
+        "version": "1.1",
+        "verified_by": "Model Validator 1 (QDB validator)",
+        "verified_on": "2024-12-27",
+        "note": "Deployed version matches the validated version (backfilled)."
+      }
+    ],
+    "kmpi_frequency": "Quarterly",
+    "confirmations": [
+      {
+        "on": "2026-01-15",
+        "by": "Model Owner 3 (Head of Market & Liquidity Risk)",
+        "statements": [
+          "The record is accurate: purpose, uses, users, data sources and platform",
+          "The model is used as approved, with no unrecorded changes",
+          "The known limitations and the KMPIs are still appropriate"
+        ],
+        "comment": null
+      }
+    ]
   }
 ]

@@ -284,7 +284,7 @@ DESCRIPTIVE_FIELDS = [
     "name", "description", "category", "business_line", "methodology", "source", "vendor",
     "data_sources", "implementation_platform", "usage_frequency", "model_users",
     "key_assumptions", "known_limitations", "exposure_covered_qar_mn", "regulatory_mapping",
-    "uses", "upstream", "ai_system", "qcb_ai_high_risk", "ai_functional_category",
+    "uses", "upstream", "downstream", "ai_system", "qcb_ai_high_risk", "ai_functional_category",
     "ai_provider_role", "ai_autonomy", "qcb_approval_status",
 ]
 # Accountability fields: MRM Administrator only.

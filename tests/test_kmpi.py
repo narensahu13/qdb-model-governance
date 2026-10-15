@@ -68,12 +68,12 @@ def test_library_add_edit_retire(act_as):
     act_as(DEV4)  # developer of QDB-013 (no KMPIs yet)
     added = data_store.save_kmpi_library("QDB-013", [
         {"name": "Combined-grade agreement", "description": "Pass if at least 80% agree; otherwise Fail."}])
-    assert added == ["KMPI-045"]
+    assert added == ["KMPI_QDB-013_01"]
     with pytest.raises(ValueError, match="pass/fail"):
-        data_store.save_kmpi_library("QDB-013", [{"kmpi_id": "KMPI-045", "name": "x", "description": ""}])
+        data_store.save_kmpi_library("QDB-013", [{"kmpi_id": "KMPI_QDB-013_01", "name": "x", "description": ""}])
     # leaving it out of the list retires it, never deletes it
     data_store.save_kmpi_library("QDB-013", [])
-    k = next(x for x in repository.list_kmpis() if x["kmpi_id"] == "KMPI-045")
+    k = next(x for x in repository.list_kmpis() if x["kmpi_id"] == "KMPI_QDB-013_01")
     assert k["active"] is False
 
 
@@ -99,17 +99,17 @@ def _entries(results, comment=""):
 
 def test_draft_then_submit(act_as):
     act_as(DEV1)   # QDB-001: draft with two KMPIs still empty
-    with pytest.raises(ValueError, match="KMPI-004"):
+    with pytest.raises(ValueError, match="KMPI_QDB-001_04"):
         data_store.save_kmpi_return("QDB-001", Q, {}, submit=True, attest=True)
-    entries = _entries({"KMPI-004": "Pass", "KMPI-005": "Fail"})
-    with pytest.raises(ValueError, match="KMPI-005"):
+    entries = _entries({"KMPI_QDB-001_04": "Pass", "KMPI_QDB-001_05": "Fail"})
+    with pytest.raises(ValueError, match="KMPI_QDB-001_05"):
         data_store.save_kmpi_return("QDB-001", Q, entries, submit=True, attest=True)
-    entries["KMPI-005"]["comment"] = "Ratings backlog after the CreditLens upgrade"
+    entries["KMPI_QDB-001_05"]["comment"] = "Ratings backlog after the CreditLens upgrade"
     with pytest.raises(ValueError, match="confirmation"):
         data_store.save_kmpi_return("QDB-001", Q, entries, submit=True)
     assert data_store.save_kmpi_return("QDB-001", Q, entries, submit=True, attest=True) == kmpi.SUBMITTED
     ret = data_loader.kmpi_return("QDB-001", Q)
-    assert ret["values"]["KMPI-005"]["result"] == "Fail" and "Pass if" in ret["values"]["KMPI-005"]["description"]
+    assert ret["values"]["KMPI_QDB-001_05"]["result"] == "Fail" and "Pass if" in ret["values"]["KMPI_QDB-001_05"]["description"]
     with pytest.raises(ValueError, match="no longer"):
         data_store.save_kmpi_return("QDB-001", Q, entries)
     assert repository.verify_audit_chain() == (True, None)
@@ -117,13 +117,13 @@ def test_draft_then_submit(act_as):
 
 def test_upload_fills_the_draft(act_as):
     act_as(OWNER1)
-    csv = b"KMPI ID,Value,Result,Comment\nKMPI-004,0.08,Pass,\nKMPI-005,1.7%,Pass,\n"
+    csv = b"KMPI ID,Value,Result,Comment\nKMPI_QDB-001_04,0.08,Pass,\nKMPI_QDB-001_05,1.7%,Pass,\n"
     data_store.save_kmpi_return("QDB-001", Q, kmpi.parse_upload(csv, "q3.csv"))
     ret = data_loader.kmpi_return("QDB-001", Q)
-    assert ret["status"] == kmpi.DRAFT and ret["values"]["KMPI-005"]["value"] == "1.7%"
-    assert ret["values"]["KMPI-001"]["result"] == "Pass"          # earlier entries kept
-    with pytest.raises(ValueError, match="KMPI-099"):
-        data_store.save_kmpi_return("QDB-001", Q, {"KMPI-099": {"result": "Pass"}})
+    assert ret["status"] == kmpi.DRAFT and ret["values"]["KMPI_QDB-001_05"]["value"] == "1.7%"
+    assert ret["values"]["KMPI_QDB-001_01"]["result"] == "Pass"          # earlier entries kept
+    with pytest.raises(ValueError, match="KMPI_QDB-001_99"):
+        data_store.save_kmpi_return("QDB-001", Q, {"KMPI_QDB-001_99": {"result": "Pass"}})
 
 
 def test_only_owner_or_developer_reports(act_as):
@@ -147,7 +147,7 @@ def test_validator_returns_then_reviews_and_raises_finding(act_as):
     ret = data_loader.kmpi_return("QDB-008", Q)
     assert ret["status"] == kmpi.REVIEWED and ret["finding_id"] == fid
     f = repository.get_request(fid)
-    assert f["type"] == "FND" and f["source"] == "Monitoring" and "KMPI-023" in f["description"]
+    assert f["type"] == "FND" and f["source"] == "Monitoring" and "KMPI_QDB-008_01" in f["description"]
 
 
 def test_owner_cannot_review_own_return(act_as):
@@ -182,11 +182,14 @@ def test_kmpis_needed_before_go_live(act_as):
         data_store.verify_implementation("QDB-012", "Deployed v1.0 checked")
 
 
-def test_rename_model_moves_kmpis(act_as):
+def test_kmpi_ids_follow_the_model_id(act_as):
+    assert kmpi.next_kmpi_id("QDB-001", ["KMPI_QDB-001_01", "KMPI_QDB-001_05", "KMPI_QDB-002_09"]) == "KMPI_QDB-001_06"
     act_as(ADMIN)
     data_store.rename_model_id("QDB-001", "QDB-101")
-    assert all(k["model_id"] != "QDB-001" for k in repository.list_kmpis())
-    assert data_loader.kmpi_return("QDB-101", "2026-Q2")["status"] == kmpi.REVIEWED
+    ids = [k["kmpi_id"] for k in repository.list_kmpis() if k["model_id"] == "QDB-101"]
+    assert ids and all(i.startswith("KMPI_QDB-101_") for i in ids)
+    ret = data_loader.kmpi_return("QDB-101", "2026-Q2")
+    assert ret["status"] == kmpi.REVIEWED and "KMPI_QDB-101_01" in ret["values"]
 
 
 # ---------------------------------------------------------------- annual confirmation

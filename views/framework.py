@@ -60,7 +60,7 @@ audit, answered by the owner and closed by whoever raised them.
 
 **While in use**
 
-- **KMPIs** — each model has key model performance indicators (KMPI-001 …), each with a description
+- **KMPIs** — each model has key model performance indicators (KMPI_QDB-001_01 … — the model ID and a number), each with a description
   that states its pass/fail criterion. The model's owner sets how often they are reported (monthly,
   quarterly, semi-annual or annual). Within 30 days of each period end the owner or developer fills
   in Value, Result (Pass / Fail / Not available) and Comment — in the table or by uploading the Excel

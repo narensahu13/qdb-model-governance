@@ -26,7 +26,7 @@ from pathlib import Path
 
 import config
 
-SCHEMA_VERSION = "6"
+SCHEMA_VERSION = "7"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -266,7 +266,8 @@ def _backup_and_reset(old_version: str) -> Path:
     """A database from an older schema is kept as a backup and rebuilt from seed
     (v3 renumbered the models; v5 replaced monitoring with KMPIs and the CRO
     approval with owner and sponsor approvals; v6 simplified KMPIs to pass/fail
-    and added annual confirmation and decommissioning)."""
+    and added annual confirmation and decommissioning; v7 added the investment-portfolio
+    PD model and KMPI IDs of the form KMPI_QDB-001_01)."""
     path = config.db_path()
     stamp = datetime.now().strftime("%Y%m%d%H%M%S")
     backup = path.with_name(f"{path.stem}.v{old_version}-backup-{stamp}{path.suffix}")
@@ -473,13 +474,21 @@ def put_kmpi_return(conn, r: dict) -> None:
 
 
 def rename_model_in_kmpis(conn, old_id: str, new_id: str) -> None:
+    """Move a model's KMPIs and returns to its new ID (KMPI_QDB-007_01 -> KMPI_QDB-101_01)."""
+    old_p, new_p = f"KMPI_{old_id}_", f"KMPI_{new_id}_"
+
+    def new_kid(kid: str) -> str:
+        return new_p + kid[len(old_p):] if kid.startswith(old_p) else kid
+
     for k in list_kmpis(conn):
         if k["model_id"] == old_id:
-            put_kmpi(conn, {**k, "model_id": new_id})
+            conn.execute("DELETE FROM kmpis WHERE kmpi_id = ?", (k["kmpi_id"],))
+            put_kmpi(conn, {**k, "kmpi_id": new_kid(k["kmpi_id"]), "model_id": new_id})
     for r in list_kmpi_returns(conn):
         if r["model_id"] == old_id:
             conn.execute("DELETE FROM kmpi_returns WHERE model_id = ? AND period = ?", (old_id, r["period"]))
-            put_kmpi_return(conn, {**r, "model_id": new_id})
+            put_kmpi_return(conn, {**r, "model_id": new_id,
+                                   "values": {new_kid(kid): v for kid, v in r["values"].items()}})
 
 
 # ---------------------------------------------------------------- audit log

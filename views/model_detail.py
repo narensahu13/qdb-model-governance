@@ -273,9 +273,12 @@ def _edit_form(m: dict, user: dict) -> None:
             f_usage = st.text_input("Usage frequency", m["usage_frequency"])
             f_exp = st.number_input("Exposure covered (QAR mn)", min_value=0, step=100,
                                     value=int(m["exposure_covered_qar_mn"]))
-            f_up = st.multiselect("Upstream models (feed this model)", list(others),
+            f_up = st.multiselect("Upstream — models that feed this model", list(others),
                                   default=[u for u in m["dependencies"]["upstream"] if u in others],
                                   format_func=lambda i: others[i])
+            f_down = st.multiselect("Downstream — models this model feeds", list(others),
+                                    default=[u for u in m["dependencies"]["downstream"] if u in others],
+                                    format_func=lambda i: others[i])
             f_ai = st.checkbox("AI system (QCB AI Guideline)", bool(m.get("ai_system")))
             f_aihigh = st.checkbox("High-risk AI system", bool(m.get("qcb_ai_high_risk")))
         f_desc = st.text_area("Purpose", m["description"])
@@ -322,7 +325,8 @@ def _edit_form(m: dict, user: dict) -> None:
             "name": f_name.strip(), "methodology": f_meth.strip(), "category": f_cat.strip(),
             "business_line": f_bl.strip(), "source": f_src, "vendor": f_vendor.strip() or None,
             "implementation_platform": f_plat.strip(), "usage_frequency": f_usage.strip(),
-            "exposure_covered_qar_mn": int(f_exp), "upstream": f_up, "description": f_desc.strip(),
+            "exposure_covered_qar_mn": int(f_exp), "upstream": f_up, "downstream": f_down,
+            "description": f_desc.strip(),
             "model_users": f_users, "data_sources": f_data, "regulatory_mapping": f_regmap,
             "key_assumptions": f_ass, "known_limitations": f_lim, "uses": uses, "ai_system": f_ai,
         }
@@ -867,27 +871,37 @@ def _in_use_panels(m: dict, user: dict) -> None:
     if m["status"] in governance.IN_USE_STATUSES:
         cstatus = governance.confirmation_status(m)
         confs = m.get("confirmations") or []
+        is_owner = auth.has_permission("confirm_model") and owner == user["name"]
         with st.container(border=True):
             color = {"Confirmed": utils.GREEN, "Due soon": utils.AMBER, "Overdue": utils.RED}[cstatus]
             st.markdown(
-                f"**Annual confirmation** {utils.badge(cstatus, color)} "
+                f"**Annual confirmation by the model owner** {utils.badge(cstatus, color)} "
                 f"<span style='color:#666;'>"
                 + (f"last by {governance.person_name(confs[-1]['by'])} on {utils.fmt_date(confs[-1]['on'])} · "
                    if confs else "never confirmed · ")
                 + f"next due {utils.fmt_date(governance.confirmation_due(m))}</span>",
                 unsafe_allow_html=True)
-            if auth.has_permission("confirm_model") and owner == user["name"]:
-                if cstatus != "Confirmed" or st.toggle("Confirm now", key=f"conf_toggle_{mid}"):
-                    with st.form(f"confirm_{mid}"):
-                        st.caption("Tick each statement. If one is not true, update the record (Summary tab) or "
-                                   "record a model change first; if the model is no longer used, request "
-                                   "decommissioning below.")
-                        ticks = [st.checkbox(t, key=f"conf_{mid}_{i}")
-                                 for i, t in enumerate(governance.CONFIRMATION_ITEMS)]
-                        comment = st.text_input("Comment (optional)", key=f"conf_c_{mid}")
-                        go = st.form_submit_button("Confirm", type="primary")
-                    if go:
-                        _act(data_store.confirm_model, "Confirmed for the year — thank you.", mid, ticks, comment)
+            open_form = is_owner and (cstatus != "Confirmed"
+                                      or st.toggle("Confirm again now", key=f"conf_toggle_{mid}"))
+            if open_form:
+                with st.form(f"confirm_{mid}"):
+                    st.caption("Tick all three. If one is not true, update the record (Summary tab) or record "
+                               "a model change first; if the model is no longer used, request decommissioning "
+                               "below.")
+                    ticks = [st.checkbox(t, key=f"conf_{mid}_{i}")
+                             for i, t in enumerate(governance.CONFIRMATION_ITEMS)]
+                    comment = st.text_input("Comment (optional)", key=f"conf_c_{mid}")
+                    go = st.form_submit_button("Confirm", type="primary")
+                if go:
+                    _act(data_store.confirm_model, "Confirmed for the year — thank you.", mid, ticks, comment)
+            else:
+                mark = "✅" if confs and cstatus == "Confirmed" else "☐"
+                st.markdown("  \n".join(f"{mark} {t}" for t in governance.CONFIRMATION_ITEMS))
+                if confs and confs[-1].get("comment"):
+                    st.caption(f"Owner's comment: {confs[-1]['comment']}")
+                if not is_owner:
+                    st.caption(f"Only the model owner, {owner}, gives this confirmation"
+                               + (" — it shows here as a task when due." if cstatus == "Confirmed" else "."))
 
     # ---- decommissioning
     if d.get("status") == "Requested":
@@ -1025,13 +1039,22 @@ with tab_sum:
         ])
         st.markdown(
             f"**Model owner** {m['owner']} · **Model developer** {m['developer']} · "
-            f"**Model validator** {m['validator']} · **Model sponsor** {m['sponsor']} · "
-            f"**Model users** {', '.join(m['model_users']) or '—'}"
+            f"**Model validator** {m['validator']} · **Model sponsor** {m['sponsor']}"
         )
+        st.markdown("**Connections and use**")
+        dep = m["dependencies"]
+        k1, k2, k3 = st.columns(3)
+        k1.markdown("*Upstream — feeds this model*  \n" + ("  \n".join(labels.get(d, d) for d in dep["upstream"])
+                                                          or "—"))
+        k2.markdown("*Downstream — fed by this model*  \n" + ("  \n".join(labels.get(d, d) for d in dep["downstream"])
+                                                             or "—"))
+        k3.markdown("*Model users*  \n" + ("  \n".join(m["model_users"]) or "—"))
         if m.get("uses"):
             st.dataframe(pd.DataFrame(m["uses"]).rename(columns={
                 "use": "Use", "business_area": "Business area", "decision": "Decision supported",
                 "status": "Status"}), hide_index=True, width="stretch")
+        else:
+            st.caption("No model uses recorded yet.")
         with st.expander("Tier and sign-off", expanded=not m["tier_confirmed"]):
             _tier_panel(m)
         with st.expander("More details"):
@@ -1048,11 +1071,7 @@ with tab_sum:
             a1, a2 = st.columns(2)
             a1.markdown("**Key assumptions**\n" + "\n".join(f"- {x}" for x in m["key_assumptions"]))
             a2.markdown("**Known limitations**\n" + "\n".join(f"- {x}" for x in m["known_limitations"]))
-            dep = m["dependencies"]
-            st.markdown(
-                "**Feeds from** " + (", ".join(labels.get(d, d) for d in dep["upstream"]) or "—") + "  \n"
-                "**Feeds into** " + (", ".join(labels.get(d, d) for d in dep["downstream"]) or "—")
-            )
+
 
 # ================================================================ Lifecycle
 with tab_life:

@@ -1390,5 +1390,95 @@
         "evidence_ids": []
       }
     ]
+  },
+  {
+    "request_id": "VAL-018",
+    "type": "VAL",
+    "model_id": "QDB-019",
+    "status": "Closed",
+    "initiated_by": "Model Validator 1",
+    "initiated_by_role": "LOD2",
+    "assigned_to": "Model Validator 1 (QDB validator)",
+    "title": "Initial validation",
+    "description": "Initial validation of the investment-portfolio PD model.",
+    "created_date": "2024-12-05",
+    "closed_date": "2024-12-05",
+    "due_date": null,
+    "outcome": "Fit for Purpose",
+    "severity": null,
+    "remediation": null,
+    "source": "Validation",
+    "materiality": null,
+    "validation_subtype": "Initial",
+    "tests": [
+      "Discriminatory power (Gini/KS)",
+      "Calibration accuracy / backtest",
+      "Population stability (PSI)",
+      "Sensitivity analysis",
+      "Documentation review"
+    ],
+    "thread": [
+      {
+        "response_id": "VAL-018-R1",
+        "date": "2024-12-05",
+        "author": "Model Validator 1",
+        "role": "LOD2",
+        "text": "Initial validation of the investment-portfolio PD model.",
+        "evidence_ids": []
+      },
+      {
+        "response_id": "VAL-018-R2",
+        "date": "2024-12-05",
+        "author": "Model Validator 1",
+        "role": "LOD2",
+        "text": "[Closure] Validation complete — rating: Fit for Purpose.",
+        "evidence_ids": []
+      }
+    ]
+  },
+  {
+    "request_id": "VAL-019",
+    "type": "VAL",
+    "model_id": "QDB-019",
+    "status": "Closed",
+    "initiated_by": "Model Validator 1",
+    "initiated_by_role": "LOD2",
+    "assigned_to": "Model Validator 1 (QDB validator)",
+    "title": "Periodic validation",
+    "description": "Annual validation: PiT conversion reasonable; agency tables current.",
+    "created_date": "2025-12-10",
+    "closed_date": "2025-12-10",
+    "due_date": null,
+    "outcome": "Fit for Purpose",
+    "severity": null,
+    "remediation": null,
+    "source": "Validation",
+    "materiality": null,
+    "validation_subtype": "Periodic",
+    "tests": [
+      "Discriminatory power (Gini/KS)",
+      "Calibration accuracy / backtest",
+      "Population stability (PSI)",
+      "Sensitivity analysis",
+      "Documentation review"
+    ],
+    "thread": [
+      {
+        "response_id": "VAL-019-R1",
+        "date": "2025-12-10",
+        "author": "Model Validator 1",
+        "role": "LOD2",
+        "text": "Annual validation: PiT conversion reasonable; agency tables current.",
+        "evidence_ids": []
+      },
+      {
+        "response_id": "VAL-019-R2",
+        "date": "2025-12-10",
+        "author": "Model Validator 1",
+        "role": "LOD2",
+        "text": "[Closure] Validation complete — rating: Fit for Purpose.",
+        "evidence_ids": []
+      }
+    ]
   }
 ]
